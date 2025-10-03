@@ -1,4 +1,4 @@
-function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, customRefractionDiopters, visualizsPSFonTopOfConeMosaic)
+function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, customRefractionDiopters, visualizePSFonTopOfConeMosaic)
 
 	switch (whichOptics)
 
@@ -6,38 +6,42 @@ function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, custom
             % Generate the optics that where used to optimize the mosaic
             [theOI, thePSF] = theMRGCMosaic.nativeOI(...
                 'opticsModification', whichOptics, ...
-                'visualizePSF', true);
+                'visualizePSF', visualizePSFonTopOfConeMosaic);
 
         case 'nativeOptics'
             % Generate the optics that where used to optimize the mosaic
-            [theOI, thePSF] = theMRGCMosaic.nativeOI(...
-                'visualizePSF', true);
+            fprintf('\n\nComputing the defocus value that maximizes the Strehl ratio. Please wait ...\n\n')
+            [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters] = theMRGCMosaic.nativeOI(...
+                'visualizePSF', visualizePSFonTopOfConeMosaic);
+            if (isempty(theOptimalStrehlRatioDefocusDiopters))
+                error('The native optics in the compute-ready mosaic were not constructed so as to optimize the Strehl ratio.')
+            end
 
         case 'adaptiveOptics6MM'
             [theOI, thePSF] = theMRGCMosaic.nativeOI(...
                 'opticsModification', whichOptics, ...
-                'visualizePSF', true);
+                'visualizePSF', visualizePSFonTopOfConeMosaic);
 
         case 'adaptiveOptics6MMwithLCA'
             [theOI, thePSF] = theMRGCMosaic.nativeOI(...
                 'opticsModification', whichOptics, ...
-                'visualizePSF', true);
+                'visualizePSF', visualizePSFonTopOfConeMosaic);
 
        	case 'customRefraction'
             [theOI, thePSF] = theMRGCMosaic.nativeOI(...
                 'opticsModification', whichOptics, ...
                 'customRefractionDiopters', customRefractionDiopters, ...
-                'visualizePSF', true, ...
+                'visualizePSF', visualizePSFonTopOfConeMosaic, ...
                 'visualizedWavelengths', 450:20:650);
 
         case {'refractionResidualWithRespectToNativeOptics', 'loadComputeReadyRGCMosaic'}
             % Retrieve the defocus required to optimized the Strehl ratio
-           [~,~,theOptimalStrehlRatioDefocusDiopters] = theMRGCMosaic.nativeOI(...
-                'visualizePSF', true);
-            theOptimalStrehlRatioDefocusDiopters
-           if (isempty(theOptimalStrehlRatioDefocusDiopters))
+            fprintf('\n\nComputing the defocus value that maximizes the Strehl ratio. Please wait ...\n\n')
+            [~,~,theOptimalStrehlRatioDefocusDiopters] = theMRGCMosaic.nativeOI(...
+                'visualizePSF', visualizePSFonTopOfConeMosaic);
+            if (isempty(theOptimalStrehlRatioDefocusDiopters))
                 error('The native optics in the compute-ready mosaic were not constructed so as to optimize the Strehl ratio.')
-           end
+            end
 
            % Add in custom refraction (relative to theOptimalStrehlRatioDefocusDiopters)
            customRefractionDiopters = ...
@@ -47,13 +51,13 @@ function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, custom
            [theOI, thePSF] = theMRGCMosaic.nativeOI(...
                 'opticsModification', 'customRefraction', ...
                 'customRefractionDiopters', customRefractionDiopters, ...
-                'visualizePSF', true);
+                'visualizePSF', visualizePSFonTopOfConeMosaic);
 
         otherwise
             error('Unknown optics: ''%s''.', whichOptics)
    	end % switch
 
-   	if (visualizsPSFonTopOfConeMosaic)
+   	if (visualizePSFonTopOfConeMosaic)
 
         % Compute the 2-deg  Stockman cone fundamentals weighted PSFs
         [theLconeWeightedPSF, theMconeWeightedPSF, theSconeWeightedPSF] = ...

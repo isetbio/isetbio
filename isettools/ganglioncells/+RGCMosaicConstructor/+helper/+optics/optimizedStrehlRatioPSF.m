@@ -104,7 +104,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, theOptimalStrehlRat
 	% Find the refraction that maximized the Strehl ratio at the wavelength where the diffraction-limited PSF reaches its peak (550)
 	[theOptimalStrehlRatio, iRefractiveError] = max(StrehlRatio);
 	theOptimalStrehlRatioDefocusDiopters = examinedRefractionErrorDiopters(iRefractiveError);
-    fprintf('\n\n\t--->Will employ a defocus value of %2.3fD, for which the Strehl ratio is maximed (%2.3f)\n\n', theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio);
+    fprintf('\nWill employ a defocus value of %2.3fD, for which the Strehl ratio is maximed (%2.3f)\n\n', theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio);
 
 	% Generate the optimal Strehl ratio optics
 	[oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...

@@ -39,7 +39,7 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
 
     if (~isempty(upsampleFactor))
         arcminPerSample = wvfGet(theWVF,'psf angle per sample','min',measWavelength);
-        fprintf('PSF angular resolution: %f min\n', arcminPerSample);
+        fprintf('makeWVF: using upsample factor of %2.2f results in a PSF angular resolution of %f min\n', upsampleFactor, arcminPerSample);
     end
     
     % Now compute the PSF.  Also set customLca field if human LCA is on.

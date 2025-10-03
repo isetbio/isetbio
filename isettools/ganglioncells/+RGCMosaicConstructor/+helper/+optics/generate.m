@@ -19,12 +19,13 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
 
 	fprintf('----> Generating optics for ecc (degs): %f %f\n', oiPositionDegs(1), oiPositionDegs(2));
 
-	psfUpsampleFactor = 1.0;
+    % Do not upsample
+	psfUpsampleFactor = [];
 	if (opticsEcc < 0.5) || (~isempty(strfind(opticsParams.modification, 'adaptiveOptics')))
+        % Upsample
 		psfUpsampleFactor = 2.0;
     end
 
-	wavefrontSpatialSamples = 301;
 	if (opticsEcc > 10)
 		wavefrontSpatialSamples = 501;
 	else
