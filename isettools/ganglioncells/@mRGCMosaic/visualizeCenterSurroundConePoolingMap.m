@@ -58,7 +58,6 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     pdfExportSubDir = p.Results.pdfExportSubDir;
 
 
-    customFigureFormat
     if (plotLineWeightingFunctions)
         ff = PublicationReadyPlotLib.figureComponents('2x2 standard figure');
     else
@@ -68,7 +67,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
             ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
         end
     end
-ff
+
 
     if (isempty(axesToRenderIn))
 	    hFig = figure(figNo); clf;
