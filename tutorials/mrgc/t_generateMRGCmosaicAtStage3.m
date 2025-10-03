@@ -28,7 +28,6 @@ opticsSubjectName = 'PLOSpaperDefaultSubject';
 % cone mosaic has a 1:1 L/M cone ratio.
 coneMosaicSpecies = 'human';
 
-
 % Default STF parameters: mean Rs/Rc, mean Ks/Kc (Rs/Rc)^2
 targetVisualSTFdescriptorToOptimizeFor = 'default';
 
@@ -49,11 +48,10 @@ regenerateMosaicAtStage3A = ~true;
 regenerateMosaicAtStage3B = ~true;
 
 % Inspect the optimized surround pooling functions
-inspectMosaicAtStage3B = ~true;
+inspectMosaicAtStage3B = true;
 
 % Whether to regenerate the mosaic at stage3C. This is the compute-ready mosaic
-regenerateMosaicAtStage3C = true;
-
+regenerateMosaicAtStage3C = ~true;
 
 % Whether to generate separate figures for each component (better for figures in a paper)
 % or a single PDF with all components in a panel array. Summary PDFs have
@@ -65,6 +63,8 @@ regenerateMosaicAtStage3C = true;
 summaryInsteadOfSeparateInspectionFigures = true;
 
 
+% Generate spatial grid covering the extent of the synthesized mRGC. 
+% Surround pooling functions will be derived at each node (position) of this grid
 optimizationPositionsAndSizesGrids = RGCMosaicConstructor.compute.surroundOptimizationGrid(...
 		pStruct.rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme, ...
 		pStruct.rgcMosaicSurroundOptimization.minGridSize, ...
@@ -75,23 +75,13 @@ optimizationPositionsAndSizesGrids = RGCMosaicConstructor.compute.surroundOptimi
 		'withExtremePositions', pStruct.rgcMosaicSurroundOptimization.addEightExtremePositions);
 
 
-% Do all positions
+% Compute surround optimization functions for all grid positions 
 optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
 
 % Generate the surroundRetinalConePoolingModel params struct
 surroundRetinalConePoolingModelParamsStruct = ...
 	RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateSurroundRetinalConePoolingStruct(...
 		pStruct.rgcMosaicSurroundOptimization.optimizationStrategy);
-
-% Generate targetVisualSTFmodifierStruct
-targetVisualSTFmodifierStruct = RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct(...
-	pStruct.rgcMosaicSurroundOptimization.targetVisualSTFdescriptor);
-
-% Generate the surroundConnectivity simulation params struct 
-surroundConnectivitySimulationParamsStruct = RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateSurroundConnectivitySimulationParamsStruct(...
-	pStruct.whichZernikeDataBase, pStruct.whichSubjectID, pStruct.rgcMosaic.employRFCenterOverlappingMosaic, ...
-	optimizationPositionsAndSizesGrids, surroundRetinalConePoolingModelParamsStruct, ...
-	targetVisualSTFmodifierStruct);
 
 
 if (regenerateMosaicAtStage3A)
@@ -185,7 +175,7 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 					'optimizeSurroundConePooling', ~true, ...
 					'onlyReturnSurroundOptimizationResultFilenames', true);
 
-        % Go through each optimization file and plot a summary of theoptimization results
+        % Go through each optimization file and plot a summary of the optimization results
         for iOptimizationResultsFileIndex = 1:numel(theOptimizationResultsFileNameCollectionToBeInspected)
 
 			theOptimizationResultsFileNameToBeInspected = theOptimizationResultsFileNameCollectionToBeInspected{iOptimizationResultsFileIndex};
@@ -247,12 +237,11 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 				'maxNumberOfConesOutsideContour', 0);
 
         end % for iOptimizationResultsFileIndex
-
     end % if (inspectMosaicAtStage3B)
 
     if (regenerateMosaicAtStage3B)
         % The default initial values
-	    defaultUserSuppliedInitialValuesForSurroundPoolingModel = struct(...
+	    defaultInitialValuesForSurroundPoolingModel = struct(...
    		    'poolingModel', struct(...
    			    'name', surroundConnectivitySimulationParamsStruct.poolingOptimizationParamsStruct.poolingModel.name, ...
    			    'weightsComputeHandle', surroundConnectivitySimulationParamsStruct.poolingOptimizationParamsStruct.poolingModel.weightsComputeHandle), ...
@@ -266,7 +255,7 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
     
 	    switch (initialSurroundOptimizationValuesSource)
 		    case {'imported exact match', 'imported closest match'}
-			    userSuppliedInitialValuesForSurroundPoolingModel = defaultUserSuppliedInitialValuesForSurroundPoolingModel;
+			    userSuppliedInitialValuesForSurroundPoolingModel = defaultInitialValuesForSurroundPoolingModel;
     
 			    % Try to load optimizationResults from a previously generated optimizationResults file
 			    optimizationResults = ...
@@ -291,7 +280,7 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
     		    userSuppliedInitialValuesForSurroundPoolingModel.skipOptimizationIfOptimizationFileExists = false;
     
     	    case 'skip if previous file exists'
-    		    userSuppliedInitialValuesForSurroundPoolingModel = defaultUserSuppliedInitialValuesForSurroundPoolingModel;
+    		    userSuppliedInitialValuesForSurroundPoolingModel = defaultInitialValuesForSurroundPoolingModel;
     
 			    % Try to load optimizationResults from a previously generated optimizationResults file
 			    optimizationResults = ...
@@ -318,7 +307,7 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
     
 		    case 'default'
 			    % Generate userSuppliedInitialValuesForSurroundPoolingModel from scratch
-	    	    userSuppliedInitialValuesForSurroundPoolingModel = defaultUserSuppliedInitialValuesForSurroundPoolingModel;
+	    	    userSuppliedInitialValuesForSurroundPoolingModel = defaultInitialValuesForSurroundPoolingModel;
 	    	    userSuppliedInitialValuesForSurroundPoolingModel.skipOptimizationIfOptimizationFileExists = false;
     
 		    case 'none'
@@ -358,7 +347,7 @@ if (regenerateMosaicAtStage3C)
     % Generate the mRGCmosaic
     onlyVisualizeOptimizationGridOnTopOfMosaic = false;
 
-    visualizeSurroundConeWeightsInterpolationProcess = false;
+    visualizeSurroundConeWeightsInterpolationProcess = ~true;
 
     % Do not introduce additional variance to the intSens surround-to-center ratio
     surroundVarianceInComputeReadyMosaic = struct();
@@ -401,7 +390,7 @@ if (regenerateMosaicAtStage3C)
             'employLconeDominanceOptimizationOnly', pStruct.rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly, ...
  			'surroundVarianceInComputeReadyMosaic', surroundVarianceInComputeReadyMosaic, ...
  			'onlyVisualizeOptimizationGrid', false, ...
- 			'visualizeInterpolationProcess', false);
+ 			'visualizeInterpolationProcess', visualizeSurroundConeWeightsInterpolationProcess);
     end % if (visualizeOptimizationGridOnTopOfMosaic)
 
 end % if (regenerateMosaicAtStage3C)

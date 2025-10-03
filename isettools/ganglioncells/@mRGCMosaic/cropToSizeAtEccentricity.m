@@ -5,7 +5,7 @@ function obj = cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargi
     p.addRequired('eccentricityDegs', @isnumeric);
     p.addParameter('name', '', @ischar);
     p.addParameter('visualizeSpatialRelationshipToSourceMosaic', false, @islogical);
-    p.addParameter('extraSupportDegsForInputConeMosaic', 0, @isscalar);
+    p.addParameter('extraSupportDegsForInputConeMosaic', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('beVerbose', false, @islogical);
 
     % Parse input
@@ -27,6 +27,12 @@ function obj = cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargi
     visualizeSpatialRelationshipToSourceMosaic = p.Results.visualizeSpatialRelationshipToSourceMosaic;
     beVerbose = p.Results.beVerbose;
     extraSupportDegsForInputConeMosaic = p.Results.extraSupportDegsForInputConeMosaic;
+
+
+    if (isempty(extraSupportDegsForInputConeMosaic))
+        extraSupportDegsForInputConeMosaic = mRGCMosaic.extraSupportDegsForMidgetRGCSurrounds(...
+            eccentricityDegs, sizeDegs); 
+    end
 
     % Define theROI based on the passed eccentricity and size
     theROI = regionOfInterest(...
