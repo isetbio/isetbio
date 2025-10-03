@@ -31,15 +31,12 @@ function t_mRGCMosaicBasicComputation
 
     % (A) Eccentricity
     % Load an 11x11 deg mosaic that was synthesized at 7 degrees along the nasal meridian
-    % using optics from Polans subject with rank order 9
     mosaicParams.eccDegs  = [7 0];
     mosaicParams.sizeDegs = [11 11];
 
-    
     % (B) Surround optimization method
     mosaicParams.spatialCompactnessSpectralPurityTradeoff = 1;
     mosaicParams.surroundOptimizationSubString = 'PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
-
 
     % (C) Optics under which the mosaic was optimized
     opticsParams.ZernikeDataBase = 'Polans2015';
@@ -49,21 +46,21 @@ function t_mRGCMosaicBasicComputation
     opticsParams.visualizePSFonTopOfConeMosaic = ~true;
 
 
-    % (D) Crop a patch (8x4 degs) of the mosaic, centered at 7 degrees
+    % Crop a patch (8x4 degs) of the mosaic, centered at 7 degrees
     mosaicParams.cropParams = struct(...
         'sizeDegs', [6 3], ...
         'eccentricityDegs', [7 0] ...
         );
 
-    % Append to opticsParams, information on which optics to employ for the computation at hand
+    % We can change optics to employ for the computation at hand
     
     % EITHER adaptive optics (diffraction limited with 6 mm pupil)
     %opticsParams.type = 'adaptiveOptics6MM';
     %opticsParams. refractiveErrorDiopters = [];
     
     % OR the native optics + StrehlRatio optimization (what was used to optimize the mosaic
-    opticsParams.type = 'nativeOptics';
-    opticsParams.refractiveErrorDiopters = [];
+    %opticsParams.type = 'nativeOptics';
+    %opticsParams.refractiveErrorDiopters = [];
 
     % OR the native optics without a custom refraction, here -3.5D
     %opticsParams.type = 'customRefraction';

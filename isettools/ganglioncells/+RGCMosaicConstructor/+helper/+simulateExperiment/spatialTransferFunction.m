@@ -9,6 +9,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   p.addParameter('visualizeResponse', false, @islogical);
   p.addParameter('mRGCNonLinearityParams', [], @(x)(isempty(x))||(isstruct(x)));
   p.addParameter('customTemporalFrequencyAndContrast', [], @(x)(isempty(x))||(isstruct(x)));
+  p.addParameter('validateScenes', false, @islogical);
 
   % Execute the parser
   p.parse(varargin{:});
@@ -18,7 +19,8 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   customTemporalFrequencyAndContrast = p.Results.customTemporalFrequencyAndContrast;
   visualizeResponse = p.Results.visualizeResponse;
   debugInputConeMosaicPcurrentResponse = p.Results.debugInputConeMosaicPcurrentResponse;
-
+  validateScenes = p.Results.validateScenes;
+  
   if (computeInputConeMosaicResponses)
     computePhotocurrent = false;
     if (~isempty(mRGCNonLinearityParams)) && (strcmp(mRGCNonLinearityParams.type, 'photocurrent'))
@@ -28,7 +30,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
     inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, ...
          theInputConeMosaicSTFResponsesFullFileName, computePhotocurrent, ...
          customTemporalFrequencyAndContrast, ...
-         visualizeResponse, debugInputConeMosaicPcurrentResponse);
+         visualizeResponse, debugInputConeMosaicPcurrentResponse, validateScenes);
   end
 
   if (computeMRGCMosaicResponses)
@@ -176,7 +178,7 @@ end
 
 
 function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeMosaicSTFResponsesFullFileName, ...
-  computePhotocurrent, customTemporalFrequencyAndContrast, visualizeResponse, debugInputConeMosaicPcurrentResponse);
+  computePhotocurrent, customTemporalFrequencyAndContrast, visualizeResponse, debugInputConeMosaicPcurrentResponse, validateScenes)
 
   fprintf('Input cone mosaic STF responses will be saved in: \n%s\n', theInputConeMosaicSTFResponsesFullFileName);
   % Determine spatial frequencies examined
@@ -273,7 +275,7 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
                   'frameIndexToCompute', [], ... % [] field indicates that all stimulus frame scenes must be computed
                   'customConeFundamentals', customConeFundamentals, ...
                   'announceEmployedConeFundamentals', true, ...
-                  'validateScenes', true);
+                  'validateScenes', validateScenes);
         else
             [theDriftingGratingFrameScenes, theNullStimulusScene] = visualStimulusGenerator.stimulusFramesScenes(...
                   thePresentationDisplay, stimParams, theDriftingGratingSpatialModulationPatterns, ...
