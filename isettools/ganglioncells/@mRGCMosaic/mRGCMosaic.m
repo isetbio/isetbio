@@ -220,6 +220,10 @@ classdef mRGCMosaic < handle
         % Method to visualize the mRGCMosaic
         [hFig, ax] = visualize(obj, varargin);
 
+        % Method to visualize the center/surround cone pooling map for single RGCs
+        [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions] = ...
+            visualizeCenterSurroundConePoolingMap(obj, theRGCindex, varargin);
+
         % Method to generate the visualization cache
         generateVisualizationCache(obj, xSupport, ySupport, ...
             centerSubregionContourSamples, contourGenerationMethod, ...

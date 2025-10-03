@@ -102,17 +102,19 @@ function subregionLineWeightingFunctions = renderInputConeMosaicSubregionPooling
 
     
     % Add a scale bar for comparison with physiology
+
     if ((~isempty(scaleBarDegs)) && (scaleBarDegs>0.00))
         xOffset = XLims(1)+0.05*(XLims(2)-XLims(1));
         yOffset = YLims(1)+0.05*(YLims(2)-YLims(1));
         plot(theAxes, xOffset+[0 scaleBarDegs], yOffset*[1 1], 'r-', 'LineWidth', 2);
+
         if (~doNotLabelScaleBar)
             if (scaleBarDegs>=1.0)
-                text(theAxes, xOffset+scaleBarDegs, yOffset, sprintf(' %2.1f degs', scaleBarDegs), 'FontSize', 20, 'Color', [1 0 0]);
+                text(theAxes, xOffset+0*scaleBarDegs, yOffset, sprintf(' %2.1f degs', scaleBarDegs), 'FontSize', 20, 'Color', [1 0 0]);
             elseif (scaleBarDegs>=0.1)
-                text(theAxes, xOffset+scaleBarDegs, yOffset, sprintf(' %2.2f degs', scaleBarDegs), 'FontSize', 20, 'Color', [1 0 0]);
+                text(theAxes, xOffset+0*scaleBarDegs, yOffset, sprintf(' %2.2f degs', scaleBarDegs), 'FontSize', 20, 'Color', [1 0 0]);
             else
-                text(theAxes, xOffset+scaleBarDegs, yOffset, sprintf(' %2.3f degs', scaleBarDegs), 'FontSize', 20, 'Color', [1 0 0]);
+                text(theAxes, xOffset+0*scaleBarDegs, yOffset, sprintf(' %2.3f degs', scaleBarDegs), 'FontSize', 20, 'Color', [1 0 0]);
             end
         end
     end

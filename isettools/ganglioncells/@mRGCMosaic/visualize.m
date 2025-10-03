@@ -4,6 +4,7 @@ function [hFig,ax] = visualize(obj, varargin)
     p = inputParser;
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+    
     p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
@@ -27,6 +28,7 @@ function [hFig,ax] = visualize(obj, varargin)
     p.addParameter('identifyInputCones', false, @islogical);
     p.addParameter('identifyPooledCones', false, @islogical);
     p.addParameter('identifiedInputConeIndices', [], @isnumeric);
+    p.addParameter('identifiedInputConeIndicesContour', false, @islogical);
     p.addParameter('pooledConesLineWidth', 1.0, @(x)(isempty(x) || isscalar(x)));
     p.addParameter('inputConesAlpha', 0.7, @isscalar);
     p.addParameter('plotRFoutlines', true, @islogical);
@@ -57,10 +59,16 @@ function [hFig,ax] = visualize(obj, varargin)
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
     p.addParameter('plotTitleFontSize', 16, @isscalar);
     
+    p.addParameter('noXLabel', false, @islogical);
+    p.addParameter('noYLabel', false, @islogical);
+
     p.addParameter('superimposedRect', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('superimposedRectLineWidth', 2, @isscalar);
     p.addParameter('superimposedRectColor', [], @(x)( isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('superimposedRectAlpha', 1, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
+
+    p.addParameter('exportVisualizationPDF', false, @islogical);
+    p.addParameter('exportVisualizationPDFdirectory', 'mosaicComponentVisualizations', @ischar);
 
     p.parse(varargin{:});
 
@@ -74,7 +82,8 @@ function [hFig,ax] = visualize(obj, varargin)
         end
     end
 
-    exportVisualizationPDF = true;
+    exportVisualizationPDF = p.Results.exportVisualizationPDF;
+    exportVisualizationPDFdirectory = p.Results.exportVisualizationPDFdirectory;
     clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
@@ -101,6 +110,7 @@ function [hFig,ax] = visualize(obj, varargin)
     identifiedConeAperture = p.Results.identifiedConeAperture;
     identifiedConeApertureThetaSamples = p.Results.identifiedConeApertureThetaSamples;
     identifiedInputConeIndices = p.Results.identifiedInputConeIndices;
+    identifiedInputConeIndicesContour = p.Results.identifiedInputConeIndicesContour;
     identifyInputCones = p.Results.identifyInputCones;
     identifyPooledCones = p.Results.identifyPooledCones;
     pooledConesLineWidth = p.Results.pooledConesLineWidth;
@@ -130,6 +140,10 @@ function [hFig,ax] = visualize(obj, varargin)
     plotTitle = p.Results.plotTitle;
     plotTitleColor = p.Results.plotTitleColor;
     plotTitleFontSize = p.Results.plotTitleFontSize;
+
+    noXLabel = p.Results.noXLabel;
+    noYLabel = p.Results.noYLabel;
+
     superimposedRect = p.Results.superimposedRect;
     superimposedRectLineWidth = p.Results.superimposedRectLineWidth;
     superimposedRectColor = p.Results.superimposedRectColor;
@@ -224,6 +238,21 @@ function [hFig,ax] = visualize(obj, varargin)
                 'doNotLabelScaleBar', doNotLabelScaleBar, ...
                 'minConeWeightIncluded', minConeWeightVisualized, ...
                 'tickSeparationArcMin', tickSeparationArcMinForRFconePoolingMap);
+
+            if (exportVisualizationPDF)
+                p = getpref('isetbio');
+                pdfExportSubDir = fullfile(p.rgcResources.figurePDFsDir);
+                theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('RFmap%d.pdf', theRGCindex));
+            
+                % Generate the path if we need to
+                RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportSubDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', true);
+        
+                thePDFfileName = fullfile(pdfExportSubDir, theVisualizationPDFfilename);
+                NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
+            end
+
         end
         return;
     end
@@ -260,7 +289,7 @@ function [hFig,ax] = visualize(obj, varargin)
         labelRetinalMeridians, ...
         domainVisualizationTicks, domainVisualizationLimits, ...
         identifiedConeAperture, identifiedConeApertureThetaSamples, ...
-        identifyInputCones, identifyPooledCones, identifiedInputConeIndices, ...
+        identifyInputCones, identifyPooledCones, identifiedInputConeIndices, identifiedInputConeIndicesContour, ...
         pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
         scaleBarDegs, doNotLabelScaleBar, ...
@@ -270,6 +299,7 @@ function [hFig,ax] = visualize(obj, varargin)
         colorBarTickLabelPostFix, colorbarTickLabelColor, ...
         verticalColorBar, horizontalColorBar, colorbarFontSize, ...
         verticalColorBarInside, horizontalColorBarInside, ...
+        noXLabel, noYLabel, ...
         backgroundColor, fontSize, fontAngle, ...
         plotTitle, plotTitleColor, plotTitleFontSize);
 
@@ -277,7 +307,7 @@ function [hFig,ax] = visualize(obj, varargin)
     if (exportVisualizationPDF)
         p = getpref('isetbio');
         pdfExportSubDir = fullfile(p.rgcResources.figurePDFsDir);
-        theVisualizationPDFfilename = fullfile('modelComponentVisualizations', 'mRGCmosaic.pdf');
+        theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, 'mRGCmosaic.pdf');
     
         % Generate the path if we need to
         RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
@@ -295,7 +325,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         labelRetinalMeridians, ...
         domainVisualizationTicks, domainVisualizationLimits, ...
         identifiedConeAperture, identifiedConeApertureThetaSamples, ...
-        identifyInputCones, identifyPooledCones, identifiedInputConeIndices, ...
+        identifyInputCones, identifyPooledCones, identifiedInputConeIndices, identifiedInputConeIndicesContour, ...
         pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
         scaleBarDegs, doNotLabelScaleBar, ...
@@ -305,6 +335,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         colorBarTickLabelPostFix, colorbarTickLabelColor, ...
         verticalColorBar, horizontalColorBar, colorbarFontSize, ...
         verticalColorBarInside, horizontalColorBarInside, ...
+        noXLabel, noYLabel, ...
         backgroundColor, fontSize, fontAngle, plotTitle, plotTitleColor,  plotTitleFontSize)
 
 
@@ -451,6 +482,18 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
                 'domainVisualizationTicks', domainVisualizationTicks, ...
                 'domainVisualizationLimits', domainVisualizationLimits, ...
                 'backgroundColor', backgroundColor);
+
+            if (identifiedInputConeIndicesContour)
+                hold(ax, 'on')
+                if (numel(visualizedRGCindices) == 1)
+                    % Add dashed line showing the surround extent
+                    theRGCpos = obj.rgcRFpositionsDegs(visualizedRGCindices,:);
+                    maxRadius = max(sqrt(sum(bsxfun(@minus,obj.inputConeMosaic.coneRFpositionsDegs(identifiedInputConeIndices,:), theRGCpos).^2,2)));
+                    xx = theRGCpos(1) + maxRadius*cosd(0:10:350);
+                    yy = theRGCpos(2) + maxRadius*sind(0:10:350);
+                    plot(ax, xx,yy, 'k--', 'LineWidth', 2.0);
+                end
+            end
         end
     else
         hold(ax, 'on')
@@ -480,16 +523,23 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
     
                     S.FaceVertexCData = 0.5;
                     S.FaceColor = 'flat';
+                    
+    
+                    S.FaceAlpha = 0.0;
+                    S.LineWidth = 2*labeledRGCsLineWidth;
+                    
+                    S.EdgeColor = [0 0 0];
+                    S.LineStyle = '-';
+                    patch(S, 'Parent', ax);
+
                     if (isempty(labeledRGCsColor))
                         S.EdgeColor = [1 1 0];
                     else
                         S.EdgeColor = labeledRGCsColor;
                     end
-    
-                    S.FaceAlpha = 0.0;
+
                     S.LineWidth = labeledRGCsLineWidth;
-                    
-                    S.LineStyle = '-';
+                    S.LineStyle = '--';
                     patch(S, 'Parent', ax);
                 end
             end
@@ -528,6 +578,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         yOffset = domainVisualizationLimits(3)+0.05*(domainVisualizationLimits(4)-domainVisualizationLimits(3));
         yOffset2 = yOffset + 0.05*(domainVisualizationLimits(4)-domainVisualizationLimits(3));
         plot(ax, xOffset+[0 scaleBarDegs], yOffset2*[1 1], 'k-', 'LineWidth', 2);
+
         if (~doNotLabelScaleBar)
             if (scaleBarDegs>=1.0)
                 text(ax, xOffset+scaleBarDegs, yOffset, sprintf(' %2.1f degs', scaleBarDegs), ...
@@ -562,6 +613,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
                 'YTickLabel', sprintf('%1.3f\n', domainVisualizationTicks.y));
     end
 
+    set(ax, 'XLim', domainVisualizationLimits(1:2), 'YLim', domainVisualizationLimits(3:4));
     if (~identifyInputCones)
         colormap(ax, cMap);
     end
@@ -621,6 +673,14 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
     else
         colorbar(ax, 'off');
     end
+
+    if (noXLabel)
+        xlabel(ax, '');
+    end
+    if (noYLabel)
+        ylabel(ax, '');
+    end
+
 
     title(ax, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
     drawnow;

@@ -800,7 +800,7 @@ if (isempty(activation))
     if (labelCones)
         cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor];
     elseif (~isempty(labelConesWithIndices))
-        cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor; [0.5 0.5 0.5]];
+        cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor; [0.85 0.85 0.85]];
     else
         cMap = 0.4*ones(4,3);
     end

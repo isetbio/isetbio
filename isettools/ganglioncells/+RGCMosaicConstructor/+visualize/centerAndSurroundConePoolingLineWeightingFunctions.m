@@ -8,6 +8,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     p.addParameter('domainVisualizationLimits', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isnumeric(x))));
     p.addParameter('compositeInsteadOfComponent', false, @islogical);
+    p.addParameter('flipXYaxes', false, @islogical);
     p.addParameter('noGrid', false, @islogical);
 
     p.parse(varargin{:});
@@ -15,6 +16,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     compositeInsteadOfComponent = p.Results.compositeInsteadOfComponent;
+    flipXYaxes = p.Results.flipXYaxes;
     noGrid = p.Results.noGrid;
     
 	switch (whichMeridian)
@@ -69,24 +71,33 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     [~,iidx] = sort(centerLineWeightingProfile.spatialSupportDegs(idx), 'ascend');
     xx = centerLineWeightingProfile.spatialSupportDegs(idx(iidx));
     yy = centerLineWeightingProfile.amplitude(idx(iidx));
-    %xx = cat(1, xx(1), xx);
-    %yy = cat(2,  0, yy);
-    %xx = cat(1, xx, xx(end));
-    %yy = cat(2, yy, 0);
+
+    if (flipXYaxes)
+        xflip = yy;
+        yflip = xx;
+        xx = xflip;
+        yy = yflip;
+    end
 
     RGCMosaicAnalyzer.visualize.xyDataAsShadedArea(ax, xx, yy, 0, [0.9 0.1 0.3], 'none', 0.5, ff.lineWidth);
     hold(ax, 'on');
-    plot(ax, centerLineWeightingProfile.spatialSupportDegs(idx(iidx)), centerLineWeightingProfile.amplitude(idx(iidx)), 'r-', 'Color', [0.9 0.1 0.3]*0.5, 'LineWidth', ff.lineWidth);
+    plot(ax, xx, yy, 'r-', 'Color', [0.9 0.1 0.3]*0.5, 'LineWidth', ff.lineWidth);
+    
+    
     idx = find(surroundLineWeightingProfile.amplitude>0.001*max(surroundLineWeightingProfile.amplitude(:)));
     [~,iidx] = sort(surroundLineWeightingProfile.spatialSupportDegs(idx), 'ascend');
     xx = surroundLineWeightingProfile.spatialSupportDegs(idx(iidx));
     yy = -surroundLineWeightingProfile.amplitude(idx(iidx));
-    %xx = cat(1, xx(1), xx);
-    %yy = cat(2,  0, yy);
-    %xx = cat(1, xx, xx(end));
-    %yy = cat(2, yy, 0);
+
+    if (flipXYaxes)
+        xflip = yy;
+        yflip = xx;
+        xx = xflip;
+        yy = yflip;
+    end
+
     RGCMosaicAnalyzer.visualize.xyDataAsShadedArea(ax, xx, yy, 0,  [0.3 0.5 0.65], 'none', 0.5, ff.lineWidth);
-    plot(ax, surroundLineWeightingProfile.spatialSupportDegs(idx(iidx)), -surroundLineWeightingProfile.amplitude(idx(iidx)), 'b-', 'Color', [0.3 0.5 0.65]*0.5, 'LineWidth', ff.lineWidth);
+    plot(ax, xx, yy, 'b-', 'Color', [0.3 0.5 0.65]*0.5, 'LineWidth', ff.lineWidth);
     
 
     hold(ax, 'off');
@@ -99,13 +110,22 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
                 xTicksDegs = domainVisualizationTicks;
             end
 
-            ylabel(ax, 'y-integrated cone weights');
+            if (flipXYaxes)
+                xlabel(ax, 'y-integrated cone weights');
+            else
+                ylabel(ax, 'y-integrated cone weights');
+            end
+
         case 'vertical'
             xTicksDegs = spatialSupportCenterDegs(2) + (-3:3)*spatialSupportTickSeparationArcMin/60;
             if (~isempty(domainVisualizationTicks))
                 xTicksDegs = domainVisualizationTicks;
             end
-            ylabel(ax, 'x-integrated cone weights');
+            if (flipXYaxes)
+                xlabel(ax, 'x-integrated cone weights');
+            else
+                ylabel(ax, 'x-integrated cone weights');
+            end
     end
 
     if (spatialSupportTickSeparationArcMin/60 > 1-100*eps)
@@ -115,17 +135,30 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     elseif (spatialSupportTickSeparationArcMin/60 > 0.01-100*eps)
        xTickLabels = sprintf('%2.2f\n', xTicksDegs);
     else
-        xTickLabels = sprintf('%2.3f\n', xTicksDegs);
+       xTickLabels = sprintf('%2.3f\n', xTicksDegs);
     end
 
-    set(ax, ...
-        'XLim', XLims, 'YLim', YLims, ...
-        'XTick', xTicksDegs, 'YTick', YTicks, ...
-        'XTickLabel', xTickLabels, ...
-        'YTickLabel', {});
+    if (flipXYaxes)
+        set(ax, ...
+            'XLim', YLims, 'YLim', XLims, ...
+            'YTick',  YTicks, 'YTick', xTicksDegs, ...
+            'YTickLabel', xTickLabels, ...
+            'XTickLabel', {});
+    else
+        set(ax, ...
+            'XLim', XLims, 'YLim', YLims, ...
+            'XTick', xTicksDegs, 'YTick', YTicks, ...
+            'XTickLabel', xTickLabels, ...
+            'YTickLabel', {});
+    end
 
-    xlabel(ax, xLabelString);
-    
+    if (flipXYaxes)
+        ylabel(ax, xLabelString);
+        set(ax,'YAxisLocation','right', 'XDir', 'reverse')
+    else
+        xlabel(ax, xLabelString);
+    end
+
     if (noGrid)
         ff.grid = 'off';
     end
