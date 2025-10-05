@@ -51,10 +51,13 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     stfParams.orientationDeltaDegs = 45;
     stfParams.spatialPhaseIncrementDegs = 30;
 
-    % Compute the input cone mosaic STF responses and the mRGC mosaic STF
-    % responses
+    % Compute the input cone mosaic STF responses 
     computeInputConeMosaicResponses = true;
+
+    % Compute the mRGC mosaic STFresponses
     computeMRGCMosaicResponses = true;
+
+    % Fit DoG models to the STF responses
     reAnalyzeSTFData = ~true;
 
     if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
