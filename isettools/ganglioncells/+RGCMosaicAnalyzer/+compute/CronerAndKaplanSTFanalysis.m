@@ -8,7 +8,9 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
     targetedRadialEccentricityRange, ...
     targetedCenterConeNumerosityRange, ...
     targetedCenterPurityRange , ...
-    recomputeAnalysis, varargin)
+    recomputeAnalysis, ...
+    pdfExportSubDir, ...
+    varargin)
 
 	% Parse optional input
 	p = inputParser;
@@ -54,9 +56,14 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 	KcMosaic = [];
 
 
-	% Where PDF files are exported
-	theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-    pdfExportSubDir = 'validation';
+    % OLD WAY
+	%theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    %pdfExportSubDir = 'validation';
+
+    % Where PDF files are exported
+    p = getpref('isetbio');
+    pdfExportRootDir = p.rgcResources.figurePDFsDir;
+
 
     radialTemporalEquivalentEccentricityDegsAllRuns = [];
 
@@ -86,7 +93,14 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
     		'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ... %'geometricArea', ...
     		'contourGenerationMethod', 'ellipseFitToPooledConePositions'); %'ellipseFitBasedOnLocalSpacing');  % 'contourOfPooledConeApertureImage'
 
-        NicePlot.exportFigToPDF(fullfile(theRawFiguresDir, pdfExportSubDir,'mRGCMosaic.pdf'), hFig, 300);
+        % Generate the path if we need to
+        theVisualizationPDFfilename = fullfile(pdfExportSubDir, 'mRGCMosaic.pdf');
+        % Generate the path if we need to
+        thePDFFullFileName  = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+        NicePlot.exportFigToPDF(thePDFFullFileName, hFig, 300);
 
 		% Preallocate memory
 		optimalOrientationDegsMosaic = zeros(1, theMRGCMosaic.rgcsNum);
@@ -136,6 +150,12 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 					fittedSTFsPDFfilename, pdfFileName, mRGCNonLinearityParams, customTemporalFrequencyAndContrast);
 
 
+                theVisualizationPDFfilename = fullfile(pdfExportSubDir, fittedSTFsPDFfilename);
+                % Generate the path if we need to
+                thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', true);
+
 				dataOut = fitTheSTF(theMRGCMosaic, iRGC, stimParams, ...
 					theMRGCMosaicResponseTemporalSupportSeconds, ...
 					squeeze(theNoiseFreeSpatioTemporalMRGCMosaicResponses2DSTF(:,:,:,iRGC)), ...
@@ -146,7 +166,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 					visualizeModelFitting, ...
 					visualizeFullAndMaximalExcursionSTF, ...
 					visualizeSTFfits, ...
-					fullfile(theRawFiguresDir, pdfExportSubDir, fittedSTFsPDFfilename));
+					thePDFFullFileName);
 
 				% Retrieve the data
 				optimalOrientationDegsMosaic(iRGC) = dataOut.theOptimalOrientation;
@@ -162,8 +182,15 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 				theFittedSTFsMosaic{iRGC} = dataOut.theFittedSTFs;
 
 				if (visualizeSTFwithConeWeightsMap)
+
+                    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
+                    % Generate the path if we need to
+                    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                        pdfExportRootDir, theVisualizationPDFfilename, ...
+                        'generateMissingSubDirs', true);
+
 					visualizeSingleCellConeWeightsMapsAndSTF(theMRGCMosaic, iRGC, dataOut, ...
-						fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName), ...
+						thePDFFullFileName, ...
 						showComponentLineWeightingFunctions);
 				end
 			end % for iRGC = 1:theMRGCMosaic.rgcsNum
@@ -182,6 +209,12 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 				[fittedSTFsPDFfilename, pdfFileName] = updatePSFfileNames(...
 					fittedSTFsPDFfilename, pdfFileName, mRGCNonLinearityParams, customTemporalFrequencyAndContrast);
 
+                theVisualizationPDFfilename = fullfile(pdfExportSubDir, fittedSTFsPDFfilename);
+
+                % Generate the path if we need to
+                thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', true);
 
 				dataOut = fitTheSTF(theMRGCMosaic, iRGC, stimParams, ...
 					theMRGCMosaicResponseTemporalSupportSeconds, ...
@@ -193,7 +226,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 					visualizeModelFitting, ...
 					visualizeFullAndMaximalExcursionSTF, ...
 					visualizeSTFfits, ...
-					fullfile(theRawFiguresDir, pdfExportSubDir, fittedSTFsPDFfilename));
+					thePDFFullFileName);
 
 				% Retrieve the data
 				optimalOrientationDegsMosaic(iRGC) = dataOut.theOptimalOrientation;
@@ -269,6 +302,13 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 						'', pdfFileName, mRGCNonLinearityParams, customTemporalFrequencyAndContrast);
 
 
+                    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
+                
+                    % Generate the path if we need to
+                    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                        pdfExportRootDir, theVisualizationPDFfilename, ...
+                        'generateMissingSubDirs', true);
+
                     % Get analyzed STF data for this cell
                     dataOutForThisCell.spatialFrequencyCPDFullRange = dataOut.spatialFrequencyCPDFullRange{iRGC};
                     dataOutForThisCell.theSTFtoFitFullRange = dataOut.theSTFtoFitFullRangeMosaic{iRGC};
@@ -285,10 +325,13 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 					dataOutForThisCell.RcDegs = dataOut.RcDegsMosaic(iRGC);
 
 					visualizeSingleCellConeWeightsMapsAndSTF(theMRGCMosaic, iRGC, dataOutForThisCell, ...
-						fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName), showComponentLineWeightingFunctions);
+						thePDFFullFileName, showComponentLineWeightingFunctions);
 				end % iRGC
 			end % for iRun
 		end
+
+
+        thePercentages = [5 10 25 50 75 90 95];
 
 		if (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities) || (onlyVisualizeFittedDOGmodels)
 
@@ -298,8 +341,8 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 				runsNum = 1;
             end
 
-			radialTemporalEquivalentEccentricityDegsMosaicAllRuns = [];
             % Aggregated across all runs
+			radialTemporalEquivalentEccentricityDegsMosaicAllRuns = [];
 			RcDegsMosaicAllRuns = [];
 			RsToRcMosaicAllRuns = [];
 			intStoCsensMosaicAllRuns = [];
@@ -307,7 +350,6 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 			KcMosaicAllRuns = [];
 
             % PRctiles for each run
-            thePercentages = [5 10 25 50 75 90 95];
             radialTemporalEquivalentEccentricityDegsAllRuns = cell(1,numel(runsNum));
             RcDegsPrcTilesAllRuns = zeros(runsNum, numel(thePercentages));
 			RsToRcPrcTilesAllRuns = zeros(runsNum, numel(thePercentages));
@@ -594,7 +636,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 	end
 
 	% Rc (degs) as a function of temporal equivalent eccentricity
-	figNo = 500; pdfFileName = 'RcDegs.pdf'; 
+	figNo = 500; 
 
 	[eccentricityDegsCKdata, RcDegsCKdata] = ...
 		RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
@@ -629,6 +671,13 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 	RcDegsGodat2022data = Godat2022data(:,2);
 
 
+    pdfFileName = 'RcDegs.pdf'; 
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName)
+    % Generate the path if we need to
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', true);
+
 	RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo, ...
 		radialTemporalEquivalentEccentricityDegsMosaic, RcDegsMosaic, 'o', 6, [0.0 0.4 1], 0.02, 0.0, ...
 		populationContourInsteadOfPointCloud, ...
@@ -638,8 +687,13 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		'log', 'linear', ...
 		'temporal equivalent eccentricity (degs)', 'Rc (degs)', ...
 		{sprintf('synthetic, n=%d',numel(RcDegsMosaic)), 'Croner & Kaplan'}, ...
-		pdfFileName);
+		thePDFFullFileName);
 
+
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, strrep(pdfFileName, '.pdf', 'Godat2022.pdf'));
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
 
 	RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo+1, ...
 		radialTemporalEquivalentEccentricityDegsMosaic, RcDegsMosaic, 'o', 6, [0.0 0.4 1], 0.02, 0.0, ...
@@ -650,9 +704,14 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		'log', 'linear', ...
 		'temporal equivalent eccentricity (degs)', 'Rc (degs)', ...
 		{sprintf('synthetic, n=%d',numel(RcDegsMosaic)), 'Godat et al.'}, ...
-		strrep(pdfFileName, '.pdf', 'Godat2022.pdf'));
+		thePDFFullFileName);
 
     if (~isempty(radialTemporalEquivalentEccentricityDegsAllRuns))
+
+        theVisualizationPDFfilename = fullfile(pdfExportSubDir, strrep(pdfFileName, '.pdf', 'PrcTiles.pdf'));
+        thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
 
         RGCMosaicAnalyzer.visualize.scatterPrcTilesPlot(figNo, ...
 		    radialTemporalEquivalentEccentricityDegsAllRuns, RcDegsPrcTilesAllRuns, 'o', 14, [0.0 0.4 1], 0.3, 1.0, ...
@@ -662,13 +721,13 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		    'log', 'linear', ...
 		    'temporal equivalent eccentricity (degs)', 'Rc (degs)', ...
 		    {sprintf('synthetic, n=%d',numel(RcDegsMosaic)), 'Croner & Kaplan'}, ...
-		    strrep(pdfFileName, '.pdf', 'PrcTiles.pdf'));
+		    thePDFFullFileName);
 
     end
 
 
 	% Rs/Rc ratio as a function of temporal equivalent eccentricity
-	figNo = figNo+1; pdfFileName = 'RsRcRatios.pdf';
+	figNo = figNo+1; 
 
 	[eccentricityDegsCKdata, RcToRSCKdata] = ...
 		RGCmodels.CronerKaplan.digitizedData.parvoCenterSurroundRadiusRatioAgainstEccentricity();
@@ -679,6 +738,12 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 
 	
 	RsRcCKtarget = RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio * ones(size(eccentricityDegsCKdata));
+
+    pdfFileName = 'RsRcRatios.pdf';
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
 
 	RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo, ...
 		radialTemporalEquivalentEccentricityDegsMosaic, RsToRcMosaic, 'o', 6, [0.0 0.4 1], 0.02, 0.0, ...
@@ -693,6 +758,12 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 
     if (~isempty(radialTemporalEquivalentEccentricityDegsAllRuns))
         figNo = figNo+1;
+
+        theVisualizationPDFfilename = fullfile(pdfExportSubDir, strrep(pdfFileName, '.pdf', 'PrcTiles.pdf'));
+        thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
+
         RGCMosaicAnalyzer.visualize.scatterPrcTilesPlot(figNo, ...
 		    radialTemporalEquivalentEccentricityDegsAllRuns, RsToRcPrcTilesAllRuns, 'o', 14, [0.0 0.4 1], 0.3, 1, ...
 		    eccentricityDegsCKdata, RsRcCKdata, RsRcCKtarget, ...
@@ -701,11 +772,11 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		    'log', 'linear', ...
 		    'temporal equivalent eccentricity (degs)', 'Rs/Rc', ...
 		    {sprintf('synthetic, n=%d',numel(RcDegsMosaic)), 'Croner & Kaplan'}, ...
-		    strrep(pdfFileName, '.pdf', 'PrcTiles.pdf'));
+		    thePDFFullFileName);
     end
 
 	% Int S/C ratio as a function of temporal equivalent eccentricity
-	figNo = figNo+1; pdfFileName = 'intSCRatios.pdf';
+	figNo = figNo+1; 
 	[eccentricityDegsCKdata, intSCratioCKdata] = ...
             RGCmodels.CronerKaplan.digitizedData.parvoSurroundCenterIntSensisitivityRatioAgainstEccentricity();
 
@@ -728,6 +799,12 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 
 	intStoCsensCKtarget = RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(eccentricityDegsCKdata(relevantCKdataIndices));
 
+    pdfFileName = 'intSCRatios.pdf';
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
+
     RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo, ...
 		radialTemporalEquivalentEccentricityDegsMosaic, intStoCsensMosaic, 'o', 6, [0.0 0.4 1], 0.05, 0.0, ...
 		populationContourInsteadOfPointCloud, ...
@@ -737,10 +814,16 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		'log', 'linear', ...
 		'temporal equivalent eccentricity (degs)', 'ISs/ISc', ...
 		{sprintf('synthetic, n=%d',numel(intStoCsensMosaic)), macaqueDataLegend}, ...
-		pdfFileName);
+		thePDFFullFileName);
 
     if (~isempty(radialTemporalEquivalentEccentricityDegsAllRuns))
         figNo = figNo+1;
+
+        theVisualizationPDFfilename = fullfile(pdfExportSubDir, strrep(pdfFileName, '.pdf', 'PrcTiles.pdf'));
+        thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
+
         RGCMosaicAnalyzer.visualize.scatterPrcTilesPlot(figNo, ...
 		    radialTemporalEquivalentEccentricityDegsAllRuns, intStoCsensPrcTilesAllRuns, 'o', 14, [0.0 0.4 1], 0.3, 1, ...
 		    eccentricityDegsCKdata(relevantCKdataIndices), intSCratioCKdata(relevantCKdataIndices), intStoCsensCKtarget, ...
@@ -749,24 +832,31 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		    'log', 'linear', ...
 		    'temporal equivalent eccentricity (degs)', 'ISs/ISc', ...
 		    {sprintf('synthetic, n=%d',numel(intStoCsensMosaic)), 'Croner & Kaplan'}, ...
-		    strrep(pdfFileName, '.pdf', 'PrcTiles.pdf'));
+		    thePDFFullFileName);
     end
 
     % Histogram of Rs/Rc ratios
-	figNo = figNo+1; pdfFileName = 'RsRcRatiosHistogram.pdf';
+	figNo = figNo+1; 
 
 	theLegends = {sprintf('synthetic, n=%d',numel(RsToRcMosaic)), 'Croner & Kaplan'};
 	theLegends = {};
-    	RsToRcBins = 0:2:20;
-    	RGCMosaicAnalyzer.visualize.doubleHistogramPlot(figNo, ...
+    RsToRcBins = 0:2:20;
+    	
+    pdfFileName = 'RsRcRatiosHistogram.pdf';
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
+
+    RGCMosaicAnalyzer.visualize.doubleHistogramPlot(figNo, ...
 	    	RsToRcMosaic, RsToRcBins, [0 0.4 1], 1.4, ...
 	    	RsRcCKdata, RsToRcBins, [0.85 0.85 0.85], 2.0, ...
 	    	[0 20], 0:2.0:20, [0 0.6], ...
 	    	'Rs/Rc', 'frequency', ...
 	    	theLegends, ...
-	    	pdfFileName);
+	    	thePDFFullFileName);
 
-    	% Histogram of intS/C ratios
+    % Histogram of intS/C ratios
 	% Every 0.1
 	%intStoCsensBins = linspace(0, 1.5, 16);
 
@@ -782,13 +872,19 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 	% Every 0.25
     %intStoCsensBins = linspace(0, 1.5, 7);
 
-	figNo = figNo+1; pdfFileName = 'intSCratiosHistogram.pdf';
+	figNo = figNo+1; 
 
 	% For the intS/C ratios, which vary with eccentricity, we need to limit the # of cells
 	% to be the same across all runs
 
 	theLegends = {sprintf('synthetic, n=%d',numel(intStoCsensMosaic)), macaqueDataLegend};
 	theLegends = {};
+
+    pdfFileName = 'intSCratiosHistogram.pdf';
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', false);
 	RGCMosaicAnalyzer.visualize.doubleHistogramPlot(figNo, ...
 		intStoCsensMosaicEqualNumerosity, intStoCsensBins, [0 0.4 1], 0.8*(intStoCsensBins(2)-intStoCsensBins(1)), ...
 		intSCratioCKdata(relevantCKdataIndices), intStoCsensBins, [0.85 0.85 0.85], intStoCsensBins(2)-intStoCsensBins(1), ...
@@ -796,7 +892,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
     	[0 0.6], ...
     	'ISs/ISc', 'frequency', ...
     	theLegends, ...
-    	pdfFileName);
+    	thePDFFullFileName);
 end
 
 
@@ -944,7 +1040,7 @@ function dataOut = fitTheSTF(theMRGCMosaic, theRGCindex, stimParams, ...
 			dataOut.spatialFrequencyCPD, dataOut.theSTFtoFit, ...
 			dataOut.theFittedSTFs, theTitle);
 
-    		NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+    	NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
 	end
 end
 

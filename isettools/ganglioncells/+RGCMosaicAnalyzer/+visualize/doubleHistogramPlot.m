@@ -6,9 +6,8 @@ function doubleHistogramPlot(figNo, ...
 	data1, bins1, color1, binWidth1, ...
 	data2, bins2, color2, binWidth2, ...
 	xLims, xTicks, yLims, xAxisLabel, yAxisLabel, ...
-	theLegends, pdfFileName);
+	theLegends, thePDFFullFileName)
 
-	% The density plot of acrom vs cone isolating BPIs
 	ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
 	hFig = figure(figNo); clf;
     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
@@ -47,8 +46,5 @@ function doubleHistogramPlot(figNo, ...
     PublicationReadyPlotLib.applyFormat(ax,ff);
     PublicationReadyPlotLib.offsetAxes(ax, ff, xLims, yLims);
 
-    theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-	pdfExportSubDir = 'validation';
-    thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName);
-    NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+    NicePlot.exportFigToPDF(thePDFFullFileName,hFig,  300);
 end

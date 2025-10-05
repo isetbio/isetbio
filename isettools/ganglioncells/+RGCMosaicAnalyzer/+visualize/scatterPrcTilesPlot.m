@@ -3,7 +3,7 @@ function scatterPrcTilesPlot(figNo, ...
 	    xData2, yData2, referenceYdata2, marker2, marker2Size, marker2Color, marker2FaceAlpha, marker2EdgeAlpha, ...
 	    xLims, xTicks, yLims, yTicks, ...
 	    xScale, yScale, xAxisLabel, yAxisLabel, ...
-	    theLegends, pdfFileName)
+	    theLegends, thePDFFullFileName)
 
     ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
 	hFig = figure(figNo); clf;
@@ -125,8 +125,5 @@ function scatterPrcTilesPlot(figNo, ...
     %PublicationReadyPlotLib.offsetAxes(ax, ff, xLims, yLims);
 
    
-    theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-	pdfExportSubDir = 'validation';
-    thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName);
-    NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+    NicePlot.exportFigToPDF(thePDFFullFileName,hFig,  300);
 end
