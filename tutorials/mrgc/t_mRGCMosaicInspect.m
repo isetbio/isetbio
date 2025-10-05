@@ -60,12 +60,9 @@ function t_mRGCMosaicInspect
     % Load the desired mRGCmosaic and generated the optics for the computation
     [theMRGCmosaic, ~, thePSF] = mRGCMosaic.loadPrebakedMosaic(mosaicParams, opticsParams);
 
-    % Target wavelenth at which the visualized PSF is sliced at
-    targetWavelenth = 550;
-    [~, theVisualizedWavelengthIndex] = min(abs(thePSF.supportWavelength - targetWavelenth));
 
-    % Generate the PSD data struct for visualization
-    thePSFData.data = squeeze(thePSF.data(:,:,theVisualizedWavelengthIndex));
+    % Generate the PSD data struct (with vLambda-weighted PSF) for visualization 
+    thePSFData.data = RGCMosaicAnalyzer.compute.vLambdaWeightedPSF(thePSF);
     thePSFData.supportXdegs = thePSF.supportX/60;
     thePSFData.supportYdegs = thePSF.supportY/60;
 

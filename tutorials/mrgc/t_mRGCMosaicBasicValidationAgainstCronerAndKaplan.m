@@ -6,20 +6,24 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     clearvars;
     close all;
 
+    % Prebaked mRGCmosaic: 11x11 deg synthesized at 7 degrees along the nasal meridian
+    mosaicParams.sizeDegs = [11 11];
+    mosaicParams.eccDegs  = [7 0];
     
 
-    % Load an 11x11 deg mosaic that was synthesized at 7 degrees along the nasal meridian
-    mosaicParams.eccDegs  = [7 0];
-    mosaicParams.sizeDegs = [11 11];
-
-    positionDegs = [5 0];
+    % Validate a 1x1 patch of the prebaked mosaic centered at (4,0)
+    positionDegs = [4 0];
     sizeDegs = [1 1];
-    % Crop a small patch (2x2 degs) of the mosaic, centered at 7 degrees
+
+    % Validate a 1x1 patch of the prebaked mosaic centered at (5,0)
+    %positionDegs = [5 0];
+    %sizeDegs = [1 1];
+
+    % Crop params
     mosaicParams.cropParams = struct(...
             'sizeDegs', sizeDegs, ...
             'eccentricityDegs', positionDegs ...
             );
-
 
     % (B) Surround optimization method
     mosaicParams.spatialCompactnessSpectralPurityTradeoff = 1;
@@ -45,18 +49,20 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
 
     % Compute the input cone mosaic STF responses and the mRGC mosaic STF
     % responses
-    computeInputConeMosaicResponses = ~true;
+    computeInputConeMosaicResponses = true;
     computeMRGCMosaicResponses = ~true;
     reAnalyzeSTFData = ~true;
 
     if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
-        % Use 4 CPU cores
-        AppleSiliconParPoolManager(4);
+        % Use a smaller number of the available CPU cores
+        AppleSiliconParPoolManager('conservative');
     else
         AppleSiliconParPoolManager('extreme');
     end
 
-    computeSTF(mosaicParams, opticsParams, ...
+    
+    % Go !
+    runValidation(mosaicParams, opticsParams, ...
         stfParams, ...
         computeInputConeMosaicResponses, ...
         computeMRGCMosaicResponses, ...
@@ -65,7 +71,7 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
 
 end
 
-function computeSTF(mosaicParams, opticsParams, ...
+function runValidation(mosaicParams, opticsParams, ...
     stfParams, ...
     computeInputConeMosaicResponses, ...
     computeMRGCMosaicResponses, ...
@@ -73,13 +79,41 @@ function computeSTF(mosaicParams, opticsParams, ...
     exportVisualizationPDFdirectory)
 
 
-    if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
-
-        % Load the desired mRGCmosaic and generated the optics for the computation
-        [theMRGCmosaic, opticsForSTFresponses, thePSF] = mRGCMosaic.loadPrebakedMosaic(mosaicParams, opticsParams);
+    % Load the desired mRGCmosaic and generated the optics for the computation
+    [theMRGCmosaic, opticsForSTFresponses, thePSF, ...
+        prebakedMRGCMosaicDir, prebakedMRGCMosaicFilename] = mRGCMosaic.loadPrebakedMosaic(mosaicParams, opticsParams);
     
+    postFix = sprintf('%s_Ecc_%2.1f_%2.1f_Size_%2.1f_%2.1f', prebakedMRGCMosaicFilename, theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2), theMRGCmosaic.sizeDegs(1), theMRGCmosaic.sizeDegs(2));
+    
+    % Filenames for intermediate responses
+    p = getpref('isetbio');
+    intermediateDataDir = p.rgcResources.intermediateDataDir;
+
+    
+    theInputConeMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('inputConeMosaicSTFresponses_%s.mat', postFix));
+    theInputConeMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir, theInputConeMosaicSTFResponsesFileName, ...
+        'generateMissingSubDirs', true);
+
+    theMRGCMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('mRGCMosaicSTFresponses_%s.mat', postFix));
+    theMRGCMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir, theMRGCMosaicSTFResponsesFileName, ...
+        'generateMissingSubDirs', true);
+
+    theCronerKaplanAnalysisFileName = fullfile('scratchspace', sprintf('CronerKaplanAnalysis_%s.mat', postFix));
+    theCronerKaplanAnalysisFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir, theCronerKaplanAnalysisFileName, ...
+        'generateMissingSubDirs', true);
+
+
+    if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
+        % Generate the PSD data struct (with vLambda-weighted PSF) for visualization 
+        thePSFData.data = RGCMosaicAnalyzer.compute.vLambdaWeightedPSF(thePSF);
+        thePSFData.supportXdegs = thePSF.supportX/60;
+        thePSFData.supportYdegs = thePSF.supportY/60;
+
         % Visualize the mosaic
-        visualizeTheMosaic(theMRGCmosaic, exportVisualizationPDFdirectory);
+        visualizeTheMosaic(theMRGCmosaic, thePSFData, exportVisualizationPDFdirectory, postFix);
 
         if (computeInputConeMosaicResponses)
             % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
@@ -115,30 +149,12 @@ function computeSTF(mosaicParams, opticsParams, ...
     end % if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
 
 
-    % Filenames for intermediate responses
-    p = getpref('isetbio');
-    intermediateDataDir = p.rgcResources.intermediateDataDir;
-
-    theInputConeMosaicSTFResponsesFileName = fullfile('scratchspace', 'inputConeMosaicSTFresponses.mat');
-    theInputConeMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-        intermediateDataDir, theInputConeMosaicSTFResponsesFileName, ...
-        'generateMissingSubDirs', true);
-
-    theMRGCMosaicSTFResponsesFileName = fullfile('scratchspace', 'mRGCMosaicSTFresponses.mat');
-    theMRGCMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-        intermediateDataDir, theMRGCMosaicSTFResponsesFileName, ...
-        'generateMissingSubDirs', true);
-
-    theCronerKaplanAnalysisFileName = fullfile('scratchspace', 'CronerKaplanAnalysis.mat');
-    theCronerKaplanAnalysisFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-        intermediateDataDir, theCronerKaplanAnalysisFileName, ...
-        'generateMissingSubDirs', true);
-
+    
     if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
         % Whether to visualize the computed input cone mosaic STF responses
         visualizeInputConeMosaicResponses = ~true;
 
-    
+   
         RGCMosaicConstructor.helper.simulateExperiment.spatialTransferFunction(...
             theMRGCmosaic, opticsForSTFresponses, ...
             STFparamsStruct, ...
@@ -196,7 +212,7 @@ function computeSTF(mosaicParams, opticsParams, ...
 end
 
 
-function visualizeTheMosaic(theMRGCmosaic, exportVisualizationPDFdirectory)
+function visualizeTheMosaic(theMRGCmosaic, thePSFData, exportVisualizationPDFdirectory, postFix)
     
     % Visualize the mosaic of mRGC RF centers
     % identifying cones that are pooled by the RF center mechanism with
@@ -206,10 +222,10 @@ function visualizeTheMosaic(theMRGCmosaic, exportVisualizationPDFdirectory)
     minCenterConeWeight = mRGCMosaic.sensitivityAtPointOfOverlap;
 
     % Visualization limits and ticks
-    visualizedWidthDegs = theMRGCmosaic.inputConeMosaic.sizeDegs(1);
-    visualizedHeightDegs = theMRGCmosaic.inputConeMosaic.sizeDegs(2);
-    domainVisualizationLimits(1:2) = theMRGCmosaic.eccentricityDegs(1) + 0.5 * visualizedWidthDegs * [-1 1];
-    domainVisualizationLimits(3:4) = theMRGCmosaic.eccentricityDegs(2) + 0.5 * visualizedHeightDegs * [-1 1];
+    visualizedWidthDegs = theMRGCmosaic.sizeDegs(1);
+    visualizedHeightDegs = theMRGCmosaic.sizeDegs(2);
+    domainVisualizationLimits(1:2) = theMRGCmosaic.eccentricityDegs(1) + 0.51 * visualizedWidthDegs * [-1 1];
+    domainVisualizationLimits(3:4) = theMRGCmosaic.eccentricityDegs(2) + 0.51 * visualizedHeightDegs * [-1 1];
     domainVisualizationTicks = struct(...
         'x', theMRGCmosaic.eccentricityDegs(1) + 0.5 * visualizedWidthDegs * [-1 -0.5 0 0.5 1], ...
         'y', theMRGCmosaic.eccentricityDegs(2) + 0.5 * visualizedHeightDegs * [-1 -0.5 0 0.5 1]);
@@ -230,12 +246,10 @@ function visualizeTheMosaic(theMRGCmosaic, exportVisualizationPDFdirectory)
         'identifiedConeApertureThetaSamples', 16, ...
         'minConeWeightVisualized', minCenterConeWeight, ...
         'centerSubregionContourSamples', 32, ...
+        'withSuperimposedPSF', thePSFData, ...
         'domainVisualizationLimits', domainVisualizationLimits, ...
         'domainVisualizationTicks', domainVisualizationTicks, ...
-        'plotTitle', sprintf('min center weight visualized: %2.3f', minCenterConeWeight), ...
-        'visualizationPDFfileName', sprintf('mRGCmosaic_Ecc_%2.1f_%2.1f', theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2)), ...
-        'exportVisualizationPDF', true, ...
-        'exportVisualizationPDFdirectory', exportVisualizationPDFdirectory);
+        'plotTitle', sprintf('min center weight visualized: %2.3f', minCenterConeWeight));
 
     % Finalize figure using the Publication-Ready format
     PublicationReadyPlotLib.applyFormat(ax,ff);
@@ -245,7 +259,7 @@ function visualizeTheMosaic(theMRGCmosaic, exportVisualizationPDFdirectory)
     p = getpref('isetbio');
     pdfExportRootDir = p.rgcResources.figurePDFsDir;
 
-    theVisualizationPDFfilename = fullfile(pdfExportSubDir, 'mRGCMosaic.pdf');
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('Mosaic_%s.pdf', postFix));
     % Generate the path if we need to
     thePDFFullFileName  = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
                 pdfExportRootDir, theVisualizationPDFfilename, ...

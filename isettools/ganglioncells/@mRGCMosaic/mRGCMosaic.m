@@ -349,7 +349,8 @@ classdef mRGCMosaic < handle
         [themRGCmosaicFileNames, prebakedMRGCMosaicDir] = listPrebakedMosaics();
 
         % Method to load a prebaked mRGCMosaic and associated optics
-        [theMRGCmosaic, theOI, thePSF] = loadPrebakedMosaic(mosaicParams, opticsParams);
+        [theMRGCmosaic, theOI, thePSF, ...
+            prebakedMRGCMosaicDir, prebakedMRGCMosaicFilename] = loadPrebakedMosaic(mosaicParams, opticsParams);
 
         % Method to compute extra support needed to account for surrounds at a given eccentricity
         extraDegs = extraSupportDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);

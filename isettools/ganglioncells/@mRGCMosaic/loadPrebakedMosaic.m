@@ -1,4 +1,4 @@
-function [theMRGCMosaic, theOI, thePSF] = loadPrebakedMosaic(mosaicParams, opticsParams)
+function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilename] = loadPrebakedMosaic(mosaicParams, opticsParams)
 
     switch (opticsParams.ZernikeDataBase)
         case 'Polans2015'
