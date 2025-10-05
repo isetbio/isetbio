@@ -49,8 +49,8 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
 
     % Compute the input cone mosaic STF responses and the mRGC mosaic STF
     % responses
-    computeInputConeMosaicResponses = true;
-    computeMRGCMosaicResponses = ~true;
+    computeInputConeMosaicResponses = ~true;
+    computeMRGCMosaicResponses = true;
     reAnalyzeSTFData = ~true;
 
     if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
@@ -115,37 +115,37 @@ function runValidation(mosaicParams, opticsParams, ...
         % Visualize the mosaic
         visualizeTheMosaic(theMRGCmosaic, thePSFData, exportVisualizationPDFdirectory, postFix);
 
-        if (computeInputConeMosaicResponses)
-            % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
-            % here, half of the cone spacing
-            theMetric = 'cone aperture';  % choose from {'cone aperture' or cone spacing'}
-            if ((strcmp(opticsForSTFresponses, 'adaptiveOptics6MM')) || (strcmp(opticsForSTFresponses, 'adaptiveOptics6MMwithLCA')))
-                theFraction = 0.1;
-            else
-                theFraction = 0.25;
-            end
-            targetRGCindices =  1:theMRGCmosaic.rgcsNum;
-            stimulusResolutionDegs = RGCMosaicConstructor.helper.simulateExperiment.stimulusResolutionFromConeApertureOrConeSpacing(...
-                        theMRGCmosaic, targetRGCindices, theFraction, theMetric);
+        
+        % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
+        % here, half of the cone spacing
+        theMetric = 'cone aperture';  % choose from {'cone aperture' or cone spacing'}
+        if ((strcmp(opticsForSTFresponses, 'adaptiveOptics6MM')) || (strcmp(opticsForSTFresponses, 'adaptiveOptics6MMwithLCA')))
+            theFraction = 0.1;
+        else
+            theFraction = 0.25;
+        end
+        targetRGCindices =  1:theMRGCmosaic.rgcsNum;
+        stimulusResolutionDegs = RGCMosaicConstructor.helper.simulateExperiment.stimulusResolutionFromConeApertureOrConeSpacing(...
+                    theMRGCmosaic, targetRGCindices, theFraction, theMetric);
 
 
-            % Chromaticity for validation STF responses
-            chromaticityForSTFresponses = 'Achromatic';   % Choose between 'LconeIsolating', 'MconeIsolating', 'Achromatic'
-            coneFundamentalsOptimizedForStimPosition = true;
+        % Chromaticity for validation STF responses
+        chromaticityForSTFresponses = 'Achromatic';   % Choose between 'LconeIsolating', 'MconeIsolating', 'Achromatic'
+        coneFundamentalsOptimizedForStimPosition = true;
 
-            % Params struct for the STF
-            STFparamsStruct = struct(...
-                'backgroundChromaticity', [0.301 0.301], ...
-                'backgroundLuminanceCdM2', 40.0, ...
-                'chromaticity', 'Achromatic', ...
-                'coneFundamentalsOptimizedForStimPosition', true, ...
-                'resolutionDegs', stimulusResolutionDegs, ...                       % to be determined separately for each optimization position
-                'sfSupport', stfParams.sfSupport, ...
-                'orientationDeltaDegs', stfParams.orientationDeltaDegs, ...
-                'spatialPhaseIncrementDegs', stfParams.spatialPhaseIncrementDegs, ...
-                'positionDegs', theMRGCmosaic.eccentricityDegs, ...  
-                'sizeDegs', 1.1*max(theMRGCmosaic.inputConeMosaic.sizeDegs));
-        end % if (computeInputConeMosaicResponses)
+        % Params struct for the STF
+        STFparamsStruct = struct(...
+            'backgroundChromaticity', [0.301 0.301], ...
+            'backgroundLuminanceCdM2', 40.0, ...
+            'chromaticity', 'Achromatic', ...
+            'coneFundamentalsOptimizedForStimPosition', true, ...
+            'resolutionDegs', stimulusResolutionDegs, ...                       % to be determined separately for each optimization position
+            'sfSupport', stfParams.sfSupport, ...
+            'orientationDeltaDegs', stfParams.orientationDeltaDegs, ...
+            'spatialPhaseIncrementDegs', stfParams.spatialPhaseIncrementDegs, ...
+            'positionDegs', theMRGCmosaic.eccentricityDegs, ...  
+            'sizeDegs', 1.1*max(theMRGCmosaic.inputConeMosaic.sizeDegs));
+        
     end % if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
 
 
