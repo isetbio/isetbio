@@ -11,9 +11,13 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     mosaicParams.eccDegs  = [7 0];
     
 
-    % Validate a 1x1 patch of the prebaked mosaic centered at (4,0)
-    positionDegs = [4 0];
+    % Validate a 1x1 patch of the prebaked mosaic centered at (2,0)
+    positionDegs = [2 0];
     sizeDegs = [1 1];
+
+    % Validate a 1x1 patch of the prebaked mosaic centered at (4,0)
+    %positionDegs = [4 0];
+    %sizeDegs = [1 1];
 
     % Validate a 1x1 patch of the prebaked mosaic centered at (5,0)
     %positionDegs = [5 0];
@@ -42,14 +46,14 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     exportVisualizationPDFdirectory = 'mosaicValidationPDFs';
 
     % Params for the spatial transfer function
-    minSF = 0.01; maxSF = 30; sfSamplesNum = 8;
+    minSF = 0.01; maxSF = 70; sfSamplesNum = 15;
     stfParams.sfSupport = logspace(log10(minSF), log10(maxSF), sfSamplesNum);
     stfParams.orientationDeltaDegs = 45;
     stfParams.spatialPhaseIncrementDegs = 30;
 
     % Compute the input cone mosaic STF responses and the mRGC mosaic STF
     % responses
-    computeInputConeMosaicResponses = ~true;
+    computeInputConeMosaicResponses = true;
     computeMRGCMosaicResponses = true;
     reAnalyzeSTFData = ~true;
 
