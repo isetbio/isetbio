@@ -69,8 +69,17 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     % Plot
     idx = find(centerLineWeightingProfile.amplitude>0.0005*max(centerLineWeightingProfile.amplitude(:)));
     [~,iidx] = sort(centerLineWeightingProfile.spatialSupportDegs(idx), 'ascend');
-    xx = centerLineWeightingProfile.spatialSupportDegs(idx(iidx));
-    yy = centerLineWeightingProfile.amplitude(idx(iidx));
+
+    theIndices = idx(iidx);
+    if (theIndices(1) > 1)
+        theIndices = cat(2, theIndices(1)-1, theIndices);
+    end
+    if (theIndices(end) < numel(centerLineWeightingProfile.spatialSupportDegs))
+        theIndices = cat(2, theIndices, theIndices(end)+1);
+    end
+
+    xx = centerLineWeightingProfile.spatialSupportDegs(theIndices);
+    yy = centerLineWeightingProfile.amplitude(theIndices);
 
     if (flipXYaxes)
         xflip = yy;

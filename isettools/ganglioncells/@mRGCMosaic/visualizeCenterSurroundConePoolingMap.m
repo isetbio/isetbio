@@ -21,7 +21,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('axesToRenderIn', [], @(x)(isempty(x)||(isa(x, 'handle'))));
-    p.addParameter('figNo', [], @isscalar);
+    p.addParameter('figNo', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('figPos', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('withCustomFigureFormat', '', @(x)(isempty(x)||(ischar(x))));
     p.addParameter('pdfExportSubDir', '', @ischar);
@@ -58,6 +58,40 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     pdfExportSubDir = p.Results.pdfExportSubDir;
 
 
+
+    [scaleBarDegsDefault, ...
+     scaleBarMicronsDefault, ...
+	 spatialSupportTickSeparationArcMinDefault, ...
+	 spatialSupportCenterDegsDefault, ...
+     domainVisualizationLimitsDefault, ...
+     domainVisualizationTicksDefault, ...
+     domainVisualizationLimitsSingleRFDefault, ...
+     domainVisualizationTicksSingleRFDefault] = ...
+		 	RGCMosaicAnalyzer.visualize.generateLimits(obj, obj.rgcRFpositionsDegs(theRGCindex,:));
+
+
+    if (isempty(spatialSupportCenterDegs))
+        spatialSupportCenterDegs = spatialSupportCenterDegsDefault;
+    end
+
+    if (isempty(spatialSupportTickSeparationArcMin))
+        spatialSupportTickSeparationArcMin = spatialSupportTickSeparationArcMinDefault;
+    end
+
+    if (isempty(domainVisualizationLimits))
+        domainVisualizationLimits = domainVisualizationLimitsSingleRFDefault;
+    end
+
+    if (isempty(domainVisualizationTicks))
+        domainVisualizationTicks = domainVisualizationTicksSingleRFDefault;
+    end
+
+    if (isempty(scaleBarDegs))
+        scaleBarDegs = scaleBarDegsDefault;
+    end
+
+
+
     if (plotLineWeightingFunctions)
         ff = PublicationReadyPlotLib.figureComponents('2x2 standard figure');
     else
@@ -70,7 +104,11 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
 
 
     if (isempty(axesToRenderIn))
+        if (isempty(figNo))
+            figNo = 1000;
+        end
 	    hFig = figure(figNo); clf;
+        figNo = figNo + 1;
         theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
         set(hFig, 'Position', [figPos(1) figPos(2) ff.figureSize(1) ff.figureSize(2)]);
         ax = theAxes{1,1};
@@ -280,7 +318,8 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
             'domainVisualizationTicks', domainVisualizationTicks.x, ...
             'axesToRenderIn', axHorizontalProfile);
         PublicationReadyPlotLib.applyFormat(axHorizontalProfile,ff);
-    
+        figNo = figNo + 1;
+
         % The vertical profile
         whichMeridian = 'vertical';		% choose between {'horizontal', 'vertical'}
 	    RGCMosaicConstructor.visualize.centerAndSurroundConePoolingLineWeightingFunctions(...
@@ -292,6 +331,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
             'axesToRenderIn', axVerticalProfile, ...
             'flipXYaxes', true);
         PublicationReadyPlotLib.applyFormat(axVerticalProfile,ff);
+        figNo = figNo + 1;
     end % if (plotLineWeightingFunctions)
 
     

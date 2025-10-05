@@ -6,28 +6,16 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     clearvars;
     close all;
 
-    % Prebaked mRGCmosaic: 11x11 deg synthesized at 7 degrees along the nasal meridian
+    hPositions = [2 3 4 5 6 7 8 9 10 11 12];
+    vPositions = [0];
+    [X,Y] = meshgrid(hPositions, vPositions);
+    horizontalPosDegs = X(:);
+    verticalPosDegs = Y(:);
+
+
+    % (A) Prebaked mRGCmosaic: 11x11 deg synthesized at 7 degrees along the nasal meridian
     mosaicParams.sizeDegs = [11 11];
     mosaicParams.eccDegs  = [7 0];
-    
-
-    % Validate a 1x1 patch of the prebaked mosaic centered at (2,0)
-    positionDegs = [2 0];
-    sizeDegs = [1 1];
-
-    % Validate a 1x1 patch of the prebaked mosaic centered at (4,0)
-    %positionDegs = [4 0];
-    %sizeDegs = [1 1];
-
-    % Validate a 1x1 patch of the prebaked mosaic centered at (5,0)
-    %positionDegs = [5 0];
-    %sizeDegs = [1 1];
-
-    % Crop params
-    mosaicParams.cropParams = struct(...
-            'sizeDegs', sizeDegs, ...
-            'eccentricityDegs', positionDegs ...
-            );
 
     % (B) Surround optimization method
     mosaicParams.spatialCompactnessSpectralPurityTradeoff = 1;
@@ -52,13 +40,13 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     stfParams.spatialPhaseIncrementDegs = 30;
 
     % Compute the input cone mosaic STF responses 
-    computeInputConeMosaicResponses = true;
+    computeInputConeMosaicResponses = ~true;
 
     % Compute the mRGC mosaic STFresponses
-    computeMRGCMosaicResponses = true;
+    computeMRGCMosaicResponses = ~true;
 
     % Fit DoG models to the STF responses
-    reAnalyzeSTFData = ~true;
+    reAnalyzeSTFData = true;
 
     if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
         % Use a smaller number of the available CPU cores
@@ -68,13 +56,24 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     end
 
     
-    % Go !
-    runValidation(mosaicParams, opticsParams, ...
-        stfParams, ...
-        computeInputConeMosaicResponses, ...
-        computeMRGCMosaicResponses, ...
-        reAnalyzeSTFData, ...
-        exportVisualizationPDFdirectory);
+    % Analyze all mosaic patches
+    for iPos = 1:numel(horizontalPosDegs)
+
+        % Update mosaic params with current crop params
+        mosaicParams.cropParams = struct(...
+            'sizeDegs', [1 1], ...
+            'eccentricityDegs', [horizontalPosDegs(iPos) verticalPosDegs(iPos)]);
+    
+        
+        % Go !
+        runValidation(mosaicParams, opticsParams, ...
+            stfParams, ...
+            computeInputConeMosaicResponses, ...
+            computeMRGCMosaicResponses, ...
+            reAnalyzeSTFData, ...
+            exportVisualizationPDFdirectory);
+    end
+
 
 end
 
@@ -92,6 +91,8 @@ function runValidation(mosaicParams, opticsParams, ...
     
     postFix = sprintf('%s_Ecc_%2.1f_%2.1f_Size_%2.1f_%2.1f', prebakedMRGCMosaicFilename, theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2), theMRGCmosaic.sizeDegs(1), theMRGCmosaic.sizeDegs(2));
     
+    fprintf('\n Analyzing mosaic at [%2.1f, %2.1f] ...\n', theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2));
+       
     % Filenames for intermediate responses
     p = getpref('isetbio');
     intermediateDataDir = p.rgcResources.intermediateDataDir;
@@ -178,9 +179,9 @@ function runValidation(mosaicParams, opticsParams, ...
     
     aggregatePreviouslyAnalyzedRunsFromMultipleTargetVisualSTFs = false;
     aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = false;
-    onlyDisplayCronerKaplanData = false;
 
-    % Choose orientation to analyze
+    
+    % Choose orientation to analyze (slice through the 2D STF)
     % 0 deg orientation 
     fixedOptimalOrientation = 0;
 
@@ -199,6 +200,26 @@ function runValidation(mosaicParams, opticsParams, ...
     targetedCenterPurityRange = [];
 
 
+    % Visualization options
+    % Whether to visualize the computed STF together with the cone weights
+    % map and the 1D profile of cone weights map along with the STF-derived RF map
+    % separately for each mRGC in the mosaic
+    visualizeSTFwithConeWeightsMap = ~true;
+
+    % Whether visualize the full 2D STF data computed along with the chosen STF slice
+    visualizeFullAndMaximalExcursionSTF = false;
+
+    % Whether to visualize the DoG model fit to the chosen STF slice
+    visualizeSTFfits = false;
+
+    % Whether to visualize the sinusoidal fit to the time-series response of the mRGCs
+    visualizeSinusodalFitsToResponseTimeSeries = false;
+
+    % Whether to only display the macaque STF data from the Croner & Kaplan study
+    onlyDisplayCronerKaplanData = false;
+
+    
+    % Do it !
     [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVariance] = ...
         RGCMosaicAnalyzer.compute.CronerAndKaplanSTFanalysis(...
             theMRGCMosaicSTFResponsesFullFileName, ...
@@ -211,6 +232,10 @@ function runValidation(mosaicParams, opticsParams, ...
             targetedCenterPurityRange, ...
             reAnalyzeSTFData, ...
             exportVisualizationPDFdirectory, ...
+            'visualizeFullAndMaximalExcursionSTF', visualizeFullAndMaximalExcursionSTF, ...
+            'visualizeSTFfits', visualizeSTFfits, ...
+            'visualizeSTFwithConeWeightsMap', visualizeSTFwithConeWeightsMap, ...
+            'visualizeModelFitting', visualizeSinusodalFitsToResponseTimeSeries, ...
             'onlyDisplayCronerKaplanData', onlyDisplayCronerKaplanData, ...
             'fixedOptimalOrientation', fixedOptimalOrientation, ...
             'deltaThresholdForLimitingFittedSTFtoPrimaryPeak', 0.01, ...

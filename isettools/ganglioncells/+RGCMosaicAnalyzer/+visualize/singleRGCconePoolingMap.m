@@ -44,7 +44,7 @@ function [centerLineWeightingFunctions, surroundLineWeightingFunctions] = single
         ax = axesHandle;
         ff = figureFormat;
     else
-        ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure'); 
+        ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
         hFig = figure(figNo); clf;
         theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
         ax = theAxes{1,1};
@@ -65,7 +65,7 @@ function [centerLineWeightingFunctions, surroundLineWeightingFunctions] = single
     % Note however, that their measured center weights are composite, center-surround as you cant
     % separate the surround response from the center response electrophysiologically, so we should do the same here)
     minSurroundConeWeightRelativity = p.Results.minSurroundConeWeightRelativity;
-    minSurroundConeWeight = p.Results.minSurroundConeWeight
+    minSurroundConeWeight = p.Results.minSurroundConeWeight;
 
 
     % The spatial support
@@ -101,7 +101,7 @@ function [centerLineWeightingFunctions, surroundLineWeightingFunctions] = single
     % visualizedConeWeights = 'center-surround';  % center - surround
     visualizedConeWeights = 'surround-alone';     % only the surround
     if (isempty(plotTitle))
-        plotTitle = sprintf('visualized cone weights: ''%s''\n Wc > %1.3f, Ws > %1.3f (x peak %s cone)',...
+        plotTitle = sprintf('visualized cone weights: ''%s''\n Wc > %1.3f, Ws > %1.4f (x peak %s cone)',...
             visualizedConeWeights, minCenterConeWeight, minSurroundConeWeight, minSurroundConeWeightRelativity);
     end
 

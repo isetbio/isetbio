@@ -905,12 +905,19 @@ function dataOut = fitTheSTF(theMRGCMosaic, theRGCindex, stimParams, ...
 
 	fprintf('Analyzing RGC %d of %d...\n', theRGCindex, theMRGCMosaic.rgcsNum);
 
-	hFig = figure(100); clf;
-	set(hFig, 'Position', [10 10 1100 950], 'Color', [1 1 1]);
-	axFullSTF = subplot(2,2,1);
-    axSTFslice = subplot(2,2,2);
-    axSTFslicePortionFitted = subplot(2,2,3);
-    axFittedSTFslice = subplot(2,2,4);
+    if (visualizeModelFitting) || (visualizeSTFfits)
+	    hFig = figure(100); clf;
+	    set(hFig, 'Position', [10 10 1100 950], 'Color', [1 1 1]);
+	    axFullSTF = subplot(2,2,1);
+        axSTFslice = subplot(2,2,2);
+        axSTFslicePortionFitted = subplot(2,2,3);
+        axFittedSTFslice = subplot(2,2,4);
+    else
+        axFullSTF = [];
+        axSTFslice = [];
+        axSTFslicePortionFitted = [];
+        axFittedSTFslice = [];
+    end
 
 	[theMaximalExcursionSTFamplitudeSpectrum, theOptimalOrientation, ...
 	 theMaximalExcursionSTFphaseSpectrum, ...
@@ -1052,10 +1059,8 @@ function visualizeSingleCellConeWeightsMapsAndSTF(theMRGCMosaic, iRGC, dataOut, 
 	axConeWeightsLineWeightingFunctions = axes('Position', [0.39 0.1 0.27 0.9]);
 	axFittedSTFslice = axes('Position', [0.72 0.1 0.27 0.9]);
 
+    % Compute default limits and ticks
 	theRGCpositionDegs = theMRGCMosaic.rgcRFpositionsDegs(iRGC,:);
-	theTitle = sprintf('RGC %d/%d at (%2.2f,%2.2f)', iRGC, theMRGCMosaic.rgcsNum, ...
-		theRGCpositionDegs(1), theRGCpositionDegs(2));
-
 	[scaleBarDegs, scaleBarMicrons, ...
 	 spatialSupportTickSeparationArcMin, ...
 	 spatialSupportCenterDegs, ...
@@ -1065,7 +1070,29 @@ function visualizeSingleCellConeWeightsMapsAndSTF(theMRGCMosaic, iRGC, dataOut, 
 		 domainVisualizationTicksSingleRF] = ...
 		 	RGCMosaicAnalyzer.visualize.generateLimits(theMRGCMosaic, theRGCpositionDegs);
 
-		
+    scaleBarDegs = [];
+
+    % Visualize the mosaic of mRGC RF centers
+    % identifying cones that are pooled by the RF center mechanism with
+    % a weight >= mRGCMosaic.sensitivityAtPointOfOverlap;
+    % This representation is like the representation used in visualizing 
+    % mosaics of RGCs in typical in-vitro experiments (e.g. by the Chichilnisky lab)
+    minCenterConeWeight = mRGCMosaic.sensitivityAtPointOfOverlap;
+
+    % Include surround cones whose pooling weights are >= 0.001
+    minSurroundConeWeight = 0.001;
+
+    % Surround weight specified relative to the center weight, so common
+    % scale with the center weights
+    minSurroundConeWeightRelativity = 'center';
+
+
+    theTitle = sprintf('RGC %d/%d @(%2.2f,%2.2f); Wc > %1.3f; Ws > %1.4f', iRGC, theMRGCMosaic.rgcsNum, ...
+		theRGCpositionDegs(1), theRGCpositionDegs(2), ...
+        minCenterConeWeight, minSurroundConeWeight);
+
+
+
 	figureFormat = PublicationReadyPlotLib.figureComponents('1x1 standard figure'); 
 	figNo = [];
     [centerLineWeightingFunctions, surroundLineWeightingFunctions] = ...
@@ -1077,6 +1104,9 @@ function visualizeSingleCellConeWeightsMapsAndSTF(theMRGCMosaic, iRGC, dataOut, 
                 'fixedScaleBarDegs', scaleBarDegs, ...
                 'doNotLabelScaleBar', true, ...
                 'noGrid', true, ...
+                'minCenterConeWeight', minCenterConeWeight, ...
+                'minSurroundConeWeight', minSurroundConeWeight, ...
+                'minSurroundConeWeightRelativity', minSurroundConeWeightRelativity, ...
                 'plotTitle', theTitle, ...
                 'figureHandle', hFig, ...
                 'axesHandle', axConeWeightsMap, ...
