@@ -67,15 +67,12 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
      domainVisualizationTicksDefault, ...
      domainVisualizationLimitsSingleRFDefault, ...
      domainVisualizationTicksSingleRFDefault] = ...
-		 	RGCMosaicAnalyzer.visualize.generateLimits(obj, obj.rgcRFpositionsDegs(theRGCindex,:));
+		 	RGCMosaicAnalyzer.visualize.generateLimits(obj, obj.rgcRFpositionsDegs(theRGCindex,:), ...
+            'spatialSupportTickSeparationArcMin', spatialSupportTickSeparationArcMin);
 
 
     if (isempty(spatialSupportCenterDegs))
         spatialSupportCenterDegs = spatialSupportCenterDegsDefault;
-    end
-
-    if (isempty(spatialSupportTickSeparationArcMin))
-        spatialSupportTickSeparationArcMin = spatialSupportTickSeparationArcMinDefault;
     end
 
     if (isempty(domainVisualizationLimits))
@@ -85,6 +82,17 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     if (isempty(domainVisualizationTicks))
         domainVisualizationTicks = domainVisualizationTicksSingleRFDefault;
     end
+
+   
+    if (isempty(spatialSupportTickSeparationArcMin))
+        spatialSupportTickSeparationArcMin = spatialSupportTickSeparationArcMinDefault;
+    else
+        domainVisualizationTicks
+        domainVisualizationLimits
+    end
+
+
+    
 
     if (isempty(scaleBarDegs))
         scaleBarDegs = scaleBarDegsDefault;

@@ -71,11 +71,16 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     [~,iidx] = sort(centerLineWeightingProfile.spatialSupportDegs(idx), 'ascend');
 
     theIndices = idx(iidx);
+    if (size(theIndices,1) == 1)
+        catDimension = 2;
+    else
+        catDimension = 1;
+    end
     if (theIndices(1) > 1)
-        theIndices = cat(2, theIndices(1)-1, theIndices);
+        theIndices = cat(catDimension, theIndices(1)-1, theIndices);
     end
     if (theIndices(end) < numel(centerLineWeightingProfile.spatialSupportDegs))
-        theIndices = cat(2, theIndices, theIndices(end)+1);
+        theIndices = cat(catDimension, theIndices, theIndices(end)+1);
     end
 
     xx = centerLineWeightingProfile.spatialSupportDegs(theIndices);

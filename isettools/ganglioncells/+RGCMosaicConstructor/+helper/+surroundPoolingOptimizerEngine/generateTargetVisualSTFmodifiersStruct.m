@@ -1,3 +1,6 @@
+%
+% RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct
+%
 function targetVisualSTFmodifierStruct = generateTargetVisualSTFmodifiersStruct(targetVisualSTFdescriptor)
 
 switch (targetVisualSTFdescriptor)

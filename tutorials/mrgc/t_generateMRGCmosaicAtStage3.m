@@ -2,15 +2,10 @@ function t_generateMRGCmosaicAtStage3(options)
 % Generate an mRGC mosaic at different stages of cone-to-mRGC RF surround connectivity
 %
 % Syntax:
-%   t_generateMRGCmosaicAtStage3;
+%   t_generateMRGCmosaicAtStage3()
 %
 % Description:
 %   Demonstrates how to generate an mRGC mosaic at stage 3A, 3B, or 3C of connectivity
-%   At stage 3A cones are connected to RGC RF centers in a
-%   mutually-exclusive way (no RF center overlap). It is at this stage that
-%   the user can specity the desired spatialChromaticUniformityTradeoff
-%   At stage 2C cone connections diverge to nearby RGC RF centers
-%   generating overlap between neighboring RF centers
 %
 %  This is set up with key/value pairs that demonstate how to select different
 %  options. Different choices are illustrated in the examples
@@ -58,10 +53,18 @@ function t_generateMRGCmosaicAtStage3(options)
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'inspectSurroundPoolingInterpolationGrid', true);
 
+    % Synthesize the compute-ready mosaic by interpolating the derived
+    surround cone poolings and deriving surround weights for all cells in
+    the synthesized mRGCMosaic
     t_generateMRGCmosaicAtStage3(...
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
-         regenerateMosaicAtStage3C', true);
+        'regenerateMosaicAtStage3C', true);
 
+
+    % Visualize the center/surround cone pooling maps of synthesized cells
+    t_generateMRGCmosaicAtStage3(...
+        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'visualizeCenterSurroundConePoolingMapsOfSynthesizedCells', true);
 %}
 
 
@@ -85,8 +88,9 @@ arguments
     % Options are : {'default', 'x1.3 RsRcRatio'}
     % These are with respect to the macaque data of the Croner & Kaplan '95 study
     % 'default': target the mean Rs/Rc, and the mean Ks/Kc (Rs/Rc)^2
-    % 'x1.3 RsRcRatio': target Rs/Rc ratio that is 1.3 x mean, and target Ks/Kc (Rs/Rc)^2: mean
-    options.targetVisualSTFdescriptorToOptimizeFor (1,:) char = 'default';
+    % See RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct
+    % for all existing options
+    options.targetVisualSTFdescriptor (1,:) char = 'default';
 
     % Which center cone dominance to derive surround cone pooling function
     % for. Choose from {cMosaic.LCONE_ID cMosaic.MCONE_ID}
@@ -139,6 +143,9 @@ arguments
     options.visualizeOptimizationGridOnTopOfMosaic (1,1) logical = false;
     options.visualizeSurroundConeWeightsInterpolationProcess (1,1) logical = false;
 
+    % Inspect center/surround cone pooling maps of synthesized mRGCs
+    options.visualizeCenterSurroundConePoolingMapsOfSynthesizedCells (1,1) logical = false;
+
     % Whether to generate separate figures for each component (better for figures in a paper)
     % or a single PDF with all components in a panel array. Summary PDFs have
     % unique names for each visualized location.
@@ -157,16 +164,13 @@ end  % arguments
 rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
-
+targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
 
 % Center cone dominance for which to derive surround pooling functions
 centerConeDominanceToOptimize = options.centerConeDominanceToOptimize;
 
 % Center cone dominance for which to inspect the derived surround pooling functions
 centerConeDominanceToInspect = options.centerConeDominanceToInspect;
-
-% Target STF descriptor
-targetVisualSTFdescriptorToOptimizeFor = options.targetVisualSTFdescriptorToOptimizeFor;
 
 
 % Actions to perform
@@ -175,6 +179,7 @@ regenerateMosaicAtStage3B = options.regenerateMosaicAtStage3B;
 inspectMosaicAtStage3B = options.inspectMosaicAtStage3B;
 inspectSurroundPoolingInterpolationGrid = options.inspectSurroundPoolingInterpolationGrid;
 regenerateMosaicAtStage3C = options.regenerateMosaicAtStage3C;
+visualizeCenterSurroundConePoolingMapsOfSynthesizedCells = options.visualizeCenterSurroundConePoolingMapsOfSynthesizedCells;
 
 % Visualization options
 % Stage 3A visualizations
@@ -206,7 +211,7 @@ end
 
 % Generate the necessary mosaic params struct
 pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
-    coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptorToOptimizeFor);
+    coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor);
 
 
 % Generate spatial grid covering the extent of the synthesized mRGC. 
@@ -527,6 +532,59 @@ if (regenerateMosaicAtStage3C)
  			'surroundVarianceInComputeReadyMosaic', surroundVarianceInComputeReadyMosaic, ...
  			'visualizeInterpolationProcess', visualizeSurroundConeWeightsInterpolationProcess);
 
+    return;
 end % if (regenerateMosaicAtStage3C)
+
+
+if (visualizeCenterSurroundConePoolingMapsOfSynthesizedCells)
+
+    % Extract mosaic and optics params for the original prebaked mosaic
+    [mosaicParams, opticsParams] = RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams(...
+        pStruct, targetVisualSTFdescriptor);
+
+    % Load the synthesized mRGCmosaic and generated the optics for the computation
+    [theMRGCmosaic, ~, thePSF] = mRGCMosaic.loadPrebakedMosaic(mosaicParams, opticsParams);
+
+    % Plot the cone pooling RF map of the exemplar mRGC
+    figNo = 1000; figPos = [1000 500];
+
+    % Tick separation in arc min
+    spatialSupportTickSeparationArcMin = 18;
+
+    % Add a scale bar, 0.15 degs in size
+    scaleBarDegs = 0.15;
+
+    % Include surround cones whose pooling weights are >= 0.001
+    minSurroundConeWeight = 0.001;
+
+    % Back to default visualized cone weights
+    minCenterConeWeight = mRGCMosaic.sensitivityAtPointOfOverlap;
+
+    % Visualize the mRGC mosaic and its entire input cone mosaic, 
+    % identifying the location of one exemplar mRGC
+    % The index of the exemplar mRGC
+    theTargetRGCindex = 10;
+
+    % Subdirectory for exporting the generated PDFs
+    exportVisualizationPDFdirectory = 'mosaicComponentPDFs';
+
+    % Plot the cone pooling RF map of the exemplar mRGC along with
+    % line weighting functions of the center and of the surround cone pooling weights
+    % along the horizontal and vertical axes
+    theMRGCmosaic.visualizeCenterSurroundConePoolingMap(theTargetRGCindex, ...
+            'minConeWeightForVisualizingRFcenterPooling', minCenterConeWeight, ...
+            'minConeWeightForVisualizingRFsurroundPooling', minSurroundConeWeight, ...
+            'minSurroundConeWeightRelativity', 'center', ...
+            'spatialSupportTickSeparationArcMin', spatialSupportTickSeparationArcMin, ...
+            'withLineWeightingFunctions', true, ...
+            'scaleBarDegs', scaleBarDegs, ...
+            'doNotLabelScaleBar', true, ...
+            'plotTitle', sprintf('scale bar: %2.2f degs', scaleBarDegs), ...
+            'figNo', figNo+1, ...
+            'figPos', figPos, ...
+            'exportToFigurePDFsDirWithPDFFileName', sprintf('RFmap%dWithLineWeightingFunctions.pdf', theTargetRGCindex), ...
+            'pdfExportSubDir', exportVisualizationPDFdirectory);
+end
+
 
 end
