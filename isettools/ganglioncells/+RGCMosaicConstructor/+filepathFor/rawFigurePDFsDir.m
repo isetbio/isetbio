@@ -1,3 +1,4 @@
+% RGCMosaicConstructor.filepathFor.rawFigurePDFsDir
 function theRawFiguresDir = rawFigurePDFsDir()
 
     p = getpref('isetbio'); 

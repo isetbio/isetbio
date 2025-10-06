@@ -28,6 +28,8 @@ p.addParameter('userSuppliedInitialValuesForModelVariables', [], @(x)(isempty(x)
 p.addParameter('randomSeed', [], @(x)(isempty(x) || isscalar(x)));
 p.addParameter('onlyReturnSurroundOptimizationResultFilenames', false, @islogical);
 
+p.addParameter('visualizeEmployedPSF', true, @islogical);
+p.addParameter('visualizeStrehlRatioOptimization', true, @islogical);
 p.addParameter('visualizeInputConeMosaicSTFResponseSequences', false, @islogical);
 p.addParameter('visualizeFullAndMaximalExcursionSTF', false, @islogical);
 p.addParameter('visualizeGaussianFitToCenterSTF', false, @islogical);
@@ -48,6 +50,8 @@ centerConeDominanceToOptimize = p.Results.centerConeDominanceToOptimize;
 userSuppliedInitialValuesForModelVariables = p.Results.userSuppliedInitialValuesForModelVariables;
 onlyReturnSurroundOptimizationResultFilenames = p.Results.onlyReturnSurroundOptimizationResultFilenames;
 
+visualizeEmployedPSF = p.Results.visualizeEmployedPSF;
+visualizeStrehlRatioOptimization = p.Results.visualizeStrehlRatioOptimization;
 visualizeInputConeMosaicSTFResponseSequences = p.Results.visualizeInputConeMosaicSTFResponseSequences;
 visualizeFullAndMaximalExcursionSTF = p.Results.visualizeFullAndMaximalExcursionSTF;
 visualizeGaussianFitToCenterSTF = p.Results.visualizeGaussianFitToCenterSTF;
@@ -205,7 +209,8 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
             theMRGCMosaic.inputConeMosaic, ...
             surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iOptimizationPos,:), ...
             surroundConnectivitySimulationParamsStruct.opticsParamsStruct, ...
-            'visualizePSF', true);
+            'visualizePSF', visualizeEmployedPSF, ...
+            'visualizeStrehlRatioOptimization', visualizeStrehlRatioOptimization);
 
         % STEP 2: Compute input cone mosaic responses to gratings of different orientations/SFs
         % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic

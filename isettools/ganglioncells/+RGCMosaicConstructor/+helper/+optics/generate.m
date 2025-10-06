@@ -137,16 +137,16 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
 	 	if (isempty(visualizedWavelengths))
 	 		ax = subplot(1,1,1);
 	 		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, thePSF, wavelengthIndexOfPeakAmplitude, ...
-				max(thePSF.data(:)), sprintf('%2.0f nm', wavelengthOfPeakAmplitude));
+				max(thePSF.data(:)), sprintf('employed PSF at %2.0f nm', wavelengthOfPeakAmplitude));
 	 	else
 	 		for i = 1:numel(visualizedWavelengths)
 	 			ax = subplot(2, round(0.5*numel(visualizedWavelengths)) , i);
 	 			[~,wavelengthIndex] = min(abs(thePSF.supportWavelength-visualizedWavelengths(i)));
 				RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, thePSF, wavelengthIndex, ...
-					max(thePSF.data(:)), sprintf('%2.0f nm', thePSF.supportWavelength(wavelengthIndex)));
+					max(thePSF.data(:)), sprintf('employed PSF at %2.0f nm', thePSF.supportWavelength(wavelengthIndex)));
 				drawnow;
 	 		end
 	 	end
-		colormap(brewermap(1024, '*greys'));
+		colormap(ax,brewermap(1024, '*greys'));
 	end
 end

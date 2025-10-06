@@ -3,6 +3,7 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
 
     % Parse input
     p = inputParser;
+    p.addParameter('figNo', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConePositions', @(x)(ismember(x, mRGCMosaic.validRFsubregionContourGenerationMethods)));
     p.addParameter('visualizeRGCsAroundPositionAndWithingPositionDegs', [], @(x)(isempty(x)||(isnumeric(x)&&(numel(x)==4))));
     p.addParameter('identifyInputCones', false, @islogical);
@@ -14,8 +15,11 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
     p.addParameter('visualizedSamplingPositionsGridColor', [1 1 0], @(x)(isnumeric(x)&&(size(x,2)==3)));
     p.addParameter('withFigureFormat', [], @isstruct);
     p.addParameter('withoutPlotTitle', false, @islogical);
+    p.addParameter('exportVisualizationPDF', true, @islogical);
+    p.addParameter('exportVisualizationPNG', true, @islogical);
     p.parse(varargin{:});
 
+    figNo = p.Results.figNo;
     visualizeRGCsAroundPositionAndWithingPositionDegs = p.Results.visualizeRGCsAroundPositionAndWithingPositionDegs;
     identifyInputCones = p.Results.identifyInputCones;
     identifyPooledCones = p.Results.identifyPooledCones;
@@ -26,6 +30,8 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
     visualizedSamplingPositionsGridColor = p.Results.visualizedSamplingPositionsGridColor;
     figureFormat = p.Results.withFigureFormat;
     withoutPlotTitle = p.Results.withoutPlotTitle;
+    exportVisualizationPDF = p.Results.exportVisualizationPDF;
+    exportVisualizationPNG = p.Results.exportVisualizationPNG;
 
     assert(...
         (size(visualizedSamplingPositionsGridColor,1) == 1) ||...
@@ -38,7 +44,12 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
 	% Load the mosaic
     load(theCenterConnectedMRGCMosaicFullFileName, 'theMRGCMosaic');
 
-    hFig = figure(1000); clf;
+    if (isempty(figNo))
+        hFig = figure();
+    else
+        hFig = figure(figNo); 
+    end
+    clf;
     % Prepare figure and axes
     if (isempty(figureFormat))
         ff = PublicationReadyPlotLib.figureComponents('1x1 giant square mosaic');
@@ -122,22 +133,29 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
         end
     end
 
+    
     % Finalize figure using the Publication-Ready format
     ff.box = 'on';
     ff.backgroundColor = [0 0 0];
     PublicationReadyPlotLib.applyFormat(theAxes,ff);
 
-    % Export figure
-    theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-    thePDFfileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-        theRawFiguresDir, strrep(theCenterConnectedMRGCMosaicFileName, '.mat', '.pdf' ), ...
-        'generateMissingSubDirs', true);
 
+    if ((exportVisualizationPDF) || (exportVisualizationPNG))
+        % Export figure
+        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        thePDFfileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+            theRawFiguresDir, strrep(theCenterConnectedMRGCMosaicFileName, '.mat', '.pdf' ), ...
+            'generateMissingSubDirs', true);
+    
+        if (exportVisualizationPDF)
+            % Export to PDF
+            NicePlot.exportFigToPDF(thePDFfileName,hFig,  300, 'beVerbose');
+        end
 
-    % Export to PDF
-    NicePlot.exportFigToPDF(thePDFfileName,hFig,  300, 'beVerbose');
-
-    % Also export to PNG for better color saturation
-    NicePlot.exportFigToPNG(strrep(thePDFfileName, 'pdf', 'png'),hFig,  300, 'beVerbose');
+        if (exportVisualizationPNG)
+            % Eexport to PNG for better color saturation
+            NicePlot.exportFigToPNG(strrep(thePDFfileName, 'pdf', 'png'),hFig,  300, 'beVerbose');
+        end
+    end
 
 end

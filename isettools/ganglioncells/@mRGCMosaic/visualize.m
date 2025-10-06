@@ -243,16 +243,16 @@ function [hFig,ax] = visualize(obj, varargin)
                 'tickSeparationArcMin', tickSeparationArcMinForRFconePoolingMap);
 
             if (exportVisualizationPDF)
-                p = getpref('isetbio');
-                pdfExportSubDir = fullfile(p.rgcResources.figurePDFsDir);
+                
+                pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir;
                 theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('RFmap%d.pdf', theRGCindex));
             
                 % Generate the path if we need to
                 RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-                    pdfExportSubDir, theVisualizationPDFfilename, ...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
                     'generateMissingSubDirs', true);
         
-                thePDFfileName = fullfile(pdfExportSubDir, theVisualizationPDFfilename);
+                thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
                 NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
             end
 
@@ -310,15 +310,15 @@ function [hFig,ax] = visualize(obj, varargin)
 
     if (exportVisualizationPDF)
         p = getpref('isetbio');
-        pdfExportSubDir = fullfile(p.rgcResources.figurePDFsDir);
+        pdfExportRootDir = fullfile(p.rgcResources.figurePDFsDir);
         theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
     
         % Generate the path if we need to
         RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-            pdfExportSubDir, theVisualizationPDFfilename, ...
+            pdfExportRootDir, theVisualizationPDFfilename, ...
             'generateMissingSubDirs', true);
 
-        thePDFfileName = fullfile(pdfExportSubDir, theVisualizationPDFfilename);
+        thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
         NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
     end
 

@@ -1,4 +1,8 @@
-%% Generate mRGC mosaics at different substages of stage 2 synthesis (cone-RFcenter connectivity)
+function t_generateMRGCmosaicAtStage2(options)
+% Generate an mRGC mosaic at different stages of cone-to-mRGC RF center connectivity
+%
+% Syntax:
+%   t_generateMRGCmosaicAtStage2;
 %
 % Description:
 %   Demonstrates how to generate an mRGC mosaic at stage 2A or 2C of connectivity
@@ -8,32 +12,225 @@
 %   At stage 2C cone connections diverge to nearby RGC RF centers
 %   generating overlap between neighboring RF centers
 %
+%  This is set up with key/value pairs that demonstate how to select different
+%  options. Different choices are illustrated in the examples
+%  in the source code.
+%
+% Optional key/value pairs
+%    See source code arguments block for a list of key/value pairs.
 
 % History:
 %    08/28/25  NPC  Wrote it.
 
+% Examples:
+%{
+    % Visualize the default center-connected mRGC mosaic 
+    % using the default minimum visualized center cone weights
+    t_generateMRGCmosaicAtStage2(...
+        'visualizeMosaicAtStage2C', true);
 
-close all; clear all;
 
-% Specify desired spatialChromaticUniformityTradeoff for the RGC RF centers
-% A value of 1 corresponds to maximal spatial homogeneity
-% A value of 0 corresponds to maximal spectral purity
-spatialChromaticUniformityTradeoff = 1.0; 
+    % Visualize the default center-connected mRGC mosaic using the smallest
+    % minimum visualized center cone weight
+    t_generateMRGCmosaicAtStage2(...
+        'rgcMosaicName', 'PLOSpaperNasal10DegsMosaic', ...
+        'visualizeMosaicAtStage2C', true, ...
+        'domainVisualizationLimits', [8 12 1.5 5.5], ...
+        'minConeWeightVisualized', mRGCMosaic.minSensitivityForInclusionOfDivergentConeConnections ...
+    );
 
-% Name encoding rgcMosaic
-%rgcMosaicName = 'PLOSpaperNasal10DegsMosaic';
-%rgcMosaicName = 'PLOSpaperNasal14DegsMosaic';
-%rgcMosaicName = 'PLOSpaperNasal19DegsMosaic';
-%rgcMosaicName = 'PLOSpaperNasal25DegsMosaic';
-rgcMosaicName = 'PLOSpaperNasal7DegsMosaic';
 
-% Which optics to employ
-opticsSubjectName = 'PLOSpaperDefaultSubject';
+    % Visualize the default center-connected mRGC mosaic using the 
+    % noise floor in the measurements of cone weights 
+    % according to Greg Field and which is what they used in Fig 4 of their 2010 paper.
+    t_generateMRGCmosaicAtStage2(...
+        'rgcMosaicName', 'PLOSpaperNasal7DegsMosaic', ...
+        'visualizeMosaicAtStage2AB', true, ...
+        'visualizeMosaicAtStage2C', false, ...
+        'inputConesAlpha', 0.6, ...
+        'identifyInputCones', true, ...
+        'identifyPooledCones', true, ...
+        'domainVisualizationLimits', [10.0 11.0 4.0 5.0], ...
+        'closeOpenFigures', true, ...
+        'figNo', 1000, ...
+        'figureFormat', '1x1 giant square mosaic', ...
+        'minConeWeightVisualized', mRGCMosaic.minRFcenterConeWeightIncludedToMatchFigure4OfFieldEtAl2010 ...
+    );
 
-% Which species to employ 
-% Choose between {'macaque', 'human'}. If 'macaque' is chosen, the input
-% cone mosaic has a 1:1 L/M cone ratio.
-coneMosaicSpecies = 'human';
+    % Visualize the default center-connected mRGC mosaic using the 
+    % noise floor in the measurements of cone weights 
+    % according to Greg Field and which is what they used in Fig 4 of their 2010 paper.
+    t_generateMRGCmosaicAtStage2(...
+        'rgcMosaicName', 'PLOSpaperNasal7DegsMosaic', ...
+        'visualizeMosaicAtStage2AB', false, ...
+        'visualizeMosaicAtStage2C', true, ...
+        'inputConesAlpha', 0.6, ...
+        'identifyInputCones', true, ...
+        'identifyPooledCones', true, ...
+        'domainVisualizationLimits', [10.0 11.0 4.0 5.0], ...
+        'closeOpenFigures', false, ...
+        'figNo', 1001, ...
+        'figureFormat', '1x1 giant square mosaic', ...
+        'minConeWeightVisualized', mRGCMosaic.minRFcenterConeWeightIncludedToMatchFigure4OfFieldEtAl2010 ...
+    );
+
+
+    % Generate a tiny center-connected mRGC mosaic at 2 degrees (stage 2A/B only
+    % so no divergent connections)
+    t_generateMRGCmosaicAtStage2(...
+        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'regenerateMosaicAtStage2AB', true, ...
+        'visualizeMosaicAtStage2AB', true, ...
+        'identifyInputCones', true, ...
+        'identifyPooledCones', true);
+
+
+    % Generate a tiny center-connected mRGC mosaic at 2 degrees (stage 2C
+    % i.e., with divergent connections)
+    t_generateMRGCmosaicAtStage2(...
+        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'regenerateMosaicAtStage2C', true, ...
+        'visualizeMosaicAtStage2C', true, ...
+        'identifyInputCones', true, ...
+        'identifyPooledCones', true);
+
+
+
+%}
+
+
+arguments
+    % ---- Name encoding properties of the rgcMosaic, such as its eccentricity ---
+    % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
+    % for what is available and to add new mosaics
+    options.rgcMosaicName (1,:) char = 'PLOSpaperNasal7DegsMosaic';
+
+
+    % ---- Which species to employ ----
+    % Choose between {'macaque', 'human'}. If 'macaque' is chosen, the input
+    % cone mosaic has a 1:1 L/M cone ratio.
+    options.coneMosaicSpecies  (1,:) char {mustBeMember(options.coneMosaicSpecies,{'human','macaque'})} = 'human';
+
+
+    % ----- Which subject optics to employ -----
+    options.opticsSubjectName (1,:) char = 'PLOSpaperDefaultSubject';
+
+
+    % ------ spatialChromaticUniformityTradeoff parameter ----
+    % A value of 1 corresponds to maximal spatial homogeneity
+    % A value of 0 corresponds to maximal spectral purity
+    options.spatialChromaticUniformityTradeoff (1,1) double =  1.0; 
+
+    % ---- Choices of actions to perform ----
+    % Whether to regenerate the mosaic at stage2AB
+    options.regenerateMosaicAtStage2AB (1,1) logical = false;
+
+    % Whether to regenerate the mosaic at stage2C
+    options.regenerateMosaicAtStage2C (1,1) logical = false;
+
+    % Whether to visualize the mosaic at stage2AB
+    options.visualizeMosaicAtStage2AB (1,1) logical = false;
+
+    % Whether to visualize the mosaic at stage2C (final stage)
+    options.visualizeMosaicAtStage2C (1,1) logical = false;
+
+
+    % ---- Visualization options ----
+    % Visualization domain:
+    % If empty, we are visualizing the entire mosaic
+    % If not empty, it must be a 4-element vector containing the 
+    % min and max values of x and y eccentricities (degs): [xMin xMax yMin yMax]
+    options.domainVisualizationLimits = [];
+
+    % Input cones alpha (transparency) value
+    options.inputConesAlpha (1,1) double = 0.5;
+
+    % Whether to identify the input cones for each mRGC RF center
+    options.identifyInputCones (1,1) logical = false
+
+    % Whether to identify the pooling of the input cones for each mRGC RF center
+    options.identifyPooledCones (1,1) logical = false;
+
+    % Minimum cone weight visualized: only has an effect for stage 2C mosaics
+    % that contain divergent cone to RGC RF center connections, which have non-binary weights
+    % Between 0 and 1
+    %
+    % Some pre-defined options are:
+    % Weight for a representation similar to that of Chichilnisky labs
+    % This is specified as: mRGCMosaic.sensitivityAtPointOfOverlap
+    %
+    % Weight = 10%, which is the noise floor in the measurements of cone weights 
+    % according to Greg Field and which is what they used in Fig 4 of their 2010 paper.
+    % This is specified as: mRGCMosaic.minRFcenterConeWeightIncludedToMatchFigure4OfFieldEtAl2010
+    %
+    % Weight = 1%, the min sensitivity for inclusion of divergent cone
+    % connections in the model
+    % This is specified as: = mRGCMosaic.minSensitivityForInclusionOfDivergentConeConnections
+    %
+    options.minConeWeightVisualized (1,1) double = mRGCMosaic.sensitivityAtPointOfOverlap; 
+
+
+    % Graphic export options.
+    % Graphics are exported in the directory returned by calling
+    % RGCMosaicConstructor.filepathFor.rawFigurePDFsDir()
+    % The above function computes this directory based on the
+    % isetbio pref `rgcResources.figurePDFsDir` which must be set by the
+    % user to the desired directory
+    options.exportVisualizationPNG (1,1) logical = false;
+    options.exportVisualizationPDF (1,1) logical = false;
+
+    % Figure format
+    % Specify one of the available figure formats, e.g. '1x1 giant square mosaic'
+    % To see the availabe figure format checkPublicationReadyPlotLib.figureComponents()
+    options.figureFormat (1,:) char = '';
+
+    % Whether to close previously open figures
+    options.closeOpenFigures (1,1) logical = true;
+
+    % Figure number
+    options.figNo = [];
+end % arguments
+
+
+
+% Set flags from key/value pairs
+rgcMosaicName = options.rgcMosaicName;
+coneMosaicSpecies = options.coneMosaicSpecies;
+opticsSubjectName = options.opticsSubjectName;
+spatialChromaticUniformityTradeoff = options.spatialChromaticUniformityTradeoff;
+
+% Actions to perform
+regenerateMosaicAtStage2A = options.regenerateMosaicAtStage2AB;
+regenerateMosaicAtStage2C = options.regenerateMosaicAtStage2C;
+visualizeMosaicAtStage2A = options.visualizeMosaicAtStage2AB;
+visualizeMosaicAtStage2C = options.visualizeMosaicAtStage2C;
+
+% Visualization options
+domainVisualizationLimits = options.domainVisualizationLimits;
+inputConesAlpha = options.inputConesAlpha;
+identifyInputCones = options.identifyInputCones;
+identifyPooledCones = options.identifyPooledCones;
+minConeWeightVisualized = options.minConeWeightVisualized;
+
+
+% Graphic export options
+exportVisualizationPNG = options.exportVisualizationPNG;
+exportVisualizationPDF = options.exportVisualizationPDF;
+
+figureFormat = options.figureFormat;
+
+% Close previously open figures
+closePreviouslyOpenFigures = options.closeOpenFigures;
+
+% Figure no to generate
+figNo = options.figNo;
+
+
+if (closePreviouslyOpenFigures)
+    % Close any stray figs
+    close all;
+end
+
 
 % Cone types pooled by the RF center
 coneTypesPooledByRFcenter = [cMosaic.LCONE_ID cMosaic.MCONE_ID];
@@ -41,20 +238,6 @@ coneTypesPooledByRFcenter = [cMosaic.LCONE_ID cMosaic.MCONE_ID];
 % Generate the necessary mosaic params struct
 pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
     coneMosaicSpecies, opticsSubjectName, rgcMosaicName, '');
-
-
-% Whether to regenerate the mosaic at stage2A
-regenerateMosaicAtStage2A = ~true;
-
-% Whether to regenerate the mosaic at stage2C
-regenerateMosaicAtStage2C = true;
-
-% Whether to visualize the mosaic at stage2A
-visualizeMosaicAtStage2A = ~true;
-
-% Whether to visualize the mosaic at stage2C
-visualizeMosaicAtStage2C = ~true;
-
 
 if (regenerateMosaicAtStage2A)
     % Set the random seed so we get same cone assignments in the inputConeMosaic
@@ -84,6 +267,7 @@ if (regenerateMosaicAtStage2A)
             'visualizeIntermediateStagesOfCenterConnectivityOptimization', ~true, ...
             'saveIntermediateStagesOfCenterConnectivityOptimization', true);
     
+
     % Generate the center-connected (no RF center ovelap) mRGCMosaic
     [theCenterConnectedMRGCMosaicFullFileName, ...
      theIntermediateConnectivityStageMetaDataFile, ...
@@ -185,58 +369,36 @@ if (visualizeMosaicAtStage2C)
 end
 
 
-% Visualization params
-% Whether to identify the input cones for each mRGC RF center
-identifyInputConesInFullMosaic = ~true;
-
-% Whether to identify the pooling of the input cones for each mRGC RF center
-identifyPooledConesInFullMosaic = true;
-
-% Visualization domain:
-% If empty, we are visualizing the entire mosaic
-domainVisualizationLimits = [];
-
-% Or just visualize a portion by specifying the visualization domain limits
-% minX
-%domainVisualizationLimits(1) = 17;
-% maxX
-%domainVisualizationLimits(2) = 20;
-% minY
-%domainVisualizationLimits(3) =-0.3;   
-% maxY
-%domainVisualizationLimits(4) = 0.3;
-
-% minConeWeightVisualized only has an effect for stage 2C mosaics
-% (which contain divergent cone to RGC RF center connections, which had non-binary weights)
-
-% Weight for a representation similar to that of Chichilnisky labs
-minConeWeightVisualized = mRGCMosaic.sensitivityAtPointOfOverlap; 
-
-% Weight = 10%, which is the noise floor in the measurements of cone weights 
-% according to Greg Field and which is what they used in Fig 4 of their 2010 paper.
-% minConeWeightVisualized = mRGCMosaic.minRFcenterConeWeightIncludedToMatchFigure4OfFieldEtAl2010
-
-% Weight = 1%, the min sensitivity for inclusion of divergence cone connections
-%minConeWeightVisualized = mRGCMosaic.minSensitivityForInclusionOfDivergentConeConnections
-
 visualizationParamsStruct = struct(...
     'maxNumberOfConesOutsideContour', 0);
 
-if (isempty(domainVisualizationLimits))
-    figureFormat = PublicationReadyPlotLib.figureComponents('1x1 giant square mosaic');
+if (isempty(figureFormat))
+    if (isempty(domainVisualizationLimits))
+        figureFormat = PublicationReadyPlotLib.figureComponents('1x1 giant square mosaic');
+    else
+        figureFormat = PublicationReadyPlotLib.figureComponents('1x1 double width figure');
+    end
 else
-    figureFormat = PublicationReadyPlotLib.figureComponents('1x1 double width figure');
+    figureFormat = PublicationReadyPlotLib.figureComponents(figureFormat);
 end
+
 
 RGCMosaicConstructor.visualize.fullMosaic(...
     theCenterConnectedMRGCMosaicFullFileName, ...
     theCenterConnectedMRGCMosaicFileName, ...
     minConeWeightVisualized, ...
     visualizationParamsStruct, ...
-    'identifyInputCones', identifyInputConesInFullMosaic, ...
-    'identifyPooledCones', identifyPooledConesInFullMosaic, ...
-    'inputConesAlpha', 1.0, ...
+    'figNo', figNo, ...
+    'identifyInputCones', identifyInputCones, ...
+    'identifyPooledCones', identifyPooledCones, ...
+    'inputConesAlpha', inputConesAlpha, ...
     'withFigureFormat', figureFormat, ...
     'domainVisualizationLimits', domainVisualizationLimits, ...
     'domainVisualizationTicks', struct('x', -50:0.5:50, 'y', -50:0.5:50), ...
-    'withoutPlotTitle', true);
+    'withoutPlotTitle', true, ...
+    'exportVisualizationPNG', exportVisualizationPNG, ...
+    'exportVisualizationPDF', exportVisualizationPDF);
+
+end
+
+
