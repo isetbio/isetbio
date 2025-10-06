@@ -8,6 +8,7 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
 
     hPositions = [2 3 4 5 6 7 8 9 10 11 12];
     vPositions = [0];
+    vPositions = [-1 -2 1 2];
     [X,Y] = meshgrid(hPositions, vPositions);
     horizontalPosDegs = X(:);
     verticalPosDegs = Y(:);
@@ -56,11 +57,11 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
     computeMRGCMosaicResponses = ~true;
 
     % 3. Fit DoG models to the STF responses
-    reAnalyzeSTFData = ~true;
+    reAnalyzeSTFData = true;
 
     % 4. Analyze previously analyzed mRGC STF responses
     aggregatePreviouslyAnalyzedRunsFromMultipleTargetVisualSTFs = false;
-    aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = true;
+    aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = ~true;
 
 
 
