@@ -1,4 +1,11 @@
-function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilename] = loadPrebakedMosaic(mosaicParams, opticsParams)
+function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilename] = loadPrebakedMosaic(...
+    mosaicParams, opticsParams, varargin)
+
+    % Parse input
+    p = inputParser;
+    p.addParameter('computeTheMosaicOptics', true, @islogical);
+    p.parse(varargin{:});
+    computeTheMosaicOptics = p.Results.computeTheMosaicOptics;
 
     switch (opticsParams.ZernikeDataBase)
         case 'Polans2015'
@@ -45,9 +52,14 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
     fprintf('\t---> The cropped mRGC mosaic contains %d mRGCs\n', theMRGCMosaic.rgcsNum);
 
     % Generate the optics for the mosaic
-    [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
-        theMRGCMosaic, opticsParams.type, ...
-        opticsParams.refractiveErrorDiopters, ...
-        opticsParams.visualizePSFonTopOfConeMosaic);
+    if (computeTheMosaicOptics)
+        [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
+            theMRGCMosaic, opticsParams.type, ...
+            opticsParams.refractiveErrorDiopters, ...
+            opticsParams.visualizePSFonTopOfConeMosaic);
+    else
+        theOI = [];
+        thePSF = [];
+    end
  end
 
