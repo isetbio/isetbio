@@ -34,7 +34,7 @@ if (isscalar(opticsSubjectName))
 	pStruct.whichSubjectID = opticsSubjectName;
 elseif (ischar(opticsSubjectName))
 	switch (opticsSubjectName)
-		case 'PLOSpaperDefaultSubject'
+		case {'PLOSpaperDefaultSubject', 'PLOSpaperStrehlRatio_0.59'}
 			% This is ranked #3 in terms of resolution at the fovea (45 c/deg), Strehl Ratio around 0.59
 			pStruct.whichSubjectID = 2;
 
@@ -58,7 +58,7 @@ elseif (ischar(opticsSubjectName))
 			% This is ranked #9 in terms of resolution at the fovea (18 c/deg), Strehl Ratio around 0.23
 			pStruct.whichSubjectID = 1;
 
-		case 'PLOSpaperStrehlRatio_0.21'
+        case {'PLOSpaperSecondSubject', 'PLOSpaperStrehlRatio_0.21'}
 			% This is ranked #7 in terms of resolution at the fovea (23 c/deg),  Strehl Ratio around 0.21
 			pStruct.whichSubjectID = 3;
 
@@ -69,7 +69,6 @@ elseif (ischar(opticsSubjectName))
 		case 'PLOSpaperStrehlRatio_0.09'
 			% This is ranked #10 in terms of resolution at the fovea (9 c/deg), Strehl Ratio around 0.09
 			pStruct.whichSubjectID = 7;
-
 
 		case 'VSS2024TalkFirstSubject'
 			% This is ranked #7 in terms of resolution at the fovea (23 c/deg)
@@ -132,19 +131,6 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
 
-    case 'PLOSpaperFovealMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [0 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = [2.1 2.1];   
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'high res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 0.25; 
-		rgcMosaicSurroundOptimization.maxGridSize = 1.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = true;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.05^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
-
-
 	case 'PLOSpaperTemporal2DegsMosaic' 
 		rgcMosaicSurroundOptimization.mosaicEccDegs = [-2 0]; 
 		rgcMosaicSurroundOptimization.mosaicSizeDegs = 2*[1 1]; % [-1 -3] (10366 cells)
@@ -157,32 +143,8 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
 
-    case 'PLOSpaperTemporal2DegsMosaicLowerOverlap' 
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-2.1 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 2*[1 1]; % [-1 -3] (10366 cells)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'high res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 0.5; 
-		rgcMosaicSurroundOptimization.maxGridSize = 1.5;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.05^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
-
 	case 'PLOSpaperTemporal4DegsMosaic'
 		rgcMosaicSurroundOptimization.mosaicEccDegs = [-4 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 3*[1 1]; % [-2.5 -5.5] (9303 cells)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'high res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 0.5; 
-		rgcMosaicSurroundOptimization.maxGridSize = 1.5;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.05^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
-
-    case 'PLOSpaperTemporal4DegsMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-4.1 0]; 
 		rgcMosaicSurroundOptimization.mosaicSizeDegs = 3*[1 1]; % [-2.5 -5.5] (9303 cells)
 		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'high res'; 
 		rgcMosaicSurroundOptimization.minGridSize = 0.5; 
@@ -206,32 +168,8 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
 
-    case 'PLOSpaperTemporal7DegsMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-7.1 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 4*[1 1]; %-5 -9 (6979 cells)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
-		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.1^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
-
 	case 'PLOSpaperTemporal10DegsMosaic'
 		rgcMosaicSurroundOptimization.mosaicEccDegs = [-10 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 4*[1 1]; % -8 -12 (3772 cells) (linear part of super Gaussian exponent)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
-		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.17^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
-
-    case 'PLOSpaperTemporal10DegsMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-10.1 0]; 
 		rgcMosaicSurroundOptimization.mosaicSizeDegs = 4*[1 1]; % -8 -12 (3772 cells) (linear part of super Gaussian exponent)
 		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
 		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
@@ -254,17 +192,6 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
 
-	case 'PLOSpaperTemporal14DegsMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-14.1 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 5*[1 1]; %-11.5 -16.5 (2695 cells)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
-		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.18^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
 
 	case 'PLOSpaperTemporal19DegsMosaic'
 		rgcMosaicSurroundOptimization.mosaicEccDegs = [-19 0]; 
@@ -275,19 +202,7 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
 		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.18^2; 
 		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'MidH1paramsNarrowVisualSTFparamTolerance'
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
-
-	case 'PLOSpaperTemporal19DegsMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-19.1 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 6*[1 1];
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 1.5; 
-		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.18^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'MidH1paramsNarrowVisualSTFparamTolerance'
+		rgcMosaicSurroundOptimization.optimizationStrategy = 'MidH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
 
 	case 'PLOSpaperTemporal25DegsMosaic'
@@ -301,6 +216,19 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
+
+    case 'PLOSpaperTemporal32DegsMosaic'
+		rgcMosaicSurroundOptimization.mosaicEccDegs = [-32 0]; 
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 9*[1 1]; %-27.5 -36.5 (1358 cells)
+		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 
+		rgcMosaicSurroundOptimization.minGridSize = 2; 
+		rgcMosaicSurroundOptimization.maxGridSize = 4.0;
+		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
+		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.15^2; 
+		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
+		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
+		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
+
 
     case 'PLOSpaperNasal2DegsTinyMosaic'
         rgcMosaicSurroundOptimization.mosaicEccDegs = [2 0]; 
@@ -380,42 +308,7 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
 
-	case 'PLOSpaperTemporal25DegsMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-25.1 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 7*[1 1]; %-21.5 -28.5 (1358 cells)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 2; 
-		rgcMosaicSurroundOptimization.maxGridSize = 4.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.15^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
 
-
-	case 'PLOSpaperTemporal32DegsMosaic'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-32 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 9*[1 1]; %-27.5 -36.5 (1358 cells)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 2; 
-		rgcMosaicSurroundOptimization.maxGridSize = 4.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.15^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
-
-	case 'PLOSpaperTemporal32DegsMosaicLowerOverlap'
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-32.1 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 9*[1 1]; %-27.5 -36.5 (1358 cells)
-		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 
-		rgcMosaicSurroundOptimization.minGridSize = 2; 
-		rgcMosaicSurroundOptimization.maxGridSize = 4.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.15^2; 
-		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
-		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
-		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
 
 	otherwise
 		error('No params specified for rgc mosaic  name: ''%s''.', rgcMosaicName);
@@ -432,21 +325,5 @@ end
 
 % Add all the specified surround optimization params
 pStruct.rgcMosaicSurroundOptimization = rgcMosaicSurroundOptimization;
-
-
-if (1==2)
-	% Test to validate against the RFs depicted in Fig 4 of the Field et al (2010) paper,
-	% In the supplementary section of that paper it is stated that all cells were recorded at
-	% an eccentricity of 6.75 mm temporal eccentricity along the horizontal meridian.
-	% According to the following computation, 6.75 mm in macaque retina corresponds to 25 degs in human retina
-	Field2010Figure4CellsEccentricityMMs = mRGCMosaic.eccentricityMMsForFigure4OfFieldEtAl2010
-
-	% Convert to degs in macaque retina
-	Field2010Figure4CellsEccentricityDegs = mRGCMosaic.eccentricityDegsMacaqueRetinaForFigure4OfFieldEtAl2010
-
-	% Convert to degs in human retina
-	equivalentEccDegsInHumanRetina = mRGCMosaic.eccentricityDegsHumanRetinaForFigure4OfFieldEtAl2010
-end
-
 
 end

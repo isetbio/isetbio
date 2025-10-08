@@ -253,7 +253,7 @@ function [hFig,ax] = visualize(obj, varargin)
                     'generateMissingSubDirs', true);
         
                 thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
-                NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
+                NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
             end
 
         end
@@ -319,7 +319,7 @@ function [hFig,ax] = visualize(obj, varargin)
             'generateMissingSubDirs', true);
 
         thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
-        NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
+        NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
     end
 
 end

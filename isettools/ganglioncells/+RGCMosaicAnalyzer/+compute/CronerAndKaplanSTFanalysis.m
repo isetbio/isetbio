@@ -701,7 +701,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		'temporal equivalent eccentricity (degs)', 'Rc (degs)', ...
 		{sprintf('synthetic mRGCs, n=%d',numel(RcDegsMosaic)), 'macaque mRGCs (C&K''95)'}, ...
 		exportVisualizationPDF, thePDFFullFileName);
-
+ 
     % Comparison of Rc: synthetic vs macaque mRGCs 
     % (with the foveal data  of Godat et al 2022)
     theVisualizationPDFfilename = fullfile(pdfExportSubDir, strrep(pdfFileName, '.pdf', 'withoutGodat2022.pdf'));
