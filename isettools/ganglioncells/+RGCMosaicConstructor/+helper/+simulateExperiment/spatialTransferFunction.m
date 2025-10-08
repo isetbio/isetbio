@@ -10,6 +10,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   p.addParameter('mRGCNonLinearityParams', [], @(x)(isempty(x))||(isstruct(x)));
   p.addParameter('customTemporalFrequencyAndContrast', [], @(x)(isempty(x))||(isstruct(x)));
   p.addParameter('validateScenes', false, @islogical);
+  p.addParameter('visualizeCustomConeFundamentals', false, @islogical);
 
   % Execute the parser
   p.parse(varargin{:});
@@ -20,7 +21,8 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   visualizeResponse = p.Results.visualizeResponse;
   debugInputConeMosaicPcurrentResponse = p.Results.debugInputConeMosaicPcurrentResponse;
   validateScenes = p.Results.validateScenes;
-  
+  visualizeCustomConeFundamentals = p.Results.visualizeCustomConeFundamentals;
+
   if (computeInputConeMosaicResponses)
     computePhotocurrent = false;
     if (~isempty(mRGCNonLinearityParams)) && (strcmp(mRGCNonLinearityParams.type, 'photocurrent'))
@@ -30,7 +32,8 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
     inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, ...
          theInputConeMosaicSTFResponsesFullFileName, computePhotocurrent, ...
          customTemporalFrequencyAndContrast, ...
-         visualizeResponse, debugInputConeMosaicPcurrentResponse, validateScenes);
+         visualizeResponse, debugInputConeMosaicPcurrentResponse, ...
+         validateScenes, visualizeCustomConeFundamentals);
   end
 
   if (computeMRGCMosaicResponses)
@@ -178,7 +181,8 @@ end
 
 
 function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeMosaicSTFResponsesFullFileName, ...
-  computePhotocurrent, customTemporalFrequencyAndContrast, visualizeResponse, debugInputConeMosaicPcurrentResponse, validateScenes)
+  computePhotocurrent, customTemporalFrequencyAndContrast, visualizeResponse, debugInputConeMosaicPcurrentResponse, ...
+  validateScenes, visualizeCustomConeFundamentals)
 
   fprintf('Input cone mosaic STF responses will be saved in: \n%s\n', theInputConeMosaicSTFResponsesFullFileName);
   % Determine spatial frequencies examined
@@ -236,7 +240,8 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
             viewingDistanceMeters);
 
   % Allocate memory (Single precision responses) to store all the cone mosaic responses
-  [~, ~, spatialPhasesDegs, stimulusFrameSequenceTemporalSupportSeconds] = visualStimulusGenerator.driftingGratingModulationPatterns(stimParams);
+  [~, ~, spatialPhasesDegs, stimulusFrameSequenceTemporalSupportSeconds] = ...
+      visualStimulusGenerator.driftingGratingModulationPatterns(stimParams);
 
   theInputConeMosaicSTFresponses = zeros(...
         numel(orientationsExamined), ...
@@ -275,7 +280,8 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
                   'frameIndexToCompute', [], ... % [] field indicates that all stimulus frame scenes must be computed
                   'customConeFundamentals', customConeFundamentals, ...
                   'announceEmployedConeFundamentals', true, ...
-                  'validateScenes', validateScenes);
+                  'validateScenes', validateScenes, ...
+                  'visualizeCustomConeFundamentals', 'visualizeCustomConeFundamentals');
         else
             [theDriftingGratingFrameScenes, theNullStimulusScene] = visualStimulusGenerator.stimulusFramesScenes(...
                   thePresentationDisplay, stimParams, theDriftingGratingSpatialModulationPatterns, ...

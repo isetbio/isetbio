@@ -7,6 +7,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
     p.addParameter('customConeFundamentals', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('withPreviouslyComputedConeFundamentalsStruct', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('announceEmployedConeFundamentals', false, @islogical);
+    p.addParameter('visualizeCustomConeFundamentals', false, @islogical);
 
     p.parse(varargin{:});
     validateScenes = p.Results.validateScenes;
@@ -14,6 +15,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
     customConeFundamentals = p.Results.customConeFundamentals;
     previouslyComputedConeFundamentalsStruct = p.Results.withPreviouslyComputedConeFundamentalsStruct;
     announceEmployedConeFundamentals = p.Results.announceEmployedConeFundamentals;
+    visualizeCustomConeFundamentals = p.Results.visualizeCustomConeFundamentals;
 
     if (isempty(previouslyComputedConeFundamentalsStruct))
         if (isempty(customConeFundamentals))
@@ -58,7 +60,9 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
             coneFundamentalsStruct.spectralSupport = displayWavelengths;
 
             % Compare to default SS2
-            visuallyContrastCustomConeFundamentalsToDefaultSS2(coneFundamentalsStruct);
+            if (visualizeCustomConeFundamentals)
+                visuallyContrastCustomConeFundamentalsToDefaultSS2(coneFundamentalsStruct);
+            end
 
             if (announceEmployedConeFundamentals)
                 fprintf('Employing the custom cone fundamentals.\n');

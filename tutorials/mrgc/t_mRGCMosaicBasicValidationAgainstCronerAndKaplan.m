@@ -27,10 +27,39 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(options)
     
     % Aggregate previously analyzed data over specific XY eccentricities
     t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(...
-        'validationEccentritiesDegsX', [2 3 4 5 6 7 8 9 10 11 12], ...
-        'validationEccentritiesDegsY', [-2 -1 0 1 2], ...
+        'validationEccentricitiesDegsX', [2 3 4 5 6 7 8 9 10 11 12], ...
+        'validationEccentricitiesDegsY', [-2 -1 0 1 2], ...
         'aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities', true);
+
+
+    % Compute the requisite inputConeMosaic and rgcMosaic STF responses
+    % for a mosaic synthesized at 2 degrees
+    t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(...
+        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'validationEccentricitiesDegsX', 2, ...
+        'validationEccentricitiesDegsY', 0, ...
+        'computeInputConeMosaicResponses', true, ...
+        'computeMRGCMosaicResponses', true);
+
+    % Analyze the mRGCMosaic STF responses computed previously
+    % by fitting a DoG model to each RGC STF, and validate against the
+    % Croner&Kaplan data
+    t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(...
+        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'validationEccentricitiesDegsX', 2, ...
+        'validationEccentricitiesDegsY', 0, ...
+        'reAnalyzeSTFData', true);
+
+
+    % Just plot previously analyzed and fitted STF validations
+    t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(...
+        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'validationEccentricitiesDegsX', 2, ...
+        'validationEccentricitiesDegsY', 0, ...
+        'reAnalyzeSTFData', ~true);
+
 %}
+
 
 
 arguments
@@ -60,8 +89,8 @@ arguments
 
     % ------- Validation options ------
     % Validation positions within the prebaked mosaic specified by options.rgcMosaicName 
-    options.validationEccentritiesDegsX (1,:) double = [2  12];
-    options.validationEccentritiesDegsY (1,:) double = [0];
+    options.validationEccentricitiesDegsX (1,:) double = [2  12];
+    options.validationEccentricitiesDegsY (1,:) double = [0];
     options.validationSizeDegs (1,2) double = [1 1];
 
     % STF stimulus params for the validation
@@ -95,8 +124,6 @@ arguments
     options.analyzedCenterConeNumerosityRange = [];  % Empty means all numerositities, or select a numerosity range, e.g., [1 1], [1 3] etc.
     
 
-
-
     % ------ Choices of actions to perform -------
     % 1. Compute the input cone mosaic STF responses 
     options.computeInputConeMosaicResponses (1,1) logical = false
@@ -113,7 +140,15 @@ arguments
 
 
 
-    % ----- Visualization optioncs -----
+    % ----- Visualization options -----
+    % Whether to visualize the mRGC mosaic and PSF at each validation position
+    options.visualizeMosaicsAndPSFsAtValidationEccentricities (1,1) logical = false
+
+    % Whether to visualize and contrast the custom cone fundamentals 
+    % to the SS2 cone fundamentals. This occurs only if
+    % validationConeFundamentalsOptimizedForStimPosition is set to true
+    options.visualizeCustomConeFundamentals (1,1) logical = false
+
     % Whether to visualize the computed input cone mosaic STF responses
     options.visualizeInputConeMosaicResponses (1,1) logical = false
 
@@ -155,18 +190,9 @@ coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
 targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
 
-
-% Generate pStruct with synthesized mosaic params
-pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
-    coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor);
-
-% Extract mosaic and optics params for the original prebaked mosaic
-[mosaicParams, opticsParams] = RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams(...
-    pStruct, targetVisualSTFdescriptor);
-
 % Validation eccentricities and patch size within the prebaked mosaic
-validationEccentritiesDegsX = options.validationEccentritiesDegsX;
-validationEccentritiesDegsY = options.validationEccentritiesDegsY;
+validationEccentricitiesDegsX = options.validationEccentricitiesDegsX;
+validationEccentricitiesDegsY = options.validationEccentricitiesDegsY;
 validationSizeDegs = options.validationSizeDegs; 
 
 
@@ -190,7 +216,6 @@ stfAnalysisParams.analyzedRadialEccentricityRange = options.analyzedRadialEccent
 stfAnalysisParams.analyzedCenterConeNumerosityRange =  options.analyzedCenterConeNumerosityRange;
     
 
-
 % Actions to perform
 computeInputConeMosaicResponses = options.computeInputConeMosaicResponses;
 computeMRGCMosaicResponses = options.computeMRGCMosaicResponses;
@@ -200,6 +225,8 @@ aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = options.aggregatePre
 
 
 % Visualization options
+visualizeMosaicsAndPSFsAtValidationEccentricities = options.visualizeMosaicsAndPSFsAtValidationEccentricities;
+visualizeCustomConeFundamentals = options.visualizeCustomConeFundamentals;
 visualizeInputConeMosaicResponses = options.visualizeInputConeMosaicResponses;
 visualizeSTFwithConeWeightsMap = options.visualizeSTFwithConeWeightsMap;
 visualizeFullAndMaximalExcursionSTF = options.visualizeFullAndMaximalExcursionSTF;
@@ -228,22 +255,32 @@ else
     AppleSiliconParPoolManager('extreme');
 end
 
-% Grid it
-[X,Y] = meshgrid(validationEccentritiesDegsX, validationEccentritiesDegsY);
-validationEccentritiesDegsXgrid = X(:); validationEccentritiesDegsYgrid = Y(:);
+
+% Generate pStruct with synthesized mosaic params
+pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
+    coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor);
+
+% Extract mosaic and optics params for the original prebaked mosaic
+[mosaicParams, opticsParams] = RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams(...
+    pStruct, targetVisualSTFdescriptor);
+
+
+% Generate validation position grid
+[X,Y] = meshgrid(validationEccentricitiesDegsX, validationEccentricitiesDegsY);
+validationEccentricitiesDegsXgrid = X(:); validationEccentricitiesDegsYgrid = Y(:);
 
 if (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities)
-    allMRGCMosaicSTFResponsesFullFileNames = cell(1, numel(validationEccentritiesDegsXgrid));
-    allCronerKaplanAnalysisFullFileNames = cell(1, numel(validationEccentritiesDegsYgrid));
+    allMRGCMosaicSTFResponsesFullFileNames = cell(1, numel(validationEccentricitiesDegsXgrid));
+    allCronerKaplanAnalysisFullFileNames = cell(1, numel(validationEccentricitiesDegsYgrid));
 end
 
 % Analyze all validation positions
-for iPos = 1:numel(validationEccentritiesDegsXgrid)
+for iPos = 1:numel(validationEccentricitiesDegsXgrid)
 
     % Update mosaic params with current crop params
     mosaicParams.cropParams = struct(...
         'sizeDegs', validationSizeDegs, ...
-        'eccentricityDegs', [validationEccentritiesDegsXgrid(iPos) validationEccentritiesDegsYgrid(iPos)]);
+        'eccentricityDegs', [validationEccentricitiesDegsXgrid(iPos) validationEccentricitiesDegsYgrid(iPos)]);
 
     % Go !
     [theMRGCMosaicSTFResponsesFullFileName, ...
@@ -257,6 +294,8 @@ for iPos = 1:numel(validationEccentritiesDegsXgrid)
             false, ...
             onlyReturnAggegatedFilenames, ...
             [], [], ...
+            visualizeMosaicsAndPSFsAtValidationEccentricities, ...
+            visualizeCustomConeFundamentals, ...
             visualizeInputConeMosaicResponses, ...
             visualizeSTFwithConeWeightsMap, ...
             visualizeFullAndMaximalExcursionSTF, ...
@@ -284,6 +323,8 @@ if (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities)
             false, ...
             allMRGCMosaicSTFResponsesFullFileNames, ...
             allCronerKaplanAnalysisFullFileNames, ...
+            visualizeMosaicsAndPSFsAtValidationEccentricities, ...
+            visualizeCustomConeFundamentals, ...
             visualizeInputConeMosaicResponses, ...
             visualizeSTFwithConeWeightsMap, ...
             visualizeFullAndMaximalExcursionSTF, ...
@@ -295,7 +336,7 @@ if (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities)
     return;
 end % if (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities)
 
-end
+end % t_mRGCMosaicBasicValidationAgainstCronerAndKaplan
 
 
 
@@ -312,6 +353,8 @@ function [theMRGCMosaicSTFResponsesFullFileName, ...
             onlyReturnFilenames, ...
             theAggregatedMRGCMosaicSTFResponsesFullFileNames, ...
             theAggregatedCronerKaplanAnalysisFullFileNames, ...
+            visualizeMosaicsAndPSFsAtValidationEccentricities, ...
+            visualizeCustomConeFundamentals, ...
             visualizeInputConeMosaicResponses, ...
             visualizeSTFwithConeWeightsMap, ...
             visualizeFullAndMaximalExcursionSTF, ...
@@ -323,15 +366,19 @@ function [theMRGCMosaicSTFResponsesFullFileName, ...
 
     % Load the desired mRGCmosaic and generated the optics for the computation
     [theMRGCmosaic, opticsForSTFresponses, thePSF, ...
-        prebakedMRGCMosaicDir, prebakedMRGCMosaicFilename] = mRGCMosaic.loadPrebakedMosaic(...
+     prebakedMRGCMosaicDir, prebakedMRGCMosaicFilename] = mRGCMosaic.loadPrebakedMosaic(...
         mosaicParams, opticsParams, ...
         'computeTheMosaicOptics', computeInputConeMosaicResponses||computeMRGCMosaicResponses);
 
     
     postFix = sprintf('%s_Ecc_%2.1f_%2.1f_Size_%2.1f_%2.1f', prebakedMRGCMosaicFilename, theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2), theMRGCmosaic.sizeDegs(1), theMRGCmosaic.sizeDegs(2));
     
-    fprintf('\n Analyzing mosaic at [%2.1f, %2.1f] ...\n', theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2));
-       
+    if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
+        fprintf('\nComputing STF responses at [%2.1f, %2.1f] ...\n', theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2));
+    else
+        fprintf('\nAnalyzing STF responses at [%2.1f, %2.1f] ...\n', theMRGCmosaic.eccentricityDegs(1), theMRGCmosaic.eccentricityDegs(2));
+    end
+
     % Filenames for intermediate responses
     p = getpref('isetbio');
     intermediateDataDir = p.rgcResources.intermediateDataDir;
@@ -363,7 +410,9 @@ function [theMRGCMosaicSTFResponsesFullFileName, ...
         thePSFData.supportYdegs = thePSF.supportY/60;
 
         % Visualize the mosaic
-        visualizeMosaicAndEmployedPSF(theMRGCmosaic, thePSFData, exportVisualizationPDFdirectory, postFix);
+        if (visualizeMosaicsAndPSFsAtValidationEccentricities)
+            visualizeMosaicAndEmployedPSF(theMRGCmosaic, thePSFData, exportVisualizationPDFdirectory, postFix);
+        end
 
         
         % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
@@ -378,16 +427,15 @@ function [theMRGCMosaicSTFResponsesFullFileName, ...
         stimulusResolutionDegs = RGCMosaicConstructor.helper.simulateExperiment.stimulusResolutionFromConeApertureOrConeSpacing(...
                     theMRGCmosaic, targetRGCindices, theFraction, theMetric);
 
-
-        % Update stfParams adding 
+        % Update stfParams for the current validation position, adding 
         % - the stimulus resolution
-        % - the stimulus position
-        % - the stimulus size
+        % - the stimulus position = mosaic position
+        % - the stimulus size = 1.1 x input cone mosaic size
         stfParams.resolutionDegs = stimulusResolutionDegs;
         stfParams.positionDegs = theMRGCmosaic.eccentricityDegs;
         stfParams.sizeDegs = 1.1*max(theMRGCmosaic.inputConeMosaic.sizeDegs);
 
-        % Go !
+        % Compute STF responses for the current validation position
         RGCMosaicConstructor.helper.simulateExperiment.spatialTransferFunction(...
             theMRGCmosaic, opticsForSTFresponses, ...
             stfParams, ...
@@ -395,7 +443,8 @@ function [theMRGCMosaicSTFResponsesFullFileName, ...
             theMRGCMosaicSTFResponsesFullFileName, ...
             'computeInputConeMosaicResponses', computeInputConeMosaicResponses, ...
             'computeMRGCMosaicResponses', computeMRGCMosaicResponses , ...
-            'visualizeResponse', visualizeInputConeMosaicResponses);
+            'visualizeResponse', visualizeInputConeMosaicResponses, ...
+            'visualizeCustomConeFundamentals', visualizeCustomConeFundamentals && stfParams.coneFundamentalsOptimizedForStimPosition);
 
         return;
     end % if (computeInputConeMosaicResponses || computeMRGCMosaicResponses)
@@ -408,7 +457,8 @@ function [theMRGCMosaicSTFResponsesFullFileName, ...
         theCronerKaplanAnalysisFullFileName = theAggregatedCronerKaplanAnalysisFullFileNames;
     end
 
-    % Do it !
+    % Analyze the computed STFs by fitting DoG models to extracting the
+    % Croner & Kaplan parameters
     [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVariance] = ...
         RGCMosaicAnalyzer.compute.CronerAndKaplanSTFanalysis(...
             theMRGCMosaicSTFResponsesFullFileName, ...
@@ -421,6 +471,7 @@ function [theMRGCMosaicSTFResponsesFullFileName, ...
             stfAnalysisParams.analyzedCenterPurityRange, ...
             reAnalyzeSTFData, ...
             exportVisualizationPDFdirectory, ...
+            'visualizeMosaic', visualizeMosaicsAndPSFsAtValidationEccentricities, ...
             'visualizeFullAndMaximalExcursionSTF', visualizeFullAndMaximalExcursionSTF, ...
             'visualizeSTFfits', visualizeSTFfits, ...
             'visualizeSTFwithConeWeightsMap', visualizeSTFwithConeWeightsMap, ...
@@ -478,13 +529,13 @@ function visualizeMosaicAndEmployedPSF(theMRGCmosaic, thePSFData, exportVisualiz
 
     % The full path where the generated PDFs will be stored
     pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir;
-    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('Mosaic_%s.pdf', postFix));
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('Mosaic_%s_withPSF.pdf', postFix));
 
     % Generate the path if we need to
     thePDFFullFileName  = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
                 pdfExportRootDir, theVisualizationPDFfilename, ...
                 'generateMissingSubDirs', true);
 
-    NicePlot.exportFigToPDF(thePDFFullFileName, hFig, 300);
+    NicePlot.exportFigToPDF(thePDFFullFileName, hFig, 300, 'beVerbose');
 
 end

@@ -5,8 +5,8 @@
 function doubleHistogramPlot(figNo, ...
 	data1, bins1, color1, binWidth1, ...
 	data2, bins2, color2, binWidth2, ...
-	xLims, xTicks, yLims, xAxisLabel, yAxisLabel, ...
-	theLegends, thePDFFullFileName)
+	xLims, xTicks, yLims, xAxisLabel, yAxisLabel, theLegends, ...
+    exportVisualizationPDF, thePDFFullFileName)
 
 	ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
 	hFig = figure(figNo); clf;
@@ -46,5 +46,7 @@ function doubleHistogramPlot(figNo, ...
     PublicationReadyPlotLib.applyFormat(ax,ff);
     PublicationReadyPlotLib.offsetAxes(ax, ff, xLims, yLims);
 
-    NicePlot.exportFigToPDF(thePDFFullFileName,hFig,  300);
+    if (exportVisualizationPDF)
+        NicePlot.exportFigToPDF(thePDFFullFileName,hFig,  300, 'beVerbose');
+    end
 end
