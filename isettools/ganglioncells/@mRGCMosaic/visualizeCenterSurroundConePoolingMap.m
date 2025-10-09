@@ -58,7 +58,6 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     pdfExportSubDir = p.Results.pdfExportSubDir;
 
 
-
     [scaleBarDegsDefault, ...
      scaleBarMicronsDefault, ...
 	 spatialSupportTickSeparationArcMinDefault, ...
@@ -70,10 +69,10 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
 		 	RGCMosaicAnalyzer.visualize.generateLimits(obj, obj.rgcRFpositionsDegs(theRGCindex,:), ...
             'spatialSupportTickSeparationArcMin', spatialSupportTickSeparationArcMin);
 
-
     if (isempty(spatialSupportCenterDegs))
         spatialSupportCenterDegs = spatialSupportCenterDegsDefault;
     end
+
 
     if (isempty(domainVisualizationLimits))
         domainVisualizationLimits = domainVisualizationLimitsSingleRFDefault;
@@ -90,9 +89,6 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
         domainVisualizationTicks
         domainVisualizationLimits
     end
-
-
-    
 
     if (isempty(scaleBarDegs))
         scaleBarDegs = scaleBarDegsDefault;

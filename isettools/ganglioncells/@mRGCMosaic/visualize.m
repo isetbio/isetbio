@@ -67,22 +67,16 @@ function [hFig,ax] = visualize(obj, varargin)
     p.addParameter('superimposedRectColor', [], @(x)( isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('superimposedRectAlpha', 1, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
 
+    p.addParameter('withFigureFormat', [], @isstruct);
     p.addParameter('exportVisualizationPDF', false, @islogical);
     p.addParameter('exportVisualizationPDFdirectory', 'mosaicComponentVisualizations', @ischar);
     p.addParameter('visualizationPDFfileName', 'mRGCmosaic', @ischar);
 
     p.parse(varargin{:});
 
-    hFig = p.Results.figureHandle;
-    ax = p.Results.axesHandle;
-    if (isempty(hFig)) && (~isempty(ax))
-        try
-            hFig = ancestor(ax, 'figure');
-        catch
-            fprintf('MRGCMosaic.visualize:: Unable to retrieve the parent figure handle from passed axes\n');
-        end
-    end
+    
 
+    figureFormat = p.Results.withFigureFormat;
     visualizationPDFfileName = p.Results.visualizationPDFfileName;
     exportVisualizationPDF = p.Results.exportVisualizationPDF;
     exportVisualizationPDFdirectory = p.Results.exportVisualizationPDFdirectory;
@@ -158,6 +152,18 @@ function [hFig,ax] = visualize(obj, varargin)
         assert(size(superimposedRect.center,1) == numel(superimposedRect.xRange), 'The rows of superimposedRect.center must equal the length of superimposedRect.xRange'); 
         assert(size(superimposedRect.center,1) == numel(superimposedRect.yRange), 'The rows of superimposedRect.center must equal the length of superimposedRect.xRange'); 
     end
+
+
+    hFig = p.Results.figureHandle;
+    ax = p.Results.axesHandle;
+    if (isempty(hFig)) && (~isempty(ax))
+        try
+            hFig = ancestor(ax, 'figure');
+        catch
+            fprintf('MRGCMosaic.visualize:: Unable to retrieve the parent figure handle from passed axes\n');
+        end
+    end
+
 
 
     % Determine X,Y limits
@@ -309,8 +315,13 @@ function [hFig,ax] = visualize(obj, varargin)
 
 
     if (exportVisualizationPDF)
-        p = getpref('isetbio');
-        pdfExportRootDir = fullfile(p.rgcResources.figurePDFsDir);
+
+        if (~isempty(figureFormat))
+            figureFormat.box = 'on';
+            PublicationReadyPlotLib.applyFormat(ax,figureFormat);
+        end
+
+        pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
         theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
     
         % Generate the path if we need to

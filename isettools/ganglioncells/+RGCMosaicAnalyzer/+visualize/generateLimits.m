@@ -14,7 +14,7 @@ function [scaleBarDegs, scaleBarMicrons, spatialSupportTickSeparationArcMin, spa
     spatialSupportTickSeparationArcMin = p.Results.spatialSupportTickSeparationArcMin;
 
     % The spatial support
-    spatialSupportCenterDegs = round(theMRGCMosaic.eccentricityDegs*10)/10;
+    spatialSupportCenterDegs = round(theRGCpositionDegs*10)/10;
     ecc = sqrt(sum(theMRGCMosaic.eccentricityDegs.^2,2));
 
     if (isempty(spatialSupportTickSeparationArcMin))
@@ -62,15 +62,6 @@ function [scaleBarDegs, scaleBarMicrons, spatialSupportTickSeparationArcMin, spa
     % No scale bar
     % scaleBarDegs = 0;
 
-    % XY lims
-    spatialSupportRangeArcMin = 3 * spatialSupportTickSeparationArcMin;
-    maxXY = round(spatialSupportRangeArcMin/2);
-    spatialSupportDegs = (-maxXY:0.05:maxXY)/60;
-    spatialSupportXYDegs(:,1) = spatialSupportCenterDegs(1) + spatialSupportDegs;
-    spatialSupportXYDegs(:,2) = spatialSupportCenterDegs(2) + spatialSupportDegs;
-    dx = (spatialSupportDegs(end)-spatialSupportDegs(1))*0.05;
-    XLims = spatialSupportCenterDegs(1) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
-    YLims = spatialSupportCenterDegs(2) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
 
     domainVisualizationLimits(1:2) = theRGCpositionDegs(1) + [-3 3]*spatialSupportTickSeparationArcMin/60;
     domainVisualizationLimits(3:4) = theRGCpositionDegs(2) + [-3 3]*spatialSupportTickSeparationArcMin/60;

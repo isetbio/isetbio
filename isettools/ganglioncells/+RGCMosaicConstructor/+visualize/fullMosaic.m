@@ -50,6 +50,7 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
         hFig = figure(figNo); 
     end
     clf;
+    
     % Prepare figure and axes
     if (isempty(figureFormat))
         ff = PublicationReadyPlotLib.figureComponents('1x1 giant square mosaic');

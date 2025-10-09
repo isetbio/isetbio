@@ -63,6 +63,7 @@ function t_mRGCMosaicBasicComputation(options)
 
 %}
 
+
 arguments
 
     % ---- Name encoding properties of the rgcMosaic, such as its eccentricity ---
@@ -139,7 +140,6 @@ arguments
         'type', 'nativeOptics', ...
         'refractiveErrorDiopters', 0);
 
-
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
 
@@ -202,7 +202,8 @@ exportVisualizationPDFdirectory = 'mosaicComputePDFs';
 % mosaics of RGCs in typical in-vitro experiments (e.g. by the Chichilnisky lab)
 minCenterConeWeight = mRGCMosaic.sensitivityAtPointOfOverlap;
 
-% mRGC mosaic visualization limits and ticks
+% mRGC mosaic visualization limits and ticks (including the extent of the
+% input cone mosaic)
 visualizedWidthDegs = theMRGCmosaic.inputConeMosaic.sizeDegs(1);
 visualizedHeightDegs = theMRGCmosaic.inputConeMosaic.sizeDegs(2);
 domainVisualizationLimits(1:2) = theMRGCmosaic.eccentricityDegs(1) + 0.5 * visualizedWidthDegs * [-1 1];
@@ -233,22 +234,22 @@ theMRGCmosaic.visualize(...
     'domainVisualizationLimits', domainVisualizationLimits, ...
     'domainVisualizationTicks', domainVisualizationTicks, ...
     'plotTitle', sprintf('min center weight visualized: %2.3f', minCenterConeWeight), ...
+    'withFigureFormat', ff, ...
     'visualizationPDFfileName', sprintf('fullMRGCmosaicMinCenterConeWeight_%2.3f', minCenterConeWeight), ...
     'exportVisualizationPDF', true, ...
     'exportVisualizationPDFdirectory', exportVisualizationPDFdirectory);
 
-% Finalize figure using the Publication-Ready format
-PublicationReadyPlotLib.applyFormat(ax,ff);
 
 
 % Now plot a smaller region of the mRGC mosaic, showing pooled cones with
 % the mRGC RF centers with a min weight = mRGCMosaic.sensitivityAtPointOfOverlap
 % and also visualized the PSF of the employed optics
-narrowDomainVisualizationLimits(1:2) = [-8.8 -8.2];
-narrowDomainVisualizationLimits(3:4) = [0.75 1.25];
+narrowDomainVisualizationLimits(1:2) = theMRGCmosaic.eccentricityDegs(1) + [-0.3 0.3];
+narrowDomainVisualizationLimits(3:4) = theMRGCmosaic.eccentricityDegs(2) + [-0.25 0.25];
 narrowDomainVisualizationTicks = struct(...
-    'x', -10:0.1:-8, ...
-    'y', 0:0.1:2);
+    'x', -30:0.2:0, ...
+    'y', -10:0.2:10);
+
 
 
 % Generate a PSF visualization data struct (containing the vLambda-weighted PSF) for
@@ -261,6 +262,7 @@ visualizedPSFData.supportYdegs = thePSF.supportY/60 - PSFvisualizationOffset(2);
 hFig = figure(2); clf;
 theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
 ax = theAxes{1,1};
+
 
 theMRGCmosaic.visualize(...
     'figureHandle', hFig, ...
@@ -276,6 +278,7 @@ theMRGCmosaic.visualize(...
     'domainVisualizationTicks', narrowDomainVisualizationTicks, ...
     'withSuperimposedPSF', visualizedPSFData, ...
     'plotTitle', sprintf('min center weight visualized: %2.3f', minCenterConeWeight), ...
+    'withFigureFormat', ff, ...
     'visualizationPDFfileName', sprintf('zoomedInMRGCmosaicWithPSFminCenterConeWeight_%2.3f', minCenterConeWeight), ...
     'exportVisualizationPDF', true, ...
     'exportVisualizationPDFdirectory', exportVisualizationPDFdirectory);

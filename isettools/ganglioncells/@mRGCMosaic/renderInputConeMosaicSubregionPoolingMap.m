@@ -32,6 +32,7 @@ function subregionLineWeightingFunctions = renderInputConeMosaicSubregionPooling
     spatialSupportDegs = (-maxXY:spatialSupportSamplingArcMin:maxXY)/60;
     spatialSupportXYDegs(:,1) = spatialSupportCenterDegs(1) + spatialSupportDegs;
     spatialSupportXYDegs(:,2) = spatialSupportCenterDegs(2) + spatialSupportDegs;
+
     dx = (spatialSupportDegs(end)-spatialSupportDegs(1))*0.05;
     XLims = spatialSupportCenterDegs(1) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
     YLims = spatialSupportCenterDegs(2 )+ [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
