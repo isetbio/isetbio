@@ -111,27 +111,18 @@ coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
 targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
 
-
 closePreviouslyOpenFigures = options.closePreviouslyOpenFigures;
-
 if (closePreviouslyOpenFigures)
     % Close any stray figs
     close all;
 end
 
 
-% Generate pStruct with synthesized mosaic params
-pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
-    coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor);
-
-% Extract mosaic and optics params for the original prebaked mosaic
-[mosaicParams, opticsParams] = RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams(...
-    pStruct, targetVisualSTFdescriptor);
-
-% Load the desired mRGCmosaic and the optics that correspond to
-% the mosaic's position with optimal refraction 
+% Load the mRGCmosaic specified by the passed parameters:
+%   coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor
+% and generate the optics that were used to synthesize the mosaic
 [theMRGCmosaic, ~, thePSFatTheMosaicEccentricity] = mRGCMosaic.loadPrebakedMosaic(...
-        mosaicParams, opticsParams, ...
+        coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
         'computeTheMosaicOptics', true);
 
 

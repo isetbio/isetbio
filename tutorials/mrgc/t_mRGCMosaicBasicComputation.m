@@ -161,36 +161,27 @@ if (closePreviouslyOpenFigures)
     close all;
 end
 
-% Generate pStruct with synthesized mosaic params
-pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
-    coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor);
-
-% Extract mosaic and optics params for the original prebaked mosaic
-[mosaicParams, opticsParams] = RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams(...
-    pStruct, targetVisualSTFdescriptor);
-
 
 % Optionally, we can crop the mosaic to use a smaller portion of it.
 % For example, here we crop a patch (2x2 degs) of the mosaic, 
 % centered at -7 degrees
-% mosaicParams.cropParams = struct(...
+% cropParams = struct(...
 %        'sizeDegs', [2 2], ...
 %        'eccentricityDegs', [-7 0] ...
 %        );
+% Here, we are not doing any cropping
+cropParams = [];
 
 
-% Load the desired mRGCmosaic and generate optics that correspond to
-% the mosaic's position with optimal refraction or the user-specified optics
-if (~isempty(opticsToEmploy))
-    opticsParams.type = opticsToEmploy.type;
-    if (isfield(opticsToEmploy, 'refractiveErrorDiopters'))
-        opticsParams.refractiveErrorDiopters = opticsToEmploy.refractiveErrorDiopters;
-    end
-end
+% Load the mRGCmosaic specified by the passed parameters:
+%   coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor
+% and generate the optics that were used to synthesize the mosaic
+[theMRGCmosaic, theOpticsToEmploy, thePSFatTheMosaicEccentricity] = mRGCMosaic.loadPrebakedMosaic(...
+        coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
+        'computeTheMosaicOptics', true, ...
+        'opticsToEmploy', opticsToEmploy, ...
+        'cropParams', cropParams);
 
-[theMRGCmosaic, theOpticsToEmploy, thePSF] = mRGCMosaic.loadPrebakedMosaic(...
-        mosaicParams, opticsParams, ...
-        'computeTheMosaicOptics', true);
 
 % Subdirectory for exporting the generated PDFs
 exportVisualizationPDFdirectory = 'mosaicComputePDFs';
@@ -255,9 +246,9 @@ narrowDomainVisualizationTicks = struct(...
 % Generate a PSF visualization data struct (containing the vLambda-weighted PSF) for
 % visualization purposes
 PSFvisualizationOffset = theMRGCmosaic.eccentricityDegs - [mean(narrowDomainVisualizationLimits(1:2)) mean(narrowDomainVisualizationLimits(3:4))];
-visualizedPSFData.data = RGCMosaicAnalyzer.compute.vLambdaWeightedPSF(thePSF);
-visualizedPSFData.supportXdegs = thePSF.supportX/60 - PSFvisualizationOffset(1);
-visualizedPSFData.supportYdegs = thePSF.supportY/60 - PSFvisualizationOffset(2);
+visualizedPSFData.data = RGCMosaicAnalyzer.compute.vLambdaWeightedPSF(thePSFatTheMosaicEccentricity);
+visualizedPSFData.supportXdegs = thePSFatTheMosaicEccentricity.supportX/60 - PSFvisualizationOffset(1);
+visualizedPSFData.supportYdegs = thePSFatTheMosaicEccentricity.supportY/60 - PSFvisualizationOffset(2);
 
 hFig = figure(2); clf;
 theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);

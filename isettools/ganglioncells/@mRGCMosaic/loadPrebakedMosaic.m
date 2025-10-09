@@ -1,12 +1,42 @@
 function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilename] = loadPrebakedMosaic(...
-    mosaicParams, opticsParams, varargin)
+    coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, varargin)
 
     % Parse input
     p = inputParser;
     p.addParameter('computeTheMosaicOptics', true, @islogical);
+    p.addParameter('opticsToEmploy', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('cropParams', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('onlyReturnMosaicFilename', false, @islogical);
     p.parse(varargin{:});
-    computeTheMosaicOptics = p.Results.computeTheMosaicOptics;
 
+    opticsToEmploy = p.Results.opticsToEmploy;
+    cropParams = p.Results.cropParams;
+    computeTheMosaicOptics = p.Results.computeTheMosaicOptics;
+    onlyReturnMosaicFilename = p.Results.onlyReturnMosaicFilename;
+
+
+    % Generate pStruct with synthesized mosaic params
+    pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
+        coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor);
+
+    % Extract mosaic and optics params for the original prebaked mosaic
+    [mosaicParams, opticsParams] = RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams(...
+        pStruct);
+
+    % Update mosaicParams with optional cropParams
+    if (~isempty(cropParams))
+        mosaicParams.cropParams = cropParams;
+    end
+
+    % Update opticsParams with optional opticsToEmploy
+    if (~isempty(opticsToEmploy))
+            opticsParams.type = opticsToEmploy.type;
+            if (isfield(opticsToEmploy, 'refractiveErrorDiopters'))
+                opticsParams.refractiveErrorDiopters = opticsToEmploy.refractiveErrorDiopters;
+            end
+    end
+
+    clear 'pStruct'
     switch (opticsParams.ZernikeDataBase)
         case 'Polans2015'
             subjectIndex = find(PolansOptics.constants.subjectRanking == opticsParams.subjectRankOrder);
@@ -31,6 +61,14 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
         opticsSubString, ...
         mosaicParams.surroundOptimizationSubString);
 
+    
+    if (onlyReturnMosaicFilename)
+        theMRGCMosaic = [];
+        theOI = [];
+        thePSF = [];
+        return;
+    end
+
     theFileName = fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename);
     assert(isfile(theFileName), 'Could not locate the mosaic. File %s not found.\n', theFileName);
 
@@ -53,6 +91,7 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
 
     % Generate the optics for the mosaic
     if (computeTheMosaicOptics)
+
         [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
             theMRGCMosaic, opticsParams.type, ...
             opticsParams.refractiveErrorDiopters, ...

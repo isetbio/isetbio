@@ -346,7 +346,7 @@ classdef mRGCMosaic < handle
     % Static methods
     methods (Static)
         % Method to list available prebaked mRGCMosaics
-        [themRGCmosaicFileNames, prebakedMRGCMosaicDir] = listPrebakedMosaics();
+        [themRGCmosaicFileNames, prebakedMRGCMosaicDir] = listPrebakedMosaics(varargin);
 
         % Method to load a prebaked mRGCMosaic and associated optics
         [theMRGCmosaic, theOI, thePSF, ...

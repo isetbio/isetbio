@@ -1,15 +1,15 @@
 %
 % RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams
 %
-function [mosaicParams, opticsParams] = extractSynthesizedMosaicAndOpticsParams(...
-    pStruct, targetVisualSTFdescriptor)
+function [mosaicParams, opticsParams] = extractSynthesizedMosaicAndOpticsParams(pStruct)
 
     surroundRetinalConePoolingModelParamsStruct = ...
 	    RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateSurroundRetinalConePoolingStruct(...
 		    pStruct.rgcMosaicSurroundOptimization.optimizationStrategy);
     
     targetVSTparams = ...
-        RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct(targetVisualSTFdescriptor);
+        RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct(...
+            pStruct.rgcMosaicSurroundOptimization.targetVisualSTFdescriptor);
     
     % Synthesize mosaicParams
     mosaicParams.sizeDegs = pStruct.rgcMosaicSurroundOptimization.mosaicSizeDegs;
