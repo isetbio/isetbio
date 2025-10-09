@@ -28,10 +28,12 @@ function t_mRGCMosaicInspect(options)
         'rgcMosaicName', 'PLOSpaperTemporal10DegsMosaic', ...
         'opticsSubjectName', 'PLOSpaperDefaultSubject');
 
+    % Visualize a mosaic synthesized at 4 deg along the temporal meridian
     t_mRGCMosaicInspect(...
         'rgcMosaicName', 'PLOSpaperTemporal4DegsMosaic', ...
         'opticsSubjectName', 'PLOSpaperDefaultSubject');
 
+    % Visualize a mosaic synthesized at 2 deg along the temporal meridian
     t_mRGCMosaicInspect(...
         'rgcMosaicName', 'PLOSpaperTemporal2DegsMosaic', ...
         'opticsSubjectName', 'PLOSpaperDefaultSubject');
@@ -369,7 +371,7 @@ end
 
 
 function OLD
-    % Initializ
+    % Initialize
 
 
     % Generate a video that displays cone pooling RF maps for several
