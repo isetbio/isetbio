@@ -14,31 +14,39 @@ function generateLocalPrefs(varargin)
         case 'Lefkada'
             % User on Lefkada (Nicolas' laptop)
             rgcResourcesRootDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+            intermediateDataDir = fullfile(rgcResourcesRootDir,'IBIO_rgcMosaicResources/denovo/intermediateFiles/ONcenterMidgetRGCmosaics');
+            figurePDFsDir = fullfile(rgcResourcesRootDir,'ManuscriptSupportMaterials/denovo/PLOS2024/figures');
 
         case 'Crete'
             % User on Crete (Nicolas' M2 Mac Studio) 
             rgcResourcesRootDir  = '/Volumes/M1ProBackUp/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+            intermediateDataDir = fullfile(rgcResourcesRootDir,'IBIO_rgcMosaicResources/denovo/intermediateFiles/ONcenterMidgetRGCmosaics');
+            figurePDFsDir = fullfile(rgcResourcesRootDir,'ManuscriptSupportMaterials/denovo/PLOS2024/figures');
 
-        % add different computer names for individual users here
+        % Different computer names for different users here
+        case 'YOUR_COMPUTER_NAME'
+            %rgcResourcesRootDir  = '...';
+            %intermediateDataDir = fullfile(rgcResourcesRootDir,'...');
+            %figurePDFsDir = fullfile(rgcResourcesRootDir, '...');
+
         otherwise
-            error('No rgcResourcesRootDir for computer with name: ''%s''.', p.localHostName);
+            error('No rgcResourcesRootDir specified for computer with name: ''%s''. Edit generateLocalPrefs.m to generate specific ', p.localHostName);
     end
 
 
     % User needs to make sure that the following dirs exist under the rgcResourcesRootDir
     if (useSLIMpaths)
-        intermediateDataDir = 'IBIO_rgcMosaicResources/ONcenterMidgetRGCmosaics/intermediateFiles/SLIM';
-        figurePDFsDir = 'ManuscriptSupportMaterials/PLOS2024/figures/SLIM/raw';
+        intermediateDataDir = fullfile(rgcResourcesRootDir,'IBIO_rgcMosaicResources/ONcenterMidgetRGCmosaics/intermediateFiles/SLIM');
+        figurePDFsDir = fullfile(rgcResourcesRootDir,'ManuscriptSupportMaterials/PLOS2024/figures/SLIM/raw');
     else
-        intermediateDataDir = 'IBIO_rgcMosaicResources/denovo/intermediateFiles/ONcenterMidgetRGCmosaics/';
-        figurePDFsDir = 'ManuscriptSupportMaterials/denovo/PLOS2024/figures/';
+        
     end
 
     % Generate the rgcResources struct
     rgcResources = struct(...
         'method', 'localFile', ...
-        'intermediateDataDir', fullfile(rgcResourcesRootDir, intermediateDataDir), ...
-        'figurePDFsDir',    fullfile(rgcResourcesRootDir, figurePDFsDir) ...
+        'intermediateDataDir', intermediateDataDir, ...
+        'figurePDFsDir',    figurePDFsDir ...
      );
      
      % Set the rgcResources pref
