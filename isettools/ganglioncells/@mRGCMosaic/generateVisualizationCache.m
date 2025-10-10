@@ -99,38 +99,6 @@ function generateVisualizationCache(obj, xSupport, ySupport,  ...
     obj.visualizationCache.rfCenterConeConnectionLineSegments = rfCenterConeConnectionLineSegments;
     obj.visualizationCache.rfCenterSingleConeInputDotPositions = singleConeRGCdotPositions;
 
-
-    if (1==2)
-        % NOT SURE IF WE NEED THE BELOW, so (1==2)
-
-        % Find all input cone indices that are connected to the RF centers
-        if (~isempty(obj.rgcRFcenterConePoolingMatrix))
-            centerConnectedConeIndices = find(sum(obj.rgcRFcenterConePoolingMatrix,2) > 0);
-        else
-            centerConnectedConeIndices = find(sum(obj.rgcRFcenterConeConnectivityMatrix,2) > 0);
-        end
-
-        idx = find(obj.inputConeMosaic.coneTypes(centerConnectedConeIndices) == cMosaic.LCONE_ID);
-        obj.visualizationCache.lConeIndicesConnectedToRGCcenters = centerConnectedConeIndices(idx);
-        idx = find(obj.inputConeMosaic.coneTypes(centerConnectedConeIndices) == cMosaic.MCONE_ID);
-        obj.visualizationCache.mConeIndicesConnectedToRGCcenters= centerConnectedConeIndices(idx);
-    
-    
-        if (~isempty(obj.rgcRFsurroundConePoolingMatrix))
-            % Find all input cone indices that are connected to the RF surrounds
-            surroundConnectedConeIndices = find(sum(obj.rgcRFsurroundConePoolingMatrix,2) > 0);
-            xx = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,1));
-            yy = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,2));
-            obj.visualizationCache.surroundConesXrange = [min(xx) max(xx)];
-            obj.visualizationCache.surroundConesYrange = [min(yy) max(yy)];
-            idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.LCONE_ID);
-            obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
-            idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.MCONE_ID);
-            obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
-        end
-
-    end
-
     fprintf(' Done in %2.1f seconds\n', toc);
 end
 

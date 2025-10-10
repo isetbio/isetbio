@@ -80,7 +80,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     parfor iRGC = 1:obj.rgcsNum
         % Retrieve the center cone indices & weights
         centerConnectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
-        centerConeIndices = find(centerConnectivityVector > 0.001);
+        centerConeIndices = find(centerConnectivityVector > mRGCMosaic.minCenterWeightForInclusionInComputing);
         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
         
         % Spatially pool the weighted cone responses to the RF center

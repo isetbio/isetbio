@@ -31,6 +31,10 @@ classdef mRGCMosaic < handle
         % max surround support factor (used during optimizing surround)
         maxSurroundSupportFactor = 7.0;   % max surround radius: this factor x C&K surroundCharacteristicRadius
 
+        % Min center weight for inclusion in response computation
+        minCenterWeightForInclusionInComputing = 1e-3;
+
+
         % Min surround weight for inclusion in response computation
         minSurroundWeightForInclusionInComputing = 1e-4;
 
