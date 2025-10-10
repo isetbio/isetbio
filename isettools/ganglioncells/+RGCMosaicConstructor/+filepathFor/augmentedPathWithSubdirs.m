@@ -5,6 +5,7 @@ function theAugmentedFilePath = augmentedPathWithSubdirs(theRootDir, filePath, v
     % Execute the parser
     p.parse(varargin{:});
     generateMissingSubDirs = p.Results.generateMissingSubDirs;
+    
 
     [augmentedFullPath, theFileName, ext] = fileparts(filePath);
     theFileName = sprintf('%s%s',theFileName, ext);
@@ -23,9 +24,15 @@ function theAugmentedFilePath = augmentedPathWithSubdirs(theRootDir, filePath, v
                 if (~generateMissingSubDirs)
                     error('File ''%s'', does not exist. ', augmentedPath);
                 end
-                fprintf(2,'Will generate subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
-                fprintf(2,'Hit enter to continue...');
-                pause;
+                rgcResources = RGCMosaicConstructor.helper.utils.rgcResources();
+                if (isfield(rgcResources, 'queryUserBeforeGeneratingMissingDir')) && ...
+                   (rgcResources.queryUserBeforeGeneratingMissingDir)
+                    fprintf(2,'Will generate subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
+                    fprintf(2,'Hit enter to continue...');
+                    pause;
+                else
+                    fprintf(2,'Generating subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
+                end
                 mkdir(augmentedPath);
             end
         end % for iSubDir
