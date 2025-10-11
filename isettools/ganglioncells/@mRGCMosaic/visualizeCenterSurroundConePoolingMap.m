@@ -12,6 +12,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     p.addParameter('withLineWeightingFunctions', false, @islogical);
     p.addParameter('domainVisualizationLimits', [], @(x)(isempty(x)||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('visualizedSurroundPoolingWeightMapRange', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('scaleBarDegs', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('doNotLabelScaleBar', false, @islogical);
     p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConeApertureImage', @(x)(ismember(x, mRGCMosaic.validRFsubregionContourGenerationMethods)));
@@ -39,6 +40,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
 
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
+    visualizedSurroundPoolingWeightMapRange = p.Results.visualizedSurroundPoolingWeightMapRange;
     scaleBarDegs = p.Results.scaleBarDegs;
     doNotLabelScaleBar = p.Results.doNotLabelScaleBar;
 
@@ -85,9 +87,6 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
    
     if (isempty(spatialSupportTickSeparationArcMin))
         spatialSupportTickSeparationArcMin = spatialSupportTickSeparationArcMinDefault;
-    else
-        domainVisualizationTicks
-        domainVisualizationLimits
     end
 
     if (isempty(scaleBarDegs))
@@ -125,7 +124,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     if (plotLineWeightingFunctions)
         axHorizontalProfile = theAxes{2,1};
         axVerticalProfile = theAxes{1,2};
-        delete(theAxes{2,2});
+        axSurroundWeightsPlot = theAxes{2,2};
     end
 
     if (isempty(spatialSupportCenterDegs))
@@ -336,6 +335,27 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
             'flipXYaxes', true);
         PublicationReadyPlotLib.applyFormat(axVerticalProfile,ff);
         figNo = figNo + 1;
+
+        % The surround weights map
+        RGCMosaicConstructor.visualize.surroundWeightsMap(...
+            pdfExportSubDir, figNo, figPos, ...
+		    spatialSupportCenterDegs, spatialSupportTickSeparationArcMin, ...
+            visualizedSurroundPoolingWeightMapRange, ...
+		    obj.inputConeMosaic.coneRFpositionsDegs(pooledConeIndicesAndWeights.surroundConeIndices,:), ...
+            obj.inputConeMosaic.coneTypes(pooledConeIndicesAndWeights.surroundConeIndices), ...
+            pooledConeIndicesAndWeights.surroundConeWeights, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', struct('x', spatialSupportCenterDegs(1), 'y', spatialSupportCenterDegs(2)), ...
+            'axesToRenderIn', axSurroundWeightsPlot);
+        % Smaller font
+        ffsmallFont = ff;
+        ffsmallFont.titleFontSize = 16;
+        ffsmallFont.legendFontSize = 14;
+        ffsmallFont.axisFontSize = 20;
+
+        PublicationReadyPlotLib.applyFormat(axSurroundWeightsPlot,ffsmallFont);
+        figNo = figNo + 1;
+
     end % if (plotLineWeightingFunctions)
 
     

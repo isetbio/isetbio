@@ -144,22 +144,6 @@ classdef mRGCMosaic < handle
         % Struct with rfCenter overlapping params
         rfCenterOverlapParams = struct();
 
-
-        % Computed params
-        % Sparse [conesNum x rgcRFsNum] connectivity matrix for the centers
-        % To find which cones are connected to an rgcRF:
-        %  connectivityVector = full(squeeze(rgcRFcenterConeConnectivityMatrix(:, rgcRF)));
-        %  inputConeIndices = find(abs(connectivityVector) > 0.0001);
-        rgcRFcenterConeConnectivityMatrix = [];
-        rgcRFcenterConeConnectivityMatrixNoOverlap = [];
-        exclusivelyConnectedInputConeIndicesNum = [];
-
-        % Sparse [conesNum x rgcRFsNum] connectivity matrix for the surrounds
-        rgcRFsurroundConeConnectivityMatrix = [];
-
-        % The response gain for each RGC
-        responseGains = [];
-
         % Struct with all the params that were used to generate the rgcRFsurroundConeConnectivityMatrix
         rfSurroundConnectivityParams = [];
 
@@ -167,6 +151,28 @@ classdef mRGCMosaic < handle
         surroundVarianceInComputeReadyMosaic = [];
 
         visualizationCache = [];
+
+        % Center connectivity matrices that are only used during the
+        % generation stages
+        rgcRFcenterConeConnectivityMatrixNoOverlap = [];
+        exclusivelyConnectedInputConeIndicesNum = [];
+
+        % Computed params
+        % Sparse [conesNum x rgcRFsNum] connectivity matrix for the centers
+        % To find which cones are connected to the RF centere of an rgcRF:
+        %  connectivityVector = full(squeeze(rgcRFcenterConeConnectivityMatrix(:, rgcRF)));
+        %  inputConeIndices = find(abs(connectivityVector) > mRGCMosaic.minCenterWeightForInclusionInComputing);
+        rgcRFcenterConeConnectivityMatrix = [];
+
+        % Sparse [conesNum x rgcRFsNum] connectivity matrix for the surrounds
+        % To find which cones are connected to the RF centere of an rgcRF:
+        %  connectivityVector = full(squeeze(rgcRFsurroundConeConnectivityMatrix(:, rgcRF)));
+        %  inputConeIndices = find(abs(connectivityVector) > mRGCMosaic.minSurroundWeightForInclusionInComputing);
+        rgcRFsurroundConeConnectivityMatrix = [];
+
+        % The response gain for each RGC
+        responseGains = [];
+
     end %  Read-only properties
 
     % Dependent properties
@@ -217,6 +223,9 @@ classdef mRGCMosaic < handle
         % Method to compute  the spatiotemporal response of the mRGCMosaic given the response of its input cone  mosaic
         [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...
             theInputConeMosaicResponse, theInputConeMosaicResponseTemporalSupportSeconds, varargin);
+
+        % Method to enable S-cone inputs to select  target RGCs
+        enableSconeSurroundPoolingInSelectCells(obj, theTargetRGCindices, varargin);
 
         % Method to generate noisy response instances
         noisyMRGCresponseInstances = noisyResponseInstances(obj, noiseFreeMRGCresponses, varargin);

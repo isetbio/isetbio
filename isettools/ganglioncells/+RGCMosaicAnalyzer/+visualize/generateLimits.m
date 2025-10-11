@@ -18,20 +18,20 @@ function [scaleBarDegs, scaleBarMicrons, spatialSupportTickSeparationArcMin, spa
     ecc = sqrt(sum(theMRGCMosaic.eccentricityDegs.^2,2));
 
     if (isempty(spatialSupportTickSeparationArcMin))
-        if (ecc > 30)
+        if (ecc >= 30)
             spatialSupportTickSeparationArcMin = 60.0;
-        elseif (ecc > 20)
+        elseif (ecc >= 20)
+            spatialSupportTickSeparationArcMin = 56.0;
+        elseif (ecc >= 10)
             spatialSupportTickSeparationArcMin = 48.0;
-        elseif (ecc > 10)
-            spatialSupportTickSeparationArcMin = 36.0;
-        elseif (ecc > 5)
+        elseif (ecc >= 5)
+            spatialSupportTickSeparationArcMin = 32.0;
+        elseif (ecc >= 3)
             spatialSupportTickSeparationArcMin = 24.0;
-        elseif (ecc > 3)
+        elseif (ecc >= 2)
             spatialSupportTickSeparationArcMin = 18.0;
-        elseif (ecc > 2)
-            spatialSupportTickSeparationArcMin = 12.0;
-        elseif (ecc > 1)
-            spatialSupportTickSeparationArcMin = 9;
+        elseif (ecc >= 1)
+            spatialSupportTickSeparationArcMin = 12;
         else
             spatialSupportTickSeparationArcMin = 6;
         end
@@ -55,13 +55,7 @@ function [scaleBarDegs, scaleBarMicrons, spatialSupportTickSeparationArcMin, spa
         scaleBarMicrons = 2;
     end
 
-
     scaleBarDegs = scaleBarMicrons / theMRGCMosaic.inputConeMosaic.micronsPerDegree;
-
-    
-    % No scale bar
-    % scaleBarDegs = 0;
-
 
     domainVisualizationLimits(1:2) = theRGCpositionDegs(1) + [-3 3]*spatialSupportTickSeparationArcMin/60;
     domainVisualizationLimits(3:4) = theRGCpositionDegs(2) + [-3 3]*spatialSupportTickSeparationArcMin/60;
@@ -74,7 +68,7 @@ function [scaleBarDegs, scaleBarMicrons, spatialSupportTickSeparationArcMin, spa
     domainVisualizationLimitsSingleRF(3:4) = theRGCpositionDegs(2) + [-3 3]*(1/4)*spatialSupportTickSeparationArcMin/60;
 
     domainVisualizationTicksSingleRF = struct(...
-        'x', spatialSupportCenterDegs(1) + (-40:40)*(1/4)*spatialSupportTickSeparationArcMin/60, ...
-        'y', spatialSupportCenterDegs(2) + (-40:40)*(1/4)*spatialSupportTickSeparationArcMin/60);
+        'x', spatialSupportCenterDegs(1) + (-40:40)*(1/3)*spatialSupportTickSeparationArcMin/60, ...
+        'y', spatialSupportCenterDegs(2) + (-40:40)*(1/3)*spatialSupportTickSeparationArcMin/60);
 
 end

@@ -33,5 +33,6 @@ function applyFormat(ax,ff)
     grid(ax, ff.grid);
     set(ax, 'box', ff.box);
     
+
     drawnow;
 end

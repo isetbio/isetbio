@@ -171,18 +171,29 @@ function [hFig,ax] = visualize(obj, varargin)
         if (isfield(obj.visualizationCache, 'surroundConesXrange'))
             xRange = obj.visualizationCache.surroundConesXrange;
         else
-            xRange(1) = min(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,1)));
-            xRange(2) = max(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,1)));
+            if (identifyInputCones || identifyPooledCones)
+                xRange(1) = min(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,1)));
+                xRange(2) = max(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,1)));
+            else
+                xRange(1) = min(squeeze(obj.rgcRFpositionsDegs(:,1)));
+                xRange(2) = max(squeeze(obj.rgcRFpositionsDegs(:,1)));
+            end
         end
 
         if (xRange(2) == xRange(1))
             xRange = xRange(1) + 0.02*[-1 1];
         end
+
         if (isfield(obj.visualizationCache, 'surroundConesYrange'))
             yRange = obj.visualizationCache.surroundConesYrange;
         else
-            yRange(1) = min(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,2)));
-            yRange(2) = max(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,2)));
+            if (identifyInputCones || identifyPooledCones)
+                yRange(1) = min(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,2)));
+                yRange(2) = max(squeeze(obj.inputConeMosaic.coneRFpositionsDegs(:,2)));
+            else
+                yRange(1) = min(squeeze(obj.rgcRFpositionsDegs(:,2)));
+                yRange(2) = max(squeeze(obj.rgcRFpositionsDegs(:,2)));
+            end
         end
 
         if (yRange(2) == yRange(1))
@@ -313,14 +324,13 @@ function [hFig,ax] = visualize(obj, varargin)
         backgroundColor, fontSize, fontAngle, ...
         plotTitle, plotTitleColor, plotTitleFontSize);
 
+    if (~isempty(figureFormat))
+        figureFormat.box = 'on';
+        PublicationReadyPlotLib.applyFormat(ax,figureFormat);
+    end
+
 
     if (exportVisualizationPDF)
-
-        if (~isempty(figureFormat))
-            figureFormat.box = 'on';
-            PublicationReadyPlotLib.applyFormat(ax,figureFormat);
-        end
-
         pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
         theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
     
