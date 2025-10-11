@@ -206,6 +206,8 @@ arguments
 end  % arguments
 
 % Set flags from key/value pairs
+
+% Mosaic specifiers for selecting a center-connected mRGC mosaic 
 rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;

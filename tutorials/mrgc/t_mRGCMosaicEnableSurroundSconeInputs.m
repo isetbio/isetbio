@@ -112,14 +112,18 @@ end
 
 
 % Set flags from key/value pairs
+
+% Mosaic specifiers for selecting a prebaked mRGC mosaic 
 rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
 targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
 
+% Target RGCs
 indicesOfSconeSurroundPoolingEnabledRGCs = options.indicesOfSconeSurroundPoolingEnabledRGCs;
 eccOfSconeSurroundPoolingEnabledRGCs = options.eccOfSconeSurroundPoolingEnabledRGCs;
 
+% Old figures
 closePreviouslyOpenFigures = options.closePreviouslyOpenFigures;
 if (closePreviouslyOpenFigures)
     % Close any stray figs
@@ -176,3 +180,6 @@ theMRGCmosaic.enableSconeSurroundPoolingInSelectCells(...
 
  
 end
+
+
+

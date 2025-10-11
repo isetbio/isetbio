@@ -230,6 +230,8 @@ end % arguments
 
 
 % Set flags from key/value pairs
+
+% Mosaic specifiers
 rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
@@ -252,7 +254,6 @@ minConeWeightVisualized = options.minConeWeightVisualized;
 % Graphic export options
 exportVisualizationPNG = options.exportVisualizationPNG;
 exportVisualizationPDF = options.exportVisualizationPDF;
-
 figureFormat = options.figureFormat;
 
 % Close previously open figures

@@ -147,13 +147,17 @@ end % arguments
 
 
 % Set flags from key/value pairs
+
+% Mosaic specifiers for selecting a prebaked mRGC mosaic
 rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
 targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
 
-
+% Optics to employ for the computations
 opticsToEmploy  = options.opticsToEmploy;
+
+% Close previously open figures
 closePreviouslyOpenFigures = options.closePreviouslyOpenFigures;
 
 if (closePreviouslyOpenFigures)
