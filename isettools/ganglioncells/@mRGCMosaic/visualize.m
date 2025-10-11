@@ -18,7 +18,7 @@ function [hFig,ax] = visualize(obj, varargin)
     p.addParameter('centerSubregionContourSamples', 10, @isscalar);
     p.addParameter('spatialSupportSamples', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('forceRegenerateVisualizationCache', false, @islogical);
-    p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConeApertureImage', @(x)(ismember(x, obj.validRFsubregionContourGenerationMethods)));
+    p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConePositions', @(x)(ismember(x, obj.validRFsubregionContourGenerationMethods)));
     p.addParameter('minConeWeightVisualized', mRGCMosaic.sensitivityAtPointOfOverlap, @isscalar);
     p.addParameter('maxNumberOfConesOutsideContour', 1, @isscalar);
     p.addParameter('identifiedConeAperture', 'geometricArea', @(x)ismember(x, ...

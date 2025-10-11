@@ -70,7 +70,11 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
     end
 
     theFileName = fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename);
-    assert(isfile(theFileName), 'Could not locate the mosaic. File %s not found.\n', theFileName);
+    if (~isfile(theFileName))
+        fprintf(2, 'Could not locate a prebaked mosaic with the provided specifiers.\n');
+        fprintf(2, 'See ''t_visualizePrebakedMosaicAndOptics'' for a different way to load prebaked mosaics\n');
+        return;
+    end
 
     fprintf('Loading prebaked mRGCmosaic from:\n\t%s\n', mRGCMosaicFilename);
 

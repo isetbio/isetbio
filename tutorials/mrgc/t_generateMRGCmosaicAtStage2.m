@@ -93,6 +93,7 @@ function t_generateMRGCmosaicAtStage2(options)
 
 arguments
     % ---- Mosaic specifiers for the center-connected mosaic to be synthesized/visualized ---
+    
     % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
     % for what is available and to add new mosaics
     options.rgcMosaicName (1,:) ...
