@@ -69,7 +69,8 @@ function t_generateMRGCmosaicAtStage3(options)
 
 
 arguments
-    % ---- Name encoding properties of the rgcMosaic, such as its eccentricity ---
+    % ---- Mosaic specifiers for the surround connected mRGC mosaic to be synthesized/visualized---
+
     % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
     % for what is available and to add new mosaics
     options.rgcMosaicName (1,:) ...
@@ -207,7 +208,7 @@ end  % arguments
 
 % Set flags from key/value pairs
 
-% Mosaic specifiers for selecting a center-connected mRGC mosaic 
+% Mosaic specifiers for selecting a previously synthesized center-connected mRGC mosaic 
 rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;

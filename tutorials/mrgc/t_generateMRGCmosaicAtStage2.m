@@ -92,7 +92,7 @@ function t_generateMRGCmosaicAtStage2(options)
 
 
 arguments
-    % ---- Name encoding properties of the rgcMosaic, such as its eccentricity ---
+    % ---- Mosaic specifiers for the center-connected mosaic to be synthesized/visualized ---
     % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
     % for what is available and to add new mosaics
     options.rgcMosaicName (1,:) ...

@@ -63,7 +63,8 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(options)
 
 
 arguments
-    % ---- Name encoding properties of the rgcMosaic, such as its eccentricity ---
+    % ---- Mosaic specifiers for selecting a prebaked mRGC mosaic ---
+    
     % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
     % for what is available and to add new mosaics
     options.rgcMosaicName (1,:) char = 'PLOSpaperNasal7DegsMosaic';
@@ -185,6 +186,8 @@ end
 
 
 % Set flags from key/value pairs
+
+% Mosaic specifiers for selecting a prebaked mRGC mosaic
 rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
