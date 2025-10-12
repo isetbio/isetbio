@@ -27,6 +27,8 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     p.addParameter('withCustomFigureFormat', '', @(x)(isempty(x)||(ischar(x))));
     p.addParameter('pdfExportSubDir', '', @ischar);
     p.addParameter('exportToFigurePDFsDirWithPDFFileName', '', @(x)(isempty(x)||(ischar(x))));
+    p.addParameter('exportVisualizationPDF', false, @islogical);
+    p.addParameter('exportVisualizationPNG', false, @islogical);
     p.parse(varargin{:});
 
     pooledConeIndicesAndWeights = p.Results.pooledConeIndicesAndWeights;
@@ -58,7 +60,8 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     figPos = p.Results.figPos;
     exportToFigurePDFsDirWithPDFFileName = p.Results.exportToFigurePDFsDirWithPDFFileName;
     pdfExportSubDir = p.Results.pdfExportSubDir;
-
+    exportVisualizationPDF = p.Results.exportVisualizationPDF;
+    exportVisualizationPNG = p.Results.exportVisualizationPNG;
 
     [scaleBarDegsDefault, ...
      scaleBarMicronsDefault, ...
@@ -362,29 +365,29 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     if (isempty(axesToRenderIn))
         % Export figure
 
-        if (~isempty(exportToFigurePDFsDirWithPDFFileName))
-            p = getpref('isetbio');
-            pdfExportRootDir = fullfile(p.rgcResources.figurePDFsDir);
-            theVisualizationPDFfilename = fullfile(pdfExportSubDir, exportToFigurePDFsDirWithPDFFileName);
+        if (isempty(exportToFigurePDFsDirWithPDFFileName))
+            exportToFigurePDFsDirWithPDFFileName= sprintf('conePoolingWeightsMap_centerConeThreshold_%2.2f_surroundConeThreshold_%2.3f.pdf', ...
+                minConeWeightForVisualizingRFcenterPooling, ...
+                minConeWeightForVisualizingRFsurroundPooling);
+        end
+
+        pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir;
+        theVisualizationPDFfilename = fullfile(pdfExportSubDir, exportToFigurePDFsDirWithPDFFileName);
     
-            % Generate the path if we need to
-            RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        % Generate the path if we need to
+        RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
                 pdfExportRootDir, theVisualizationPDFfilename, ...
                 'generateMissingSubDirs', true);
     
-            thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+        thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+
+        if (exportVisualizationPDF)
             NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
-        else
-            thePDFFileName = sprintf('conePoolingWeightsMap_centerConeThreshold_%2.2f_surroundConeThreshold_%2.3f.pdf', ...
-                minConeWeightForVisualizingRFcenterPooling, ...
-                minConeWeightForVisualizingRFsurroundPooling);
-    
-            % OLD WAY
-            %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-            %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, thePDFFileName);
-    
-            thePDFfileName = fullfile(pdfExportSubDir, thePDFFileName);
-            NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+        end
+
+        if (exportVisualizationPNG)
+            thePDFfileName = strrep(thePDFfileName, '.pdf', '.png');
+            NicePlot.exportFigToPNG(thePDFfileName, hFig, 300);
         end
 
     end

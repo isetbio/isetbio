@@ -1,5 +1,5 @@
 function t_mRGCMosaicBasicComputation(options)
-% Perform a basic computation with midget RGC mosaics
+% Perform a basic computation with a prebaked mGC mosaic
 %
 % Description:
 %    Demonstrates the following:
@@ -93,7 +93,7 @@ arguments
             } ...
             ) ...
         } ...
-        = 'PLOSpaperTemporal7DegsMosaic';
+        = 'PLOSpaperTemporal10DegsMosaic';
 
 
     % ---- Which species to employ ----
@@ -137,9 +137,7 @@ arguments
 
 
     % Different options for the optics
-    options.opticsToEmploy (1,1) = struct( ...
-        'type', 'nativeOptics', ...
-        'refractiveErrorDiopters', 0);
+    options.opticsToEmploy = [];
 
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
@@ -365,5 +363,8 @@ PublicationReadyPlotLib.applyFormat(ax2,ff);
 pdfRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
 figureDir = fullfile(pdfRootDir, exportVisualizationPDFdirectory);
 NicePlot.exportFigToPDF(fullfile(figureDir,'checkerboardMosaicActivation.pdf'), hFig, 300, 'beVerbose');
+
+% Export PNG
+NicePlot.exportFigToPNG(fullfile(figureDir,'checkerboardMosaicActivation.png'), hFig, 300, 'beVerbose');
 
 end

@@ -1,5 +1,5 @@
 function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(options)
-% Validate synthetic mRGC mosaic against the in-vivo data of Croner&Kaplan '95
+% Validate a synthesized mRGC mosaic against the in-vivo data of Croner&Kaplan '95
 %
 % Syntax:
 %   t_mRGCMosaicBasicValidationAgainstCronerAndKaplan()

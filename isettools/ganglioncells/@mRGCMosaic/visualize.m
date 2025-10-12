@@ -69,6 +69,7 @@ function [hFig,ax] = visualize(obj, varargin)
 
     p.addParameter('withFigureFormat', [], @isstruct);
     p.addParameter('exportVisualizationPDF', false, @islogical);
+    p.addParameter('exportVisualizationPNG', false, @islogical);
     p.addParameter('exportVisualizationPDFdirectory', 'mosaicComponentVisualizations', @ischar);
     p.addParameter('visualizationPDFfileName', 'mRGCmosaic', @ischar);
 
@@ -79,6 +80,7 @@ function [hFig,ax] = visualize(obj, varargin)
     figureFormat = p.Results.withFigureFormat;
     visualizationPDFfileName = p.Results.visualizationPDFfileName;
     exportVisualizationPDF = p.Results.exportVisualizationPDF;
+    exportVisualizationPNG = p.Results.exportVisualizationPNG;
     exportVisualizationPDFdirectory = p.Results.exportVisualizationPDFdirectory;
     clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
@@ -153,6 +155,12 @@ function [hFig,ax] = visualize(obj, varargin)
         assert(size(superimposedRect.center,1) == numel(superimposedRect.yRange), 'The rows of superimposedRect.center must equal the length of superimposedRect.xRange'); 
     end
 
+
+    if (isempty(plottedRFoutlineFaceColor) && (isempty(backgroundColor)) && (~identifyInputCones) && (~identifyPooledCones))
+        plottedRFoutlineFaceColor = [0 1 0.4];
+        plottedRFoutlineFaceAlpha = 0.75;
+        backgroundColor = [0 0 0];
+    end
 
     hFig = p.Results.figureHandle;
     ax = p.Results.axesHandle;
@@ -341,6 +349,19 @@ function [hFig,ax] = visualize(obj, varargin)
 
         thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
         NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+    end
+
+    if (exportVisualizationPNG)
+        pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+    
+        % Generate the path if we need to
+        RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+            pdfExportRootDir, theVisualizationPDFfilename, ...
+            'generateMissingSubDirs', true);
+
+        thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+        NicePlot.exportFigToPNG(strrep(thePDFfileName, '.pdf', '.png'), hFig, 300, 'beVerbose');
     end
 
 end
