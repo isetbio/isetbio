@@ -119,6 +119,19 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
 
+    case 'macaqueTemporal9DegsMosaic'
+        rgcMosaicSurroundOptimization.mosaicEccDegs = [-9 0];
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 12*[1 1];
+		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low-medium res'; 
+		rgcMosaicSurroundOptimization.minGridSize = 2.5; 
+		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
+		rgcMosaicSurroundOptimization.addEightExtremePositions = ~true;
+		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.16^2; 
+		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
+		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
+		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
+
+
 	case 'PLOSpaperFovealMosaic'
 		rgcMosaicSurroundOptimization.mosaicEccDegs = [0 0]; 
 		rgcMosaicSurroundOptimization.mosaicSizeDegs = [2 2];    % [1 1] (28182 cells)

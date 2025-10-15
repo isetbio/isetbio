@@ -23,11 +23,12 @@ function visualizePSFatWavelength(ax, thePSF, theVisualizedWavelengthIndex, maxP
 	xlabel(ax, 'space, x (arc min)');
 	ylabel(ax, 'space, y (arc min)');
 	grid(ax, 'on');
+    colormap(ax, 'gray');
 
 	if (~isempty(theTitle))
-			title(ax, theTitle);
+	    title(ax, theTitle);
 	else
-			title(sprintf('max of PSF at visualized wavelength: %f', max(thePSFsliceAtWavelengthIndexOfPeakAmplitude(:))));
+		title(sprintf('max of PSF at visualized wavelength: %f', max(thePSFsliceAtWavelengthIndexOfPeakAmplitude(:))));
 	end
 	drawnow;
 end

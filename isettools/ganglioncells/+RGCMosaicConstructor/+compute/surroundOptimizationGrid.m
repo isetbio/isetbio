@@ -5,11 +5,18 @@ function optimizationPositionsAndSizesGrids = surroundOptimizationGrid(...
 
 	% Parse optional input
     p = inputParser;
-    p.addParameter('withExtremePositions',false, @isscalar)
+    p.addParameter('withExtremePositions',false, @isscalar);
+    p.addParameter('visualizeOptimizationGrid', false, @islogical);
+    p.addParameter('exportVisualizationPDF', false, @islogical);
+    p.addParameter('exportVisualizationPNG', false, @islogical);
     p.parse(varargin{:});
-	addTheEightExtrementPositions = p.Results.withExtremePositions;
 
-	assert(ismember(peripheralSampling, {'high res', 'medium res', 'low res', 'very low res'}), ...
+	addTheEightExtrementPositions = p.Results.withExtremePositions;
+    visualizeOptimizationGrid = p.Results.visualizeOptimizationGrid;
+    exportVisualizationPDF = p.Results.exportVisualizationPDF;
+    exportVisualizationPNG = p.Results.exportVisualizationPNG;
+
+	assert(ismember(peripheralSampling, {'high res', 'medium res', 'low-medium res', 'low res', 'very low res'}), ...
 		'invalid peripheralSampling. Valid values are: {''high res'', ''medium res'', ''low res'', ''very low res''}');
 
 	neuronType = 'midget ganglion cells';
@@ -135,6 +142,78 @@ function optimizationPositionsAndSizesGrids = surroundOptimizationGrid(...
 			[mosaicEccDegs(1)+0.5*mosaicSizeDegs(1) mosaicEccDegs(2)+0.5*mosaicSizeDegs(2) lastSamplingGridSize(1) lastSamplingGridSize(2)];
 	end
 
+
+    if (visualizeOptimizationGrid)
+        hFig = figure(55); clf;
+        ff = PublicationReadyPlotLib.figureComponents('1x1 giant square mosaic');
+        theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+        theAxes = theAxes{1,1};
+        x = mosaicEccDegs(1) + 0.5*mosaicSizeDegs(1)*[-1 -1 1 1 -1];
+        y = mosaicEccDegs(2) + 0.5*mosaicSizeDegs(2)*[-1 1 1 -1 -1];
+        vertices = [x(:) y(:)];
+        patch(theAxes, ...
+            'faces', 1:size(vertices,1), ...
+            'vertices',vertices, ...
+            'faceColor',[0.3 0.8 0.9], ...
+            'edgeColor', [0.2 0.2 0.2], ...
+            'faceAlpha',.8, ...
+            'LineWidth', 1.5);
+        set(theAxes, 'XLim', mosaicEccDegs(1) + 0.6*mosaicSizeDegs(1)*[-1 1]);
+        set(theAxes, 'YLim', mosaicEccDegs(2) + 0.6*mosaicSizeDegs(2)*[-1 1]);
+        set(theAxes, 'XTick', -30:1:30, 'YTick', -30:1:30);
+        xlabel(theAxes, 'eccentricity, x (degs)');
+        ylabel(theAxes, 'eccentricity, y (degs)');
+        hold(theAxes, 'on')
+
+        for iNode = 1:size(optimizationPositionsAndSizesGrids,1)
+            xo = optimizationPositionsAndSizesGrids(iNode,1);
+            yo = optimizationPositionsAndSizesGrids(iNode,2);
+            width = optimizationPositionsAndSizesGrids(iNode,3);
+            height = optimizationPositionsAndSizesGrids(iNode,4);
+            x = xo + 0.5*width*[-1 -1 1 1 -1];
+            y = yo + 0.5*height*[-1 1 1 -1 -1];
+            vertices = [x(:) y(:)];
+            patchColor = [1 0 0];
+            if (mod(iNode,2) == 0)
+                patchColor = [1 0.6 0.6];
+            end
+
+            patch(theAxes, ...
+                'faces', 1:size(vertices,1), ...
+                'vertices',vertices, ...
+                'faceColor', patchColor, ...
+                'faceAlpha', .3, ...
+                'LineWidth', 0.2);
+
+            text(theAxes, xo,yo, sprintf('#%d', iNode), 'FontSize', 14);
+        end
+
+        title(ax, sprintf('Surround optimization grid nodes: %d', size(optimizationPositionsAndSizesGrids,1)));
+        
+        ff.box = 'on';
+        PublicationReadyPlotLib.applyFormat(theAxes,ff);
+
+        if ((exportVisualizationPDF) || (exportVisualizationPNG))
+            % Export figure
+            theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+            thePDFfileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                theRawFiguresDir, sprintf('OptimizationGrid_EccDegs_%2.1f_%2.1f_SizeDegs_%2.2f_%2.2f.pdf', mosaicEccDegs(1), mosaicEccDegs(2), mosaicSizeDegs(1), mosaicSizeDegs(2)), ...
+                'generateMissingSubDirs', true);
+        
+            if (exportVisualizationPDF)
+                % Export to PDF
+                NicePlot.exportFigToPDF(thePDFfileName,hFig,  300, 'beVerbose');
+            end
+
+            if (exportVisualizationPNG)
+                % Eexport to PNG for better color saturation
+                NicePlot.exportFigToPNG(strrep(thePDFfileName, 'pdf', 'png'),hFig,  300, 'beVerbose');
+            end
+        end
+
+    end
+
+    
 end
 
 
@@ -145,6 +224,8 @@ function optimizationPositionGrids = generateForUniformSampling(mosaicEccDegs,  
 				opticalPositionIncrementDegs = 1.0;
 		case 'medium res'
 				opticalPositionIncrementDegs = 2;
+        case 'low-medium res'
+				opticalPositionIncrementDegs = 2.5;
 		case 'low res'
 				opticalPositionIncrementDegs = 3;
 		case 'very low res'
@@ -173,6 +254,12 @@ function optimizationPositionGrids = generateForPeripheralSampling(peripheralSam
 				coneDensityThresholdDistanceDegs = 2.0;
 				opticalToConeDensityGridThresholdDistanceDegs = 1.0;
 				opticalPositionIncrementDegs = 2;
+
+        case 'low-medium res'
+				coneDensityThresholdDistanceDegs = 2.0;
+				opticalToConeDensityGridThresholdDistanceDegs = 1.0;
+				opticalPositionIncrementDegs = 2.5;
+
 		case 'low res'
 				coneDensityThresholdDistanceDegs = 2.5;
 				opticalToConeDensityGridThresholdDistanceDegs = 1.5;

@@ -21,6 +21,8 @@ function [theSpatialCompactnessCosts, theSpectralUniformityCosts, ...
     coneRFpositionsMicrons = obj.inputConeMosaic.coneRFpositionsMicrons;
     coneTypes = obj.inputConeMosaic.coneTypes;
 
+    
+
     parfor iRGC = 1:obj.rgcsNum
         connectivityVector = squeeze(centerConnectivityMatrix(:, iRGC));
         inputConeIndices = find(connectivityVector > minConeWeightIncluded);
@@ -56,6 +58,9 @@ function [theSpatialCompactnessCosts, theSpectralUniformityCosts, ...
             theNearbyRGCinputConeWeights = full(connectivityVector(theNearbyRGCinputConeIndices));
             theNearbyRGCinputConeNumerosityDifferentials(iNearbyRGC) = abs(numel(theNearbyRGCinputConeWeights)-theTargetRGCinputConeNumerosity);
             theNearbyRGCinputConePositions = coneRFpositionsMicrons(theNearbyRGCinputConeIndices,:);
+
+            theTargetDestinationRFspacing = [];
+            theNearbyDestinationRFspacing = [];
 
             switch (class(obj))
                 case 'MosaicConnector'

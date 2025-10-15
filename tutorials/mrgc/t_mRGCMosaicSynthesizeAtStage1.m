@@ -1,6 +1,5 @@
 function t_mRGCMosaicSynthesizeAtStage1(options)
-% Denovo synthesis of the spatial position lattices of cones and mRGC RF
-% centers (stage 1)
+% Denovo synthesis of the spatial position lattices of cones and mRGC RF centers (stage 1)
 %
 % Syntax:
 %   t_mRGCMosaicSynthesizeAtStage1();
