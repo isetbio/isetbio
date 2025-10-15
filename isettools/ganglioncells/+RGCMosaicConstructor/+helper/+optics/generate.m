@@ -132,7 +132,7 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
 	 	wavelengthIndexOfPeakAmplitude, ...
 	 	wavelengthOfPeakAmplitude] = RGCMosaicConstructor.helper.optics.analyzePSF(thePSF, []);
 
-	 	hFig = figure(333);
+	 	hFig = figure(555);
 	 	set(hFig, 'Position', [10 10 1200 500]);
 	 	if (isempty(visualizedWavelengths))
 	 		ax = subplot(1,1,1);
@@ -147,6 +147,6 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
 				drawnow;
 	 		end
 	 	end
-		colormap(ax,brewermap(1024, '*greys'));
+		
 	end
 end

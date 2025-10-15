@@ -1,5 +1,12 @@
-function [optimizationResultsFileNames, optimizationResultsTargetCenterConesNum, theSurroundConnectedMRGCMosaicFullFileNames] = ...
-    poolingFunctionsForSurroundOptimizationGrid(whichEye, eccentricityDegs, sizeDegs, ...
+%
+% RGCMosaicConstructor.compute.poolingFunctionsForSurroundOptimizationGrid()
+%
+
+function [optimizationResultsFileNames, ...
+    optimizationResultsTargetCenterConesNum, ...
+    theSurroundConnectedMRGCMosaicFullFileNames, ...
+    theOptimizationNodePSFs, ...
+    theOptimizationNodeCroppedMosaics] = poolingFunctionsForSurroundOptimizationGrid(whichEye, eccentricityDegs, sizeDegs, ...
     spatialChromaticUniformityTradeoff, ...
     customLMSconeDensities, ...
     surroundConnectivitySimulationParamsStruct, varargin)
@@ -27,6 +34,7 @@ p.addParameter('centerConeDominanceToOptimize', cMosaic.LCONE_ID, @(x)(ismember(
 p.addParameter('userSuppliedInitialValuesForModelVariables', [], @(x)(isempty(x)||isstruct(x)));
 p.addParameter('randomSeed', [], @(x)(isempty(x) || isscalar(x)));
 p.addParameter('onlyReturnSurroundOptimizationResultFilenames', false, @islogical);
+p.addParameter('onlyVisualizeOpticsAtOptimizationGrid', false, @islogical);
 
 p.addParameter('visualizeEmployedPSF', true, @islogical);
 p.addParameter('visualizeStrehlRatioOptimization', true, @islogical);
@@ -49,6 +57,7 @@ centerConeDominanceToOptimize = p.Results.centerConeDominanceToOptimize;
 
 userSuppliedInitialValuesForModelVariables = p.Results.userSuppliedInitialValuesForModelVariables;
 onlyReturnSurroundOptimizationResultFilenames = p.Results.onlyReturnSurroundOptimizationResultFilenames;
+onlyVisualizeOpticsAtOptimizationGrid = p.Results.onlyVisualizeOpticsAtOptimizationGrid;
 
 visualizeEmployedPSF = p.Results.visualizeEmployedPSF;
 visualizeStrehlRatioOptimization = p.Results.visualizeStrehlRatioOptimization;
@@ -88,6 +97,10 @@ end
 
 optimizationResultsFileNames = {};
 optimizationResultsTargetCenterConesNum = [];
+theSurroundConnectedMRGCMosaicFullFileNames = {};
+theOptimizationNodePSFs = {};
+theOptimizationNodeCroppedMosaics = {};
+
 optimizationPositionsComputed = 0;
 
 for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid,1)
@@ -118,10 +131,12 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
             theSurroundConnectedMRGCMosaicFullFileName, surroundConnectedMRGCMosaicSubDir, chromaParamsStruct, pSurround, ...
             'generateMissingSubDirs', generateMissingSubDirs);
 
-    if (computeInputConeMosaicResponses)
+    if (computeInputConeMosaicResponses) || (onlyVisualizeOpticsAtOptimizationGrid)
         startTime = cputime;
-        fprintf('\n*******************\n Computing input cone mosaic responses for optimization position %d of %d\n************\n', ...
-            iOptimizationPos, size(surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid,1));
+        if (computeInputConeMosaicResponses)
+            fprintf('\n*******************\n Computing input cone mosaic responses for optimization position %d of %d\n************\n', ...
+                iOptimizationPos, size(surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid,1));
+        end
 
         % Generate the filename where the center-connected RGC mosaic is loaded from
         paramsStructCenterOnly = p.Results;
@@ -212,33 +227,41 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
             'visualizePSF', visualizeEmployedPSF, ...
             'visualizeStrehlRatioOptimization', visualizeStrehlRatioOptimization);
 
-        % STEP 2: Compute input cone mosaic responses to gratings of different orientations/SFs
-        % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
-        % here, half of the cone spacing
-        theMetric = 'cone aperture';  % choose from {'cone aperture' or cone spacing'}
-        theFraction = 0.25;
+        if (onlyVisualizeOpticsAtOptimizationGrid)
+            theOptimizationNodePSFs{iOptimizationPos} = thePSF;
+            theOptimizationNodeCroppedMosaics{iOptimizationPos} = theMRGCMosaic;
+        end
 
-        targetRGCindices =  1:theMRGCMosaic.rgcsNum;
-        stimulusResolutionDegs = RGCMosaicConstructor.helper.simulateExperiment.stimulusResolutionFromConeApertureOrConeSpacing(...
-            theMRGCMosaic, targetRGCindices, theFraction, theMetric);
+        if (computeInputConeMosaicResponses)
 
-        % Update the STF stimulus params struct
-        surroundConnectivitySimulationParamsStruct.STFparamsStruct.resolutionDegs = stimulusResolutionDegs;
-        surroundConnectivitySimulationParamsStruct.STFparamsStruct.positionDegs = theMRGCMosaic.eccentricityDegs;
-        surroundConnectivitySimulationParamsStruct.STFparamsStruct.sizeDegs =  1.1*max(theMRGCMosaic.inputConeMosaic.sizeDegs);
+            % STEP 2: Compute input cone mosaic responses to gratings of different orientations/SFs
+            % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
+            % here, half of the cone spacing
+            theMetric = 'cone aperture';  % choose from {'cone aperture' or cone spacing'}
+            theFraction = 0.25;
+    
+            targetRGCindices =  1:theMRGCMosaic.rgcsNum;
+            stimulusResolutionDegs = RGCMosaicConstructor.helper.simulateExperiment.stimulusResolutionFromConeApertureOrConeSpacing(...
+                theMRGCMosaic, targetRGCindices, theFraction, theMetric);
+    
+            % Update the STF stimulus params struct
+            surroundConnectivitySimulationParamsStruct.STFparamsStruct.resolutionDegs = stimulusResolutionDegs;
+            surroundConnectivitySimulationParamsStruct.STFparamsStruct.positionDegs = theMRGCMosaic.eccentricityDegs;
+            surroundConnectivitySimulationParamsStruct.STFparamsStruct.sizeDegs =  1.1*max(theMRGCMosaic.inputConeMosaic.sizeDegs);
 
-        % Compute the STF responses and save them for later processing
-        RGCMosaicConstructor.helper.simulateExperiment.spatialTransferFunction(...
-            theMRGCMosaic, theOI, surroundConnectivitySimulationParamsStruct.STFparamsStruct, ...
-            theInputConeMosaicSTFResponsesFullFileName, ...
-            theMRGCMosaicSTFResponsesFullFileName, ...
-            'computeInputConeMosaicResponses', computeInputConeMosaicResponses, ...
-            'computeMRGCMosaicResponses', false, ...
-            'visualizeResponse', visualizeInputConeMosaicSTFResponseSequences);
-
-        endTime = cputime;
-        fprintf('\n*******************\n Finished computing input cone mosaic responses for optimization position %d of %d in %2.1f minutes.\n************\n', ...
-            iOptimizationPos, size(surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid,1), (endTime-startTime)/60);
+            % Compute the STF responses and save them for later processing
+            RGCMosaicConstructor.helper.simulateExperiment.spatialTransferFunction(...
+                theMRGCMosaic, theOI, surroundConnectivitySimulationParamsStruct.STFparamsStruct, ...
+                theInputConeMosaicSTFResponsesFullFileName, ...
+                theMRGCMosaicSTFResponsesFullFileName, ...
+                'computeInputConeMosaicResponses', computeInputConeMosaicResponses, ...
+                'computeMRGCMosaicResponses', false, ...
+                'visualizeResponse', visualizeInputConeMosaicSTFResponseSequences);
+    
+            endTime = cputime;
+            fprintf('\n*******************\n Finished computing input cone mosaic responses for optimization position %d of %d in %2.1f minutes.\n************\n', ...
+                iOptimizationPos, size(surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid,1), (endTime-startTime)/60);
+        end % if (computeInputConeMosaicResponses)
     end %if (computeInputConeMosaicResponses)
 
     if (optimizeSurroundConePooling) || (onlyReturnSurroundOptimizationResultFilenames)

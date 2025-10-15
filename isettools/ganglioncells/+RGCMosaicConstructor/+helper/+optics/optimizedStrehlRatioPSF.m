@@ -54,7 +54,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, theOptimalStrehlRat
 	% Search through the defocus values in examinedRefractionErrorDiopters to determine the defocus value
 	% for which the ratio of peak PSF amplitude for the current subject to peakDiffractionLimitedPSFAmplitude 
 	% (at the wavelengthOfPeakDiffractionLimitedPSFamplitude) is maximal
-	for iRefractiveError = 1:numel(examinedRefractionErrorDiopters)
+	parfor iRefractiveError = 1:numel(examinedRefractionErrorDiopters)
 		defocusValue = examinedRefractionErrorDiopters(iRefractiveError);
 		% Generate optics with the examined defocus value
 		[oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...
@@ -72,34 +72,8 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, theOptimalStrehlRat
 		theCurrentPSF = psfEnsemble{1,1};
 		peakCurrentPSFAmplitude = RGCMosaicConstructor.helper.optics.analyzePSF(theCurrentPSF, targetInFocusWavelengthIndex);
 		StrehlRatio(iRefractiveError) = peakCurrentPSFAmplitude/peakDiffractionLimitedPSFAmplitude;
-
-		if (visualizeStrehlRatioOptimization)
-			hFig = figure(1000);
-			set(hFig, 'Position', [10 10 1200 1200]);
-			ax = subplot(2,2,1);
-			RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, theDiffractionLimitedPSF, wavelengthIndexOfPeakDiffractionLimitedPSFamplitude, ...
-				peakDiffractionLimitedPSFAmplitude, ...
-						sprintf('diffraction-limited PSF\npeak: %f at %d nm (in-focus wavelength)', peakDiffractionLimitedPSFAmplitude, targetInFocusWavelength));
-
-			ax = subplot(2,2,2);
-			RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, theCentralCorrectionPSF, wavelengthIndexOfPeakCentralCorrectionPSFamplitude, ...
-				peakCentralCorrectionPSFAmplitude, ...
-				sprintf('central refraction corrected PSF\npeak: %f at %d nm (peak wavelength)', peakCentralCorrectionPSFAmplitude, wavelengthOfPeakCentralCorrectionPSFamplitude));
-
-			ax = subplot(2,2,3);
-			RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, theCurrentPSF, targetInFocusWavelengthIndex, ...
-				peakCurrentPSFAmplitude, ...
-				sprintf('current defocus: (%2.2fD) PSF \npeak: %f at %d nm (in-focus wavelength)', examinedRefractionErrorDiopters(iRefractiveError), peakCurrentPSFAmplitude, targetInFocusWavelength));
-					
-			ax = subplot(2,2,4);
-			plot(ax,examinedRefractionErrorDiopters, StrehlRatio, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-			xlabel('defocus (D)');
-            ylabel(sprintf('Strehl ratio at %d nm (in-focus wavelength)', targetInFocusWavelength));
-            axis 'square'
-			colormap(brewermap(1024, '*greys'));
-			drawnow;
-		end % if (visualizeStrehlRatioOptimization)
-	end % for iRefractiveError
+    end % parfor for iRefractiveError
+	
 
 	% Find the refraction that maximized the Strehl ratio at the wavelength where the diffraction-limited PSF reaches its peak (550)
 	[theOptimalStrehlRatio, iRefractiveError] = max(StrehlRatio);
@@ -124,6 +98,8 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, theOptimalStrehlRat
 	theOptimalStrehlRatioOI = oiEnsemble{1,1}; 
 	theOptimalStrehlRatioPSF = psfEnsemble{1,1};
 	
+    contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection = visualizeStrehlRatioOptimization;
+
 	if (contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection)
 		[oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...
         			oiPositionDegs, ...
@@ -143,7 +119,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, theOptimalStrehlRat
 
 		hFig = figure(2000);
 		clf;
-		set(hFig, 'Position', [10 10 1970 500]);
+		set(hFig, 'Position', [10 10 1360 1200]);
 
 		XLimsArcMin = 5*[-1 1];
 		YLimsArcMin = 5*[-1 1];
@@ -153,20 +129,32 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, theOptimalStrehlRat
 		colormap(brewermap(1024, '*greys'));
 
 		% The diffraction-limited PSF at the target in-focus wavelength
-		ax = subplot(1,4,1);
-		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, theDiffractionLimitedPSF, targetInFocusWavelengthIndex, ...
+		ax1 = subplot(2,3,1);
+        ax2 = subplot(2,3,2);
+        ax3 = subplot(2,3,4);
+        ax4 = subplot(2,3,5);
+        ax5 = subplot(2,3, [3 6]);
+
+        plot(ax5,examinedRefractionErrorDiopters, StrehlRatio, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
+        hold(ax5, 'on');
+        plot(ax5, theOptimalStrehlRatioDefocusDiopters, StrehlRatio(iRefractiveError), 'bs', 'MarkerSize', 20);
+	    xlabel(ax5, 'defocus (D)');
+        ylabel(ax5, sprintf('Strehl ratio at %d nm (in-focus wavelength)', targetInFocusWavelength));
+
+
+		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax1, theDiffractionLimitedPSF, targetInFocusWavelengthIndex, ...
 			peakDiffractionLimitedPSFAmplitude, ...
 			sprintf('diffraction limited PSF\npeak: %d at \n%d nm (in-focus wavelength)', peakDiffractionLimitedPSFAmplitude, targetInFocusWavelength), ...
 			'XLimsArcMin', XLimsArcMin, ...
 			'YLimsArcMin', YLimsArcMin, ...
 			'XTicksArcMin', XTicksArcMin, ... 
 			'YTicksArcMin', YTicksArcMin);
-		colormap(ax, brewermap(1024, '*greys'));
+		colormap(ax1, brewermap(1024, '*greys'));
 		
 		% The optimal Strehl ratio PSF at the target in-focus wavelength
-		ax = subplot(1,4,2);
 		peakOptimalStrehlRatioPSFAmplitude = RGCMosaicConstructor.helper.optics.analyzePSF(theOptimalStrehlRatioPSF, targetInFocusWavelengthIndex);
-		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, theOptimalStrehlRatioPSF, targetInFocusWavelengthIndex, ...
+		
+        RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax2, theOptimalStrehlRatioPSF, targetInFocusWavelengthIndex, ...
 			peakOptimalStrehlRatioPSFAmplitude,  ...
 			sprintf('(%2.1f,%2.1f) degs PSF \n with optimal Strehl ratio (%2.3f)\npeak: %f at \n%d nm (in-focus wavelength))', ...
 				oiPositionDegs(1), oiPositionDegs(2), peakOptimalStrehlRatioPSFAmplitude/ peakDiffractionLimitedPSFAmplitude, peakOptimalStrehlRatioPSFAmplitude, targetInFocusWavelength), ...
@@ -174,35 +162,34 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, theOptimalStrehlRat
 			'YLimsArcMin', YLimsArcMin, ...
 			'XTicksArcMin', XTicksArcMin, ... 
 			'YTicksArcMin', YTicksArcMin);
-		colormap(ax, brewermap(1024, '*greys'));
+		colormap(ax2, brewermap(1024, '*greys'));
 
 		% The PSF as measured
 		[peakPSFasMeasuredAmplitude, wavelengthIndexOfPeakPSFasMeasuredAmplitude, ...
 	    wavelengthOfPeakPSFasMeasuredAmplitude] = RGCMosaicConstructor.helper.optics.analyzePSF(thePSFasMeasured, []);
-		ax = subplot(1,4,3);
-		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, thePSFasMeasured, wavelengthIndexOfPeakPSFasMeasuredAmplitude, ...
+		
+		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax3, thePSFasMeasured, wavelengthIndexOfPeakPSFasMeasuredAmplitude, ...
 			peakPSFasMeasuredAmplitude, ...
 			sprintf('(%2.1f,%2.1f) PSF as measured\npeak: %f \nat %d nm', oiPositionDegs(1), oiPositionDegs(2), peakPSFasMeasuredAmplitude, wavelengthOfPeakPSFasMeasuredAmplitude), ...
 			'XLimsArcMin', XLimsArcMin, ...
 			'YLimsArcMin', YLimsArcMin, ...
 			'XTicksArcMin', XTicksArcMin, ... 
 			'YTicksArcMin', YTicksArcMin);
-		colormap(ax, brewermap(1024, '*greys'));
+		colormap(ax3, brewermap(1024, '*greys'));
 
-		ax = subplot(1,4,4);
+		
 		peakCentralCorrectionPSFAmplitude = RGCMosaicConstructor.helper.optics.analyzePSF(theCentralCorrectionPSF, targetInFocusWavelengthIndex);
 		StrehlRatioForCentralCorrection = peakCentralCorrectionPSFAmplitude/peakDiffractionLimitedPSFAmplitude;
 
-		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, theCentralCorrectionPSF, targetInFocusWavelengthIndex, ...
+		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax4, theCentralCorrectionPSF, targetInFocusWavelengthIndex, ...
 			peakCentralCorrectionPSFAmplitude, ...
 			sprintf('(%2.1f,%2.1f) PSF \n(with central refraction (0,0) correction)\nStrehl ratio: %2.3f\npeak %f \nat %d nm',  oiPositionDegs(1), oiPositionDegs(2), StrehlRatioForCentralCorrection, peakCentralCorrectionPSFAmplitude, targetInFocusWavelength), ...
 			'XLimsArcMin', XLimsArcMin, ...
 			'YLimsArcMin', YLimsArcMin, ...
 			'XTicksArcMin', XTicksArcMin, ... 
 			'YTicksArcMin', YTicksArcMin);
-		colormap(ax, brewermap(1024, '*greys'));
+		colormap(ax4, brewermap(1024, '*greys'));
 		drawnow;	
-		pause
 	end
 
 end
