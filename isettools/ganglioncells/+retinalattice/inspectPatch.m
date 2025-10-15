@@ -1,4 +1,4 @@
-function inspectPatch(fovDegs, neuronType, whichEye)
+function inspectPatch(neuronType, fovDegs, whichEye)
 
     % Configure algorithm params
     params = retinalattice.configure(fovDegs, neuronType, whichEye);
@@ -26,12 +26,13 @@ function inspectPatch(fovDegs, neuronType, whichEye)
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1600 700], 'Color', [1 1 1]);
     
-   
+    fprintf('\n');
     subplot(1,2,1);
     plot(allIterations, maxMovements, 'ko-');
     hold on;
     set(gca, 'YScale', 'log');
     for iter = 1:savedIterationsNum
+        fprintf('Computing mesh quality at iteration %d of %d\n', iterationsHistory(iter), iterationsHistory(end));
         plot(iterationsHistory(iter)*[1 1], maxMovements(iterationsHistory(iter)), 'ro', 'MarkerFaceColor', [1 0.5 0.5]);
         drawnow
         theRFpositions = double(squeeze(rfPositionsHistory(iter,:,:)));

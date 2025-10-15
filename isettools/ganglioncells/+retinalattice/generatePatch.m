@@ -1,20 +1,26 @@
-function bestQualityRFpositions = generatePatch(fovDegs, neuronType, ...
-    whichEye, exportHistoryToFile, visualizeConvergence, useParfor, maxIterations, ...
-    varargin)
+function bestQualityRFpositions = generatePatch(latticeParamsStruct, varargin)
    
     p = inputParser;
     p.addParameter('randomSeed', [],  @(x)(isempty(x) || isscalar(x)));
     p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.addParameter('customMinRFspacing', [], @(x) (isempty(x) || isscalar(x)));
-    p.addParameter('eccentricityLookUpTableSamplesNum', [], @(x)(isempty(x) || isscalar(x)));
     p.parse(varargin{:});
     
+    fovDegs = latticeParamsStruct.sourceLatticeSizeDegs;
+    neuronType = latticeParamsStruct.neuronType;
+    whichEye = latticeParamsStruct.whichEye;
+    exportHistoryToFile = latticeParamsStruct.exportHistoryToFile;
+    visualizeConvergence = latticeParamsStruct.visualizeConvergence;
+    useParfor = latticeParamsStruct.useParfor;
+    maxIterations = latticeParamsStruct.maxIterations;
+    eccentricityLookUpTableSamplesNum = latticeParamsStruct.eccentricityLookUpTableSamplesNum;
+
     randomSeed = p.Results.randomSeed;
     customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
     customRFspacingFunction = p.Results.customRFspacingFunction;
     customMinRFspacing = p.Results.customMinRFspacing;
-    eccentricityLookUpTableSamplesNum = p.Results.eccentricityLookUpTableSamplesNum;
+    
 
     % Validate input
     validateInput(fovDegs, neuronType, whichEye);
