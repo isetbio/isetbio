@@ -199,7 +199,7 @@ arguments
     options.centerConeDominanceToInspect (1,1) double = cMosaic.LCONE_ID;
 
     % Which set of optimization position to compute in the run
-    options.positionSetToCompute (1,:) char {mustBeMember(options.coneMosaicSpecies,{'full','even', 'odd'})} = 'full';
+    options.positionSetToCompute (1,:) char {mustBeMember(options.positionSetToCompute,{'full','even', 'odd'})} = 'full';
 
     % ---- Choices of actions to perform ----
     % Whether to regenerate the mosaic at stage3A 
@@ -663,10 +663,8 @@ if (regenerateMosaicAtStage3C)
     surroundVarianceInComputeReadyMosaic = struct();
 
 	% Or introduce additional variance and a bias
-    if (...
-            (~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioBias)) && ...
-            (~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance))...
-        )
+    if ( (~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioBias)) && ...
+         (~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance)) )
 			surroundVarianceInComputeReadyMosaic = struct(...
 				'intSensRatioBias', pStruct.rgcMosaicSurroundOptimization.intSensRatioBias, ...
 				'intSensRatioSigma', sqrt(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance));
