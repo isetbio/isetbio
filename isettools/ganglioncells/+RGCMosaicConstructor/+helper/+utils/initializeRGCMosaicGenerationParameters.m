@@ -50,7 +50,7 @@ elseif (ischar(opticsSubjectName))
 			% This is ranked #4 in terms of resolution at the fovea (36 c/deg),  Strehl Ratio around 0.60
 			pStruct.whichSubjectID = 10;
 
-		case 'PLOSpaperStrehlRatio_0.27'
+		case {'VSS2024TalkSecondSubject', 'PLOSpaperStrehlRatio_0.27'}
 			% This is ranked #5 in terms of resolution at the fovea (31 c/deg), Strehl Ratio around 0.27
 			pStruct.whichSubjectID = 8;
 
@@ -58,7 +58,7 @@ elseif (ischar(opticsSubjectName))
 			% This is ranked #9 in terms of resolution at the fovea (18 c/deg), Strehl Ratio around 0.23
 			pStruct.whichSubjectID = 1;
 
-        case {'PLOSpaperSecondSubject', 'PLOSpaperStrehlRatio_0.21'}
+        case {'VSS2024TalkFirstSubject', 'PLOSpaperSecondSubject', 'PLOSpaperStrehlRatio_0.21'}
 			% This is ranked #7 in terms of resolution at the fovea (23 c/deg),  Strehl Ratio around 0.21
 			pStruct.whichSubjectID = 3;
 
@@ -70,13 +70,6 @@ elseif (ischar(opticsSubjectName))
 			% This is ranked #10 in terms of resolution at the fovea (9 c/deg), Strehl Ratio around 0.09
 			pStruct.whichSubjectID = 7;
 
-		case 'VSS2024TalkFirstSubject'
-			% This is ranked #7 in terms of resolution at the fovea (23 c/deg)
-			pStruct.whichSubjectID = 3;
-
-		case 'VSS2024TalkSecondSubject'
-			% This is ranked #5 in terms of resolution at the fovea (31 c/deg)
-			pStruct.whichSubjectID = 8;
 		otherwise
 			error('Unknown optics subject name: ''%s''.', opticsSubjectName);
 	end % switch (opticsSubjectName)
@@ -119,7 +112,7 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
 
-    case 'macaqueTemporal9DegsMosaic'
+    case 'VSS2024TalkTemporal9DegsMosaic'
         rgcMosaicSurroundOptimization.mosaicEccDegs = [-9 0];
 		rgcMosaicSurroundOptimization.mosaicSizeDegs = 12*[1 1];
 		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low-medium res'; 

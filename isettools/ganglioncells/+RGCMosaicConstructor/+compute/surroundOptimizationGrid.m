@@ -188,7 +188,7 @@ function optimizationPositionsAndSizesGrids = surroundOptimizationGrid(...
             text(theAxes, xo,yo, sprintf('#%d', iNode), 'FontSize', 14);
         end
 
-        title(ax, sprintf('Surround optimization grid nodes: %d', size(optimizationPositionsAndSizesGrids,1)));
+        title(theAxes, sprintf('Surround optimization grid nodes: %d', size(optimizationPositionsAndSizesGrids,1)));
         
         ff.box = 'on';
         PublicationReadyPlotLib.applyFormat(theAxes,ff);
