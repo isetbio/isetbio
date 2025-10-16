@@ -95,7 +95,7 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'opticsSubjectName', 'VSS2024TalkFirstSubject', ...
         'coneMosaicSpecies', 'macaque', ...
         'regenerateMosaicAtStage3B', true, ...
-        'positionSetToCompute', 'even', ...
+        'positionSetToCompute', '1/3', ...
         'centerConeDominanceToOptimize', cMosaic.LCONE_ID);
 
     % Derive optimized surround pooling functions for M-cone dominated mRGCs (stage 3B)
@@ -199,7 +199,7 @@ arguments
     options.centerConeDominanceToInspect (1,1) double = cMosaic.LCONE_ID;
 
     % Which set of optimization position to compute in the run
-    options.positionSetToCompute (1,:) char {mustBeMember(options.positionSetToCompute,{'full','even', 'odd'})} = 'full';
+    options.positionSetToCompute (1,:) char {mustBeMember(options.positionSetToCompute,{'full','even', 'odd', '1/3', '2/3', '3/3', '1/4', '2/4', '3/4', '4/4'})} = 'full';
 
     % ---- Choices of actions to perform ----
     % Whether to regenerate the mosaic at stage3A 
@@ -357,6 +357,20 @@ switch (positionSetToCompute)
         optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
     case 'odd'
         optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
+    case '1/3'
+        optimizationPositionIndicesToCompute = 1:3:size(optimizationPositionsAndSizesGrids,1);
+    case '2/3'
+        optimizationPositionIndicesToCompute = 2:3:size(optimizationPositionsAndSizesGrids,1);
+    case '3/3'
+        optimizationPositionIndicesToCompute = 3:3:size(optimizationPositionsAndSizesGrids,1);
+    case '1/4'
+        optimizationPositionIndicesToCompute = 1:4:size(optimizationPositionsAndSizesGrids,1);
+    case '2/4'
+        optimizationPositionIndicesToCompute = 2:4:size(optimizationPositionsAndSizesGrids,1);
+    case '3/4'
+        optimizationPositionIndicesToCompute = 3:4:size(optimizationPositionsAndSizesGrids,1);
+    case '4/4'
+        optimizationPositionIndicesToCompute = 4:4:size(optimizationPositionsAndSizesGrids,1);
     otherwise
         error('Unknown positionSetToCompute: ''%s''.', positionSetToCompute);
 end % switch
