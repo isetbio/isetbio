@@ -201,6 +201,16 @@ arguments
     % Which set of optimization position to compute in the run
     options.positionSetToCompute (1,:) char {mustBeMember(options.positionSetToCompute,{'full','even', 'odd', '1/3', '2/3', '3/3', '1/4', '2/4', '3/4', '4/4'})} = 'full';
 
+    % Source of initial surround optimization values
+    % Choose from {'none', 'imported exact match', 'imported closest match', or 'skip if previous file exists'}
+    % - 'none', to load the default values
+    % - 'imported exact match', to check if this position has been previously optimized and if it has, 
+    %    load those optimization values for the re-optimization
+    % - 'imported closest match' to check if a similar numerosity or a different center cone dominance has been optimized at the tested
+    %    position, and if it has, load  those optimization values for the re-optimization
+    % - 'skip if previous file exists' to check if this position has been previously optimized and if it has, skip re-optimization
+	options.initialSurroundOptimizationValuesSource (1,:) char {mustBeMember(options.initialSurroundOptimizationValuesSource, {'none', 'imported exact match', 'imported closest match', 'skip if previous file exists'})} = 'imported closest match'; 
+
     % ---- Choices of actions to perform ----
     % Whether to regenerate the mosaic at stage3A 
     % (computation of input cone mosaic STF responses)
@@ -285,6 +295,9 @@ centerConeDominanceToInspect = options.centerConeDominanceToInspect;
 % Which positions subset (or full set) to compute in this run
 positionSetToCompute = options.positionSetToCompute;
 
+% Source of initial surround optimization values
+initialSurroundOptimizationValuesSource = options.initialSurroundOptimizationValuesSource;
+
 % Actions to perform
 regenerateMosaicAtStage3A = options.regenerateMosaicAtStage3A;
 regenerateMosaicAtStage3B = options.regenerateMosaicAtStage3B;
@@ -296,7 +309,6 @@ visualizeCenterSurroundConePoolingMapsOfSynthesizedCells = options.visualizeCent
 % Visualization options
 onlyVisualizeOpticsAtOptimizationGrid = options.onlyVisualizeOpticsAtOptimizationGrid;
 rgcMosaicSizeCoVisualizedWithOpticsAtOptimizationPositions = options.rgcMosaicSizeCoVisualizedWithOpticsAtOptimizationPositions;
-
 onlyVisualizeOptimizationGrid = options.onlyVisualizeOptimizationGrid;
 
 % Stage 3A visualizations
@@ -444,13 +456,6 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
     if (regenerateMosaicAtStage3B)
         % Optimize all numerosities
         centerConeNumerositiesToOptimize = [];
-    	    
-        % Options for loading the nitial optimization params
-	    % Choose from {'none', 'default', 'imported exact match' or 'imported closest match'}
-	    %initialSurroundOptimizationValuesSource = 'imported exact match';	
-	    initialSurroundOptimizationValuesSource = 'imported closest match';
-	    % initialSurroundOptimizationValuesSource = 'none';	
-	    % initialSurroundOptimizationValuesSource = 'skip if previous file exists';
     end
 
     % User may select to use params from a fixed H1 cell index
