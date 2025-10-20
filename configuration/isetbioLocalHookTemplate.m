@@ -102,9 +102,9 @@ end
 
 % RGC mosaic resources URLpath
 if (~isempty(dropboxValidationRootDirPath))
-    rgcDropboxURLpath = fullfile(dropboxValidationRootDirPath, 'IBIO_rgcMosaicResources');
+    rgcResourcesRootDir = fullfile(dropboxValidationRootDirPath, 'IBIO_rgcMosaicResources');
 else
-    rgcDropboxURLpath = '';
+    rgcResourcesRootDir = '';
 end
 
 % Directory where all the mosaic generation intermediate data will be stored
@@ -123,9 +123,6 @@ rgcResources = struct(...
     'figurePDFsDir', rgcFigurePDFsDir, ...
     'queryUserBeforeGeneratingMissingDir', rgcQueryUserBeforeGeneratingMissingDir ...
     );
-      
-% Set the rgcResources pref
-setpref('isetbio', );
 %  'rgcResources', struct('method', 'localFile', 'URLpath', rgcDropboxURLpath), ...
 
 if (exist('isetvalidateRootPath','file'))
@@ -153,6 +150,9 @@ p = struct(...
 % Add to the path the Dropbox Validation RootDir location
 addpath(genpath(p.alternateFullDataDir));
 
+if (ispref('p.projectName'))
+    rmpref('p.projectName');
+end
 generatePreferenceGroup(p);
 UnitTest.usePreferencesForProject(p.projectName);
 
