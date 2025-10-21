@@ -38,6 +38,8 @@ arguments
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
 
+    % Prompt user for mosaic?
+    options.promptUserForMosaic (1,1) logical = false;
 end % arguments
 
 
@@ -59,10 +61,16 @@ end
 [theRGCmosaicFileNames, prebakedRGCmosaicDirectory] = mRGCMosaic.listPrebakedMosaics();
 
 % Let the user select one prebaked mRGCmosaic
-[mRGCMosaicFilename, prebakedMRGCMosaicDir] = ...
-    uigetfile(sprintf('%s/*.mat', prebakedRGCmosaicDirectory), 'Select an RGB mosaic');
-if (isempty(mRGCMosaicFilename))
-    return;
+if (options.promptUserForMosaic)
+    [mRGCMosaicFilename, prebakedMRGCMosaicDir] = ...
+        uigetfile(sprintf('%s/*.mat', prebakedRGCmosaicDirectory), 'Select an RGB mosaic');
+else
+    prebakedMRGCMosaicDir = prebakedRGCmosaicDirectory;
+    theFiles = dir(fullfile(prebakedMRGCMosaicDir,'*.mat'));
+    if (isempty(theFiles))
+        mRGCMosaicFilename = '';
+    else
+    mRGCMosaicFilename = theFiles(1).name;
 end
 
 
