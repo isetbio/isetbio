@@ -1,49 +1,108 @@
 function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
-% Plot methods for the cMosaic
+% cMosaic.plot - Plot methods for a cMosaic
 %
-% TODO:  Should we make a cMosaicPlot(cMosaic,varargin) function?
-%        Analogous to coneRectPlot()?  Or is visualize already that
-%        function?  Anyway, simplify the interface for users because
-%        visualize is complex.
+%   [uData, hdl] = plot(cmosaic, plotType, allE, varargin)
 %
-%        Also, we should have cMosaic.get commands that make it easy
-%        to extract the data used in this or the visualize function.
-%        When we call this function, a window will always appear.  If
-%        you just want the data, call the cMosaic.get function.
-%
-% Syopsis
-%    [uData, hdl] = plot(cmosaic, plotType, allE, varargin)
+% Description
+%   Provides several visualization/analysis plots for a cMosaic object,
+%   including activation maps, line profiles, ROI visualizations, and
+%   spectral/photopigment functions. Unless otherwise noted, a figure
+%   window is created (or reused when 'hdl' is supplied) and a struct of
+%   useful data (uData) is returned.
 %
 % Inputs
-%    cmosaic   - cMosaic class
-%    plotType  - See below.  Many.
-%    
-% Optional key/val pairs
-%    roi 
-%    cone type
-%    hdl - Use this figure handle (matlab.ui.Figure).  Used for overlaying
-%           curves. 
+%   cmosaic   (cMosaic)  A cMosaic instance.
+%   plotType  (char)     Plot selector (see “Plot types” below).
+%   allE      (numeric)  Precomputed excitations/activations array passed
+%                        through to subroutines that require it. May be [] 
+%                        for plot types that do not use it.
 %
-% Output
-%    uData - Struct with the plot data including the ROI
-%    hdl   - Plot figure handle.  Use get(hdl,'CurrentAxes') for axis
+% Name-Value Pairs (varargin)
+%   'roi'          : regionOfInterest object used by ROI plots/line cuts.
+%   'conetype'     : char or cellstr of cone types to include: {'l','m','s'}
+%                    (default {'l','m','s'}). Single types like 'l' allowed.
+%   'hdl'          : matlab.ui.Figure handle to draw into (default [] → new).
+%   'plottitle'    : char title string (default '').
+%   'dataonly'     : logical, NYI (reserved for returning data without plotting).
+%   'labelcones'   : logical, label cones by type in activation map (default false).
+%   'lens'         : Lens object; if empty a default human lens is created
+%                    and matched to cmosaic.wave for spectral plots.
+%   % Line-cut specific:
+%   'xdeg'         : numeric, x-position (deg) for vertical line cut (default 0).
+%   'ydeg'         : numeric, y-position (deg) for horizontal line cut (default 0).
+%   'thickness'    : numeric, line ROI thickness in deg (default 0.1).
 %
-% Plot types
+% Outputs
+%   uData  : struct with fields depending on plotType. Common fields:
+%            .allE                (for activation maps/overlays)
+%            .roi, .roiE, .roiIdx (for ROI/line plots)
+%            .lineDistance        (for line ROI distance coordinate)
+%            For 'spectralqe'     : spectral QE matrix (wave-by-coneType)
+%   hdl    : matlab.ui.Figure handle of the plot. Use get(hdl,'CurrentAxes')
+%            to access axes.
 %
-%    excitations - pull out excitations of various types
-%       cmosaic.plot('excitations',allE) 
-%       cmosaic.plot('excitations horizontal line',allE,'ydeg',0)
-%       cmosaic.plot('excitations vertical line',allE,'ydeg',0)
-%       cmosaic.plot('excitations roi',allE,'cone type',conetype)
+% Plot types (plotType)
+%   'mosaic' | 'conemosaic'   : Render the cMosaic (delegates to cmosaic.visualize).
 %
-%    roi - show the ROI superimposed on the excitation image
-%        cmosaic.plot('roi',allE,'roi',regionOfInterest)
+%   'excitations' | 'activations'
+%       Image of activations with vertical colorbar; supports cone labels.
+%       Uses fields in params passed to cmosaic.visualize().
+%       Name-Values honored: 'plottitle','hdl','labelcones'
 %
-%    plot title - Logical.  Show the title or not.
+%   'excitations horizontal line'
+%       Horizontal line ROI across mosaic at y = 'ydeg' (deg). Plots per-cone
+%       excitations along the line, optionally filtered by 'conetype'.
+%       Name-Values honored: 'ydeg','thickness','roi','conetype'
+%
+%   'excitations vertical line'
+%       Vertical line ROI across mosaic at x = 'xdeg' (deg). Plots per-cone
+%       excitations along the line, optionally filtered by 'conetype'.
+%       Name-Values honored: 'xdeg','thickness','roi','conetype'
+%
+%   'excitations roi'
+%       Plot excitations distribution inside a user-supplied ROI. For
+%       'ellipse' ROI: histograms by cone type. For 'line' ROI: scatter of
+%       excitations vs distance from the ROI origin. (Rect NYI.)
+%       Name-Values honored: 'roi','conetype'
+%
+%   'roi'
+%       Overlay the ROI outline on top of the activation image.
+%       Name-Values honored: 'roi','plottitle'
+%
+%   'spectralqe'
+%       Plot wavelength-dependent spectral quantum efficiency including lens
+%       transmittance (uses provided 'lens' or creates default).
+%
+%   'pigmentquantalefficiency'
+%       Plot photopigment quantal efficiency vs wavelength.
+%
+% Notes
+%   • This function uses ieParamFormat(plotType) for flexible matching.
+%   • Some plots expect 'allE' to be precomputed activations with time
+%     matched to cmosaic.integrationTime.
+%   • Dependencies: regionOfInterest, ieNewGraphWin, Lens, cmosaic.visualize,
+%     cmosaic.excitations, cmosaic.coneRFpositionsDegs, cmosaic.qe.
+%
+% Examples
+%   % Activation image
+%   cmosaic.plot('excitations', allE, 'plottitle','Activation map');
+%
+%   % Horizontal line cut through y = 0 deg for L/M/S
+%   cmosaic.plot('excitations horizontal line', allE, 'ydeg', 0);
+%
+%   % Vertical line cut at x = 0.1 deg for only L cones
+%   cmosaic.plot('excitations vertical line', allE, 'xdeg', 0.1, 'conetype','l');
+%
+%   % ROI overlay and ROI histogram (ellipse ROI)
+%   cmosaic.plot('roi', allE, 'roi', myEllipseROI);
+%   cmosaic.plot('excitations roi', allE, 'roi', myEllipseROI);
+%
+%   % Spectral QE with default lens
+%   cmosaic.plot('spectralqe', []);
 %
 % See also
+%   cmosaic.visualize, cmosaic.excitations, regionOfInterest, Lens,
 %   t_cMosaicBasic
-%
 
 %% Input parser
 
