@@ -1,4 +1,30 @@
 function visualizePSF(theOI, targetWavelength, psfRangeArcMin, varargin)
+% visualizePSF - Visualizes the Point Spread Function (PSF) of an optical image.
+%
+% Syntax:
+%   visualizePSF(theOI, targetWavelength, psfRangeArcMin, 'ParameterName', ParameterValue, ...)
+%
+% Inputs:
+%   theOI              - Optical image object (OI) containing optical properties.
+%   targetWavelength   - Wavelength (in nm) at which to visualize the PSF.
+%   psfRangeArcMin     - Range of the PSF visualization in arc minutes.
+%
+% Optional Name-Value Pair Arguments:
+%   'axesHandle'                        - Handle to the axes for plotting (default: new axes).
+%   'withSuperimposedMosaic'            - Cone mosaic object to superimpose (default: []).
+%   'figureTitle'                        - Title for the figure (default: '').
+%   'fontSize'                           - Font size for labels (default: [] for automatic).
+%   'contourLevels'                      - Levels for contour plotting (default: 0.1:0.1:1.0).
+%   'includePupilAndInFocusWavelengthInTitle' - Logical to include pupil and wavelength in title (default: true).
+%   'noXLabel'                           - Logical to suppress X-axis label (default: false).
+%   'noYLabel'                           - Logical to suppress Y-axis label (default: false).
+%   'psfColorMap'                        - Custom colormap for PSF visualization (default: [] for greyscale).
+%
+% Example:
+%   visualizePSF(theOI, 550, 10, 'figureTitle', 'PSF Visualization');
+%
+% See also: opticsGet, coneMosaicHex, brewermap
+
 p = inputParser;
 p.addParameter('axesHandle', [], @ishandle);
 p.addParameter('withSuperimposedMosaic', [], @(x)(isa(x, 'coneMosaicHex')));
