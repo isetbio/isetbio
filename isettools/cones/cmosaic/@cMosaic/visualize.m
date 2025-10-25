@@ -113,6 +113,7 @@ p.addParameter('labelcones', true, @islogical);
 p.addParameter('labelconesinactivationmap', false, @islogical);
 p.addParameter('conesalpha', 1.0, @isscalar);
 p.addParameter('conesedgealpha', 1.0, @isscalar);
+p.addParameter('coneslinewidth', [], @(x)(isempty(x)||isscalar(x)))
 p.addParameter('labelconeswithindices', [], @(x)(isempty(x)||isnumeric(x)));
 p.addParameter('outlinedconeswithindices', [], @(x)(isempty(x)||isnumeric(x)));
 p.addParameter('densitycontouroverlay', false, @islogical);
@@ -204,6 +205,7 @@ labelCones = p.Results.labelcones;
 labelConesInActivationMap = p.Results.labelconesinactivationmap;
 faceAlphaCones = p.Results.conesalpha;
 edgeAlphaCones = p.Results.conesedgealpha;
+lineWidthCones = p.Results.coneslinewidth;
 labelConesWithIndices = p.Results.labelconeswithindices;
 outlinedConesWithIndices = p.Results.outlinedconeswithindices;
 labelRetinalMeridians = p.Results.labelretinalmeridians;
@@ -542,6 +544,10 @@ if (visualizeCones)
         lineWidth = 0.5;
     end
 
+    if (~isempty(lineWidthCones))
+        lineWidth = lineWidthCones;
+    end
+    
     if (labelCones)
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.lConeIndices)*0.5, ...
             rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlphaCones, edgeAlphaCones);
@@ -565,6 +571,10 @@ if (visualizeCones)
         faceAlphaCones = 0.0;
         edgeColor = [0 1 0];
         lineWidth = 0.5;
+    end
+
+    if (~isempty(lineWidthCones))
+        lineWidth = lineWidthCones;
     end
 
     if (labelCones)
@@ -591,6 +601,10 @@ if (visualizeCones)
         faceAlphaCones = 0.0;
         edgeColor = [0 0.5 1];
         lineWidth = 0.5;
+    end
+
+    if (~isempty(lineWidthCones))
+        lineWidth = lineWidthCones;
     end
 
     if (labelCones)
