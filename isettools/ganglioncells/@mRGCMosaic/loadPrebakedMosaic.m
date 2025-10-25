@@ -13,8 +13,7 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
     cropParams = p.Results.cropParams;
     computeTheMosaicOptics = p.Results.computeTheMosaicOptics;
     onlyReturnMosaicFilename = p.Results.onlyReturnMosaicFilename;
-
-
+    
     % Generate pStruct with synthesized mosaic params
     pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
         coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor);
@@ -86,10 +85,18 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
     fprintf('\t---> The full prebaked mRGC mosaic contains %d mRGCs\n', theMRGCMosaic.rgcsNum);
     if (isfield(mosaicParams, 'cropParams'))&&(~isempty(mosaicParams.cropParams))
    
+        if (isfield(mosaicParams.cropParams, 'visualizeSpatialRelationshipToSourceMosaic'))
+            visualizeSpatialRelationshipToSourceMosaic = mosaicParams.cropParams.visualizeSpatialRelationshipToSourceMosaic;
+        else
+            visualizeSpatialRelationshipToSourceMosaic = false;
+        end
+
         % Crop the mosaic to requested size
         theMRGCMosaic.cropToSizeAtEccentricity(...
-            mosaicParams.cropParams.sizeDegs, ...
-            mosaicParams.cropParams.eccentricityDegs);
+                mosaicParams.cropParams.sizeDegs, ...
+                mosaicParams.cropParams.eccentricityDegs, ...
+                'visualizeSpatialRelationshipToSourceMosaic', visualizeSpatialRelationshipToSourceMosaic);
+       
     end
     
     fprintf('\t---> The cropped mRGC mosaic contains %d mRGCs\n', theMRGCMosaic.rgcsNum);
