@@ -104,8 +104,9 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'opticsSubjectName', 'VSS2024TalkFirstSubject', ...
         'coneMosaicSpecies', 'macaque', ...
         'regenerateMosaicAtStage3B', true, ...
-        'positionSetToCompute', 'even', ...
-        'centerConeDominanceToOptimize', cMosaic.MCONE_ID);
+        'initialSurroundOptimizationValuesSource', 'skip if previous file exists', ...
+        'positionSetToCompute', '2/3', ...
+        'centerConeDominanceToOptimize', cMosaic.LCONE_ID);
 
     % Synthesize the compute-ready mosaic by interpolating the derived
     % surround cone poolings and deriving surround weights for all cells in
@@ -115,6 +116,14 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'opticsSubjectName', 'VSS2024TalkFirstSubject', ...
         'coneMosaicSpecies', 'macaque', ...
         'regenerateMosaicAtStage3C', true);
+
+    t_mRGCMosaicSynthesizeAtStage3(...
+        'rgcMosaicName', 'VSS2024TalkTemporal9DegsMosaic', ...
+        'opticsSubjectName', 'VSS2024TalkFirstSubject', ...
+        'coneMosaicSpecies', 'macaque', ...
+        'inspectMosaicAtStage3B', true, ...
+        'centerConeNumerosityToInspect', 4, ...
+        'centerConeDominanceToInspect', cMosaic.LCONE_ID);
 
 %}
 
@@ -197,6 +206,10 @@ arguments
     % Which center cone dominance to inspect surround cone pooling function
     % for. Choose from {cMosaic.LCONE_ID cMosaic.MCONE_ID}
     options.centerConeDominanceToInspect (1,1) double = cMosaic.LCONE_ID;
+
+    % Which center cone numerosity to inspect surround cone pooling function
+    % for. Empty results in all cone numerosities
+    options.centerConeNumerosityToInspect (1,:) double = []
 
     % Which set of optimization position to compute in the run
     options.positionSetToCompute (1,:) char {mustBeMember(options.positionSetToCompute,{'full','even', 'odd', '1/3', '2/3', '3/3', '1/4', '2/4', '3/4', '4/4'})} = 'full';
@@ -291,6 +304,9 @@ centerConeDominanceToOptimize = options.centerConeDominanceToOptimize;
 
 % Center cone dominance for which to inspect the derived surround pooling functions
 centerConeDominanceToInspect = options.centerConeDominanceToInspect;
+
+% Center cone numerosity for which to inspect the derived surround pooling functions
+centerConeNumerosityToInspect = options.centerConeNumerosityToInspect;
 
 % Which positions subset (or full set) to compute in this run
 positionSetToCompute = options.positionSetToCompute;
@@ -474,7 +490,7 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 	    
         % Empty [] numerosity will inspect surround pooling functions for
         % all numerosities encountered in the synthesized RGCMosaic patch
-		inspectedOptimizationResultsTargetRFcenterConesNum = []; 
+		inspectedOptimizationResultsTargetRFcenterConesNum = centerConeNumerosityToInspect; 
 
         % Center cone dominance
 	    inspectedOptimizationResultsTargetRFcenterDominantConeType = centerConeDominanceToInspect;
@@ -510,8 +526,9 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 			        'optimizationResults');
 				dataAvailable = true;
 			catch 
-		   		fprintf('\nThe optimization results file \n\t %s \n was **NOT** found. Skipping inspection.\n', theOptimizationResultsFileNameToBeInspected);
-		   		continue
+		   		fprintf(2,'\nThe optimization results file \n\t %s \n was **NOT** found. Skipping inspection.\n', theOptimizationResultsFileNameToBeInspected);
+		   		pause(1)
+                continue
             end
 
             % Specify visualization parameters
