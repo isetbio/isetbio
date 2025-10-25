@@ -2,11 +2,11 @@ function t_mRGCMosaicSynthesizeAtStage1(options)
 % Denovo synthesis of the spatial position lattices of cones and mRGC RF centers (stage 1)
 %
 % Syntax:
-%   t_mRGCMosaicSynthesizeAtStage1();
+%   t_mRGCMosaicSynthesizeAtStage1()
 %
 % Description:
-%   Demonstrates how to generate an spatial position lattices of the input
-%   cone mosaic and/or the mRGC RF mosaic
+%   Demonstrates how to inspect and/or generate a lattice of the spatial
+%   positions of cones (or RFs) in a cone mosaic (or an mRGC RF mosaic)
 %
 %  This is set up with key/value pairs that demonstate how to select different
 %  options. Different choices are illustrated in the examples
@@ -20,7 +20,41 @@ function t_mRGCMosaicSynthesizeAtStage1(options)
 
 % Examples:
 %{
+    % Example #1: Simply inspect the generation of the default mRGC mosaic lattice
     t_mRGCMosaicSynthesizeAtStage1();
+
+    % Example #2: Inspect the generation of a specific lattice. Do the following:
+    % Step1: Find filenames of lattices that are available with their
+    generation progress history included
+    theLatticePatchFileNames = retinalattice.listPrecomputedPatches(...
+        'withGenerationProgressHistory', true)
+    
+    % Step2: Pick one of the returned filenames
+    theLatticeFileName = theLatticePatchFileNames{1};
+
+    % Step3: Decode the filename to extract the eye, the neuron type, and
+    % the source lattice size
+    [whichEye, neuronType, sourceLatticeSizeDegs, hasProgress] = ...
+        retinalattice.decodeFileName(theLatticeFileName);
+
+    % Step4: Inspect the lattice generation
+    t_mRGCMosaicSynthesizeAtStage1(...
+        'whichEye', whichEye, ...
+        'neuronType', neuronType, ...
+        'sourceLatticeSizeDegs', sourceLatticeSizeDegs, ...
+        'onlyInspectLattice', true);
+
+    % Example #3: Synthesize a lattice, here, a lattice of the
+    % mRGC mosaic in the right eye which is 16-deg wide
+    % Note: synthesizing lattices is an iterative, compute-intense 
+    % operation which can take many hours to complete 
+    % depending on the power of the computer it is run on
+    t_mRGCMosaicSynthesizeAtStage1(...
+        'whichEye', 'right eye', ...
+        'neuronType', 'midget ganglion cells', ...
+        'sourceLatticeSizeDegs', 16, ...
+        'maxIterations', 512, ...
+        'onlyInspectLattice', false);
 %}
 
 arguments
@@ -32,7 +66,7 @@ arguments
     options.whichEye (1,:) char {mustBeMember(options.whichEye,{'left eye','right eye'})} = 'right eye';
 
     % Currently only 64 degs is available
-    options.sourceLatticeSizeDegs = 64; 
+    options.sourceLatticeSizeDegs = 16; 
 
     % The look up entry size for eccentricity. The higher this is, 
     % the smoother the lattice will be (but will take longer to compute)

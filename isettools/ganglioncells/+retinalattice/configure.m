@@ -7,7 +7,7 @@ function p = configure(sourceLatticeSizeDegs, neuronType, whichEye)
     assert(ismember(whichEye, validEyes), sprintf('Unknown eye: ''%s''.', whichEye));
     
     % Lattice gallery directory
-    p.latticeGalleryDir = sprintf('%s/%s/%s', isetbioRootPath, 'isettools/ganglioncells/data/lattices');
+    p.latticeGalleryDir = fullfile(isetbioRootPath, 'isettools/ganglioncells/data/lattices');
 
     % Patch filename (history of positions)
     if (sourceLatticeSizeDegs >= 10)
