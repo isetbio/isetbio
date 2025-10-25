@@ -8,13 +8,19 @@ function visualize(obj, varargin)
     p.addParameter('yLims', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 2))));
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('lineWidth', 1.0, @isscalar);
+    p.addParameter('edgeColor', [], @(x)(isempty(x)||((isvector(x))&&((numel(x) == 3)||(numel(x)==4)))));
     p.addParameter('fillColor', [], @(x)(isempty(x)||((isvector(x))&&((numel(x) == 3)||(numel(x)==4)))));
+    p.addParameter('fillAlpha', 0.5, @isscalar);
     p.addParameter('fontSize', 14, @isscalar);
     p.parse(varargin{:});
     
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
+    edgeColor = p.Results.edgeColor;
+    lineWidth = p.Results.lineWidth;
     fillColor = p.Results.fillColor;
+    fillAlpha = p.Results.fillAlpha;
     xLims = p.Results.xLims;
     yLims = p.Results.yLims;
     fontSize = p.Results.fontSize;
@@ -24,17 +30,22 @@ function visualize(obj, varargin)
 
     if (isempty(fillColor))
         fillColor = [0.3 0.6 0.9];
-        faceAlpha = 0.5;
     else
         if (numel(fillColor) == 4)
-            faceAlpha = fillColor(4);
+            fillAlpha = fillColor(4);
             fillColor = fillColor(1:3);
-        else
-            faceAlpha = 0.5;
         end
     end
     
-    
+    if (isempty(edgeColor))
+        edgeColor = fillColor*0.5;
+    end
+
+    if (numel(edgeColor) == 4)
+        edgeAlpha = edgeColor(4);
+    else
+        edgeAlpha = 1.0;
+    end
 
     % Set figure size
     if (isempty(figureHandle))
@@ -68,7 +79,7 @@ function visualize(obj, varargin)
     % Draw it
     hold(axesHandle, 'on');
     patch(axesHandle, roiOutline.x, roiOutline.y, ...
-        fillColor, 'FaceAlpha', faceAlpha, 'EdgeColor', fillColor*0.5, 'LineWidth', 1.0);
+        fillColor, 'FaceAlpha', fillAlpha, 'EdgeColor', edgeColor, 'EdgeAlpha', edgeAlpha, 'LineWidth', lineWidth);
     
     
     axis(axesHandle, 'image');
