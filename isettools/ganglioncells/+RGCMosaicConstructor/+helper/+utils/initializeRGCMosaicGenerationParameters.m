@@ -107,7 +107,7 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
 		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
 		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.16^2; 
+		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.12^2; 
 		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
@@ -119,7 +119,7 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.minGridSize = 2.5; 
 		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
 		rgcMosaicSurroundOptimization.addEightExtremePositions = ~true;
-		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.16^2; 
+		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.12^2; 
 		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
