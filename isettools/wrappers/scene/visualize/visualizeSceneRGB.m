@@ -6,6 +6,7 @@ p.addParameter('noTitle', false, @islogical);
 p.addParameter('noYLabel', false, @islogical);
 p.addParameter('noYTicks', false, @islogical);
 p.addParameter('avoidAutomaticRGBscaling', false, @islogical);
+p.addParameter('showSRGBimages', true, @islogical);
 % Parse input
 p.parse(varargin{:});
 
@@ -29,7 +30,11 @@ if (p.Results.avoidAutomaticRGBscaling)
     RGBsettings(end,end,1:3) = 1.0;
 end
 
-image(ax,spatialSupportX, spatialSupportY, lrgb2srgb(RGBsettings));
+if (p.Results.showSRGBimages)
+    image(ax,spatialSupportX, spatialSupportY, lrgb2srgb(RGBsettings));
+else
+    image(ax,spatialSupportX, spatialSupportY, RGBsettings);
+end
 
 axis(ax, 'image');
 xtickformat('%0.2f'); ytickformat('%0.2f');

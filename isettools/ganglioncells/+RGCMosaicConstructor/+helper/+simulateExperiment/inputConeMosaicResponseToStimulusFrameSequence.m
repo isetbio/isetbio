@@ -5,9 +5,12 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
 	% Parse input
     p = inputParser;
     p.addParameter('visualizeResponse', false, @islogical);
+    p.addParameter('visualizeStimulusSequence', false, @islogical);
     p.addParameter('thePresentationDisplayForVisualizingOpticalSceneOrImage', [], @isstruct);
     p.addParameter('stimulusInfoString', '', @ischar);
     p.parse(varargin{:});
+
+    visualizeStimulusSequence = p.Results.visualizeStimulusSequence;
     visualizeResponse = p.Results.visualizeResponse;
     thePresentationDisplay = p.Results.thePresentationDisplayForVisualizingOpticalSceneOrImage;
     stimulusInfoString = p.Results.stimulusInfoString;
@@ -31,6 +34,25 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
   	if (visualizeResponse) && (~isempty(thePresentationDisplay))
   		theOpticalImageSequence = cell(1, numel(theStimulusFrameSequence));
   	end
+
+
+    if (visualizeStimulusSequence)
+        hFig = figure(211); clf;
+  		set(hFig,'Position', [10 10 1800 900], 'Color', [1 1 1]);
+        ax = subplot(1,1,1);
+        for iFrame = 1:numel(theStimulusFrameSequence)
+            theScene = theStimulusFrameSequence{iFrame};
+            visualizeScene(theScene, ...
+                'presentationDisplay', thePresentationDisplay, ...
+                'displayContrastProfiles', false, ...
+                'displayRadianceMaps', false, ...
+                'avoidAutomaticRGBscaling', true, ...
+                'showSRGBimages', true, ...
+                'axesHandle', ax);
+            title(sprintf('frame %d of %d',iFrame, numel(theStimulusFrameSequence)));
+            drawnow
+        end
+    end
 
   	% Compute mosaic responses to all frames
   	parfor iFrame = 1:numel(theStimulusFrameSequence)

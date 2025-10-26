@@ -40,13 +40,15 @@ function [H, spatialSupportDegs, spatialPhasesDegs, temporalSupportSeconds, temp
         temporalSupportSeconds(frameIndex) = (frameIndex-1)*frameDurationSeconds;
     end
 
+
     if (isfield(stimParams, 'temporalEnvelopeTau'))
         tt = temporalSupportSeconds - mean(temporalSupportSeconds);
         temporalRamp = exp(-0.5 * (tt/ stimParams.temporalEnvelopeTau) .^ 4);
         for frameIndex = 1:framesNum
-            H(frameIndex,:,:)  = H(frameIndex,:,:)  * temporalRamp(frameIndex);
+            H(frameIndex,:,:)  = H(frameIndex,:,:) * temporalRamp(frameIndex);
         end
     else
         temporalRamp = [1];
     end
+
 end

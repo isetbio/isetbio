@@ -7,10 +7,12 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   p.addParameter('computeMRGCMosaicResponses', false, @islogical);
   p.addParameter('debugInputConeMosaicPcurrentResponse', false, @islogical);
   p.addParameter('visualizeResponse', false, @islogical);
+  p.addParameter('visualizeStimulusSequence', false, @islogical);
   p.addParameter('mRGCNonLinearityParams', [], @(x)(isempty(x))||(isstruct(x)));
   p.addParameter('customTemporalFrequencyAndContrast', [], @(x)(isempty(x))||(isstruct(x)));
   p.addParameter('validateScenes', false, @islogical);
   p.addParameter('visualizeCustomConeFundamentals', false, @islogical);
+  
 
   % Execute the parser
   p.parse(varargin{:});
@@ -19,6 +21,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   mRGCNonLinearityParams = p.Results.mRGCNonLinearityParams;
   customTemporalFrequencyAndContrast = p.Results.customTemporalFrequencyAndContrast;
   visualizeResponse = p.Results.visualizeResponse;
+  visualizeStimulusSequence = p.Results.visualizeStimulusSequence;
   debugInputConeMosaicPcurrentResponse = p.Results.debugInputConeMosaicPcurrentResponse;
   validateScenes = p.Results.validateScenes;
   visualizeCustomConeFundamentals = p.Results.visualizeCustomConeFundamentals;
@@ -32,7 +35,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
     inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, ...
          theInputConeMosaicSTFResponsesFullFileName, computePhotocurrent, ...
          customTemporalFrequencyAndContrast, ...
-         visualizeResponse, debugInputConeMosaicPcurrentResponse, ...
+         visualizeResponse, visualizeStimulusSequence, debugInputConeMosaicPcurrentResponse, ...
          validateScenes, visualizeCustomConeFundamentals);
   end
 
@@ -181,7 +184,7 @@ end
 
 
 function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeMosaicSTFResponsesFullFileName, ...
-  computePhotocurrent, customTemporalFrequencyAndContrast, visualizeResponse, debugInputConeMosaicPcurrentResponse, ...
+  computePhotocurrent, customTemporalFrequencyAndContrast, visualizeResponse, visualizeStimulusSequence, debugInputConeMosaicPcurrentResponse, ...
   validateScenes, visualizeCustomConeFundamentals)
 
   fprintf('Input cone mosaic STF responses will be saved in: \n%s\n', theInputConeMosaicSTFResponsesFullFileName);
@@ -200,8 +203,8 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
   orientationsExamined = 0:STFparamsStruct.orientationDeltaDegs:(180-STFparamsStruct.orientationDeltaDegs);
   
   % Compute cone contrasts for desired chromaticity
-  [coneContrasts, totalContrast] = ...
-    visualStimulusGenerator.coneContrastsFromChromaticity(STFparamsStruct.chromaticity);
+  coneContrasts = ...
+      visualStimulusGenerator.coneContrastsFromChromaticity(STFparamsStruct.chromaticity);
 
 
   % The defaults TF and achromatic contrast
@@ -211,7 +214,7 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
     backgroundLuminanceMultiplier = 1.0;
   else
     temporalFrequencyHz = customTemporalFrequencyAndContrast.temporalFrequencyHz;
-    totalContrast = customTemporalFrequencyAndContrast.achromaticContrast;
+    totalContrast = customTemporalFrequencyAndContrast.totalContrast;
     backgroundLuminanceMultiplier = customTemporalFrequencyAndContrast.backgroundLuminanceMultiplier;
   end
 
@@ -236,8 +239,11 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
   % Generate presentation display
   viewingDistanceMeters = 4;
   thePresentationDisplay = visualStimulusGenerator.presentationDisplay(...
-            theMRGCMosaic.inputConeMosaic.wave, STFparamsStruct.resolutionDegs, ...
-            viewingDistanceMeters);
+            theMRGCMosaic.inputConeMosaic.wave, ...
+            STFparamsStruct.resolutionDegs, ...
+            viewingDistanceMeters, ...
+            'meanLuminanceCdPerM2', STFparamsStruct.backgroundLuminanceCdM2);
+
 
   % Allocate memory (Single precision responses) to store all the cone mosaic responses
   [~, ~, spatialPhasesDegs, stimulusFrameSequenceTemporalSupportSeconds] = ...
@@ -271,6 +277,7 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
     % Generate the spatial modulation patterns for all spatial phases of the drifting grating
     [theDriftingGratingSpatialModulationPatterns, spatialSupportDegs, spatialPhasesDegs, ...
       temporalSupportSeconds, temporalRamp] = visualStimulusGenerator.driftingGratingModulationPatterns(stimParams);
+
 
     if (STFparamsStruct.coneFundamentalsOptimizedForStimPosition)
         if ((iOri==1)&&(iSF==1))
@@ -312,6 +319,7 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
         theMRGCMosaic, theOI, theNullStimulusScene, theDriftingGratingFrameScenes, ...
         stimulusPosition, stimParams.coneMosaicModulationBasedResponse, ...
         'visualizeResponse', visualizeResponse, ...
+        'visualizeStimulusSequence', visualizeStimulusSequence, ...
         'thePresentationDisplayForVisualizingOpticalSceneOrImage', thePresentationDisplay, ...
         'stimulusInfoString', sprintf('ORI:%d degs, SF:%2.2f c/deg', stimParams.orientationDegs, stimParams.spatialFrequencyCPD));
 
@@ -320,8 +328,6 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
     theConeMosaicNullResponse = theConeMosaicNullResponse * backgroundLuminanceMultiplier;
 
     if (debugInputConeMosaicPcurrentResponse)
-      stimParams
-
       theLconeModulations = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,theMRGCMosaic.inputConeMosaic.lConeIndices));
       theMconeModulations = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,theMRGCMosaic.inputConeMosaic.mConeIndices));
       theSconeModulations = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,theMRGCMosaic.inputConeMosaic.sConeIndices));
@@ -348,7 +354,7 @@ function inputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeM
     if (computePhotocurrent)
       warmUpTimeSeconds = 2.0;
       stimulusPeriodDuration = 1/temporalFrequencyHz;
-      nWarmUpPeriods = ceil(warmUpTimeSeconds/stimulusPeriodDuration)
+      nWarmUpPeriods = ceil(warmUpTimeSeconds/stimulusPeriodDuration);
 
       pCurrentTemporalResolutionSeconds = 5/1000;
       theConeMosaicExcitationResponseSequence = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,:));
