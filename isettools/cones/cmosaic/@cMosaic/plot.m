@@ -87,6 +87,9 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 %   % Activation image
 %   cmosaic.plot('excitations', allE, 'plottitle','Activation map');
 %
+%   % Activiation image with color labeled cones
+%   cmosaic.plot('excitations', allE, 'label cones',true,'plottitle','Activation map');
+%
 %   % Horizontal line cut through y = 0 deg for L/M/S
 %   cmosaic.plot('excitations horizontal line', allE, 'ydeg', 0);
 %
@@ -122,6 +125,7 @@ p.addParameter('plottitle','',@ischar);
 p.addParameter('dataonly',false,@islogical);   % NYI
 p.addParameter('labelcones',false,@islogical)  % for excitations, show cones colored by type
 p.addParameter('lens',[],@(x)(isa(x,'Lens')));
+p.addParameter('coneslinewidth',2,@isnumeric);
 
 % Horizontal line key val pairs
 p.addParameter('xdeg',0,@isnumeric);
@@ -157,11 +161,15 @@ switch ieParamFormat(plotType)
         params.plotTitle = pTitle;
         params.verticalActivationColorBar = true;
         params.figureHandle = hdl;
-        params.labelconesinactivationmap = p.Results.labelcones;
+        params.coneslinewidth = p.Results.coneslinewidth;  % Thickness of surrounding lines
+        params.labelConesInActivationMap = p.Results.labelcones;
 
         % Return
         tmp = cmosaic.visualize(params);
         hdl = tmp.figureHandle;
+
+        % We might set a figure size (normalized position) here.
+        ieFigureResize(hdl);
         uData.allE = allE;
         
     case 'excitationshorizontalline'
