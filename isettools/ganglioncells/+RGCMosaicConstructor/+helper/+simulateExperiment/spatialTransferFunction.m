@@ -32,12 +32,20 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
 
   if (computeInputConeMosaicResponses)
     computePhotocurrent = false;
+    pCurrentTemporalResolutionSeconds = [];
+    osBiophysicalModelWarmUpTimeSeconds = [];
+    osBiophysicalModelTimeStep = [];
+
     if (~isempty(mRGCNonLinearityParams)) && (strcmp(mRGCNonLinearityParams.type, 'photocurrent'))
           computePhotocurrent = true;
+          osBiophysicalModelWarmUpTimeSeconds = mRGCNonLinearityParams.osBiophysicalModelWarmUpTimeSeconds;
+          osBiophysicalModelTimeStep = mRGCNonLinearityParams.osBiophysicalModelTemporalResolutionSeconds;
+          pCurrentTemporalResolutionSeconds = mRGCNonLinearityParams.pCurrentTemporalResolutionSeconds;
     end
 
     computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, ...
-         theInputConeMosaicSTFResponsesFullFileName, computePhotocurrent, ...
+         theInputConeMosaicSTFResponsesFullFileName, ...
+         computePhotocurrent, pCurrentTemporalResolutionSeconds, osBiophysicalModelWarmUpTimeSeconds, osBiophysicalModelTimeStep, ...
          customTemporalFrequencyAndContrast, ...
          visualizeResponse, visualizeStimulusSequence, debugInputConeMosaicPcurrentResponse, ...
          validateScenes, visualizeCustomConeFundamentals);
@@ -54,7 +62,9 @@ end
 
 
 function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInputConeMosaicSTFResponsesFullFileName, ...
-  computePhotocurrent, customTemporalFrequencyAndContrast, visualizeResponse, visualizeStimulusSequence, debugInputConeMosaicPcurrentResponse, ...
+  computePhotocurrent,  pCurrentTemporalResolutionSeconds, photocurrentModelWarmUpTimeSeconds, osTimeStep, ...
+  customTemporalFrequencyAndContrast, ...
+  visualizeResponse, visualizeStimulusSequence, debugInputConeMosaicPcurrentResponse, ...
   validateScenes, visualizeCustomConeFundamentals)
 
   fprintf('Input cone mosaic STF responses will be saved in: \n%s\n', theInputConeMosaicSTFResponsesFullFileName);
@@ -200,6 +210,7 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
     assert(backgroundLuminanceMultiplier == 1, sprintf('Why is the background luminance multiplier %f, not 1', backgroundLuminanceMultiplier));
     %theConeMosaicNullResponse = theConeMosaicNullResponse * backgroundLuminanceMultiplier;
 
+    % Plot the LMS cone modulation responses
     if (debugInputConeMosaicPcurrentResponse)
       theLconeModulations = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,theMRGCMosaic.inputConeMosaic.lConeIndices));
       theMconeModulations = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,theMRGCMosaic.inputConeMosaic.mConeIndices));
@@ -209,39 +220,38 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
       theMconeBackgroundExcitations = squeeze(theConeMosaicNullResponse(1,1,theMRGCMosaic.inputConeMosaic.mConeIndices));
       theSconeBackgroundExcitations = squeeze(theConeMosaicNullResponse(1,1,theMRGCMosaic.inputConeMosaic.sConeIndices));
 
-
-      maxConeModulations = [max(abs(theLconeModulations(:))) max(abs(theMconeModulations(:))) max(abs(theSconeModulations(:))) ]
-      meanConeExcitations = [mean(theLconeBackgroundExcitations(:)) mean(theMconeBackgroundExcitations(:)) mean(theSconeBackgroundExcitations(:))]
+      maxConeModulations = [max(abs(theLconeModulations(:))) max(abs(theMconeModulations(:))) max(abs(theSconeModulations(:))) ];
+      meanConeExcitations = [mean(theLconeBackgroundExcitations(:)) mean(theMconeBackgroundExcitations(:)) mean(theSconeBackgroundExcitations(:))];
 
       figure(33);
       subplot(3,1,1)
-      plot(temporalSupportSeconds, theLconeModulations)
+      plot(temporalSupportSeconds, theLconeModulations, 'r-')
+      title('Lcone response modulations');
       subplot(3,1,2)
-      plot(temporalSupportSeconds, theMconeModulations)
+      plot(temporalSupportSeconds, theMconeModulations, 'g-')
+      title('Mcone response modulations');
       subplot(3,1,3)
-      plot(temporalSupportSeconds, theSconeModulations)
+      plot(temporalSupportSeconds, theSconeModulations, 'b-')
+      title('Scone response modulations');
 
     end
 
 
     if (computePhotocurrent)
-      warmUpTimeSeconds = 2.0;
       stimulusPeriodDuration = 1/temporalFrequencyHz;
-      nWarmUpPeriods = ceil(warmUpTimeSeconds/stimulusPeriodDuration);
+      nWarmUpPeriods = ceil(photocurrentModelWarmUpTimeSeconds/stimulusPeriodDuration);
 
-      pCurrentTemporalResolutionSeconds = 5/1000;
-      theConeMosaicExcitationResponseSequence = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,:));
+      theConeMosaicResponseSequence = squeeze(theInputConeMosaicSTFresponses(iOri, iSF,:,:));
 
-      % Transform cone modulations to periodic cone excitations
+      % Transform cone modulations to cone excitations
       if (stimParams.coneMosaicModulationBasedResponse)
         theConeMosaicNullResponse = squeeze(theConeMosaicNullResponse);
         theConeMosaicNullResponse = reshape(theConeMosaicNullResponse, [1 numel(theConeMosaicNullResponse)]);
 
         % Transform from modulations to excitations
         %Rmod = (Recx-Ro)/Ro -> (Rmod+1)*Ro = RExc
-        theConeMosaicExcitationResponseSequence = theConeMosaicExcitationResponseSequence + 1;
-        theConeMosaicExcitationResponseSequence = bsxfun(@times, theConeMosaicExcitationResponseSequence, theConeMosaicNullResponse);
-
+        theConeMosaicResponseSequence = theConeMosaicResponseSequence  + 1;
+        theConeMosaicResponseSequence = bsxfun(@times, theConeMosaicResponseSequence, theConeMosaicNullResponse);
       end
 
       % Compute the photocurrent response
@@ -249,8 +259,8 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
        theInputConeMosaicPhotocurrents(iOri, iSF,:,:), ...
        theInputConeMosaicBackgroundPhotocurrents(iOri, iSF,:)] = computePhotocurrents(...
             theMRGCMosaic.eccentricityDegs, temporalSupportSeconds, ...
-            theConeMosaicExcitationResponseSequence, nWarmUpPeriods, ...
-            pCurrentTemporalResolutionSeconds, ...
+            theConeMosaicResponseSequence, nWarmUpPeriods, ...
+            pCurrentTemporalResolutionSeconds, osTimeStep, ...
             theMRGCMosaic.inputConeMosaic.coneTypes, ...
             debugInputConeMosaicPcurrentResponse);
 
@@ -314,7 +324,7 @@ end
 
 function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPhotocurrents] = ...
           computePhotocurrents(eccentricityDegs, temporalSupportSeconds, theConeMosaicExcitationResponseSequence, ...
-            nWarmUpPeriods, pCurrentTemporalResolutionSeconds, coneTypes, debugInputConeMosaicPcurrentResponse)
+            nWarmUpPeriods, pCurrentTemporalResolutionSeconds, osTimeStep, coneTypes, debugInputConeMosaicPcurrentResponse)
 
 
   temporalSupportSecondsPeriodic = temporalSupportSeconds(1:end-1);
@@ -325,19 +335,14 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     temporalSupportSecondsPeriodic = cat(2, temporalSupportSecondsPeriodic, temporalSupportSeconds(1:nTimeBins)+k*temporalSupportSeconds(nTimeBins+1));
   end
 
+  % Cone mosaic integration time
   coneMosaicIntegrationTime = temporalSupportSeconds(2)-temporalSupportSeconds(1);
-  osTimeStep = 1e-5;
-  integerMultiplier = round(coneMosaicIntegrationTime/osTimeStep);
-  osTimeStep = coneMosaicIntegrationTime/integerMultiplier;
-  assert(rem(coneMosaicIntegrationTime, osTimeStep) == 0, 'coneMosaic.intergrationTime must be an integral multiple of os.time step');
-
 
   % Preallocate memory
   theSingleConeExcitations = theConeMosaicExcitationResponseSequence(1:end-1,1);
-  [temporalSupportPhotocurrent, theConePhotoCurrentResponse, theConeBackgroundPhotoCurrent, ...
-   theConeExcitationsSingleConePeriodic, photocurrentResponseTimeAxisPeriodic, thePcurrentResponsePeriodic] = ...
-      computeSingleConePhotocurrentResponse(eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, nWarmUpPeriods, ...
-          coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds);
+  temporalSupportPhotocurrent = computeSingleConePhotocurrentResponse( ...
+      eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, nWarmUpPeriods, ...
+      coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, false);
 
   theConePhotocurrents = zeros(numel(temporalSupportPhotocurrent), size(theConeMosaicExcitationResponseSequence,2));
   theConeBackgroundPhotocurrents = zeros(1, size(theConeMosaicExcitationResponseSequence,2));
@@ -348,12 +353,16 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
       % Make the cone excitation response periodic by concatenating nWarmUpPeriods
       theSingleConeExcitations = theConeMosaicExcitationResponseSequence(1:end-1,iConeIndex);
 
-      [~, theConePhotoCurrentResponse, theConeBackgroundPhotoCurrent, ...
-      theConeExcitationsSingleConePeriodic, photocurrentResponseTimeAxisPeriodic, thePcurrentResponsePeriodic, thePcurrentBackgroundResponse] = ...
-          computeSingleConePhotocurrentResponse(eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, nWarmUpPeriods, ...
-            coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds);
+      [~, theConePhotoCurrentDifferentialResponse, ...
+       theConeBackgroundPhotoCurrent, ...
+       theConeExcitationsSingleConePeriodic, ...
+       photocurrentResponseTimeAxisPeriodic, ...
+       thePcurrentResponsePeriodic, ...
+       thePcurrentBackgroundResponseTransient] = computeSingleConePhotocurrentResponse(...
+                eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
+                nWarmUpPeriods, coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, true);
 
-      theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentResponse;
+      theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
       theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
 
       switch (coneTypes(iConeIndex))
@@ -427,11 +436,11 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
       grid on; box off
 
       subplot(2,3,6);
-      plot(temporalSupportPhotocurrent*1e3, theConePhotoCurrentResponse, '-', 'Color', 'k', 'LineWidth', 3);
+      plot(temporalSupportPhotocurrent*1e3, theConePhotoCurrentDifferentialResponse, '-', 'Color', 'k', 'LineWidth', 3);
       hold on
-      plot(temporalSupportPhotocurrent*1e3, theConePhotoCurrentResponse, '-', 'Color', theColor, 'LineWidth', 1.5);
+      plot(temporalSupportPhotocurrent*1e3, theConePhotoCurrentDifferentialResponse, '-', 'Color', theColor, 'LineWidth', 1.5);
       plot(temporalSupportPhotocurrent*1e3,  temporalSupportPhotocurrent*0, 'k--');
-      title(sprintf('(+): %2.2f, (-): %2.2f', max(theConePhotoCurrentResponse), min(theConePhotoCurrentResponse)), 'FontWeight', 'Normal');
+      title(sprintf('(+): %2.2f, (-): %2.2f', max(theConePhotoCurrentDifferentialResponse), min(theConePhotoCurrentDifferentialResponse)), 'FontWeight', 'Normal');
       ylabel('differential pCurrent (pAmps)')
       xlabel('time (msec)');
       xtickangle(90);
@@ -440,14 +449,14 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
 
 
       subplot(2,3,[4 5]);
-      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentResponsePeriodic, '-', 'Color', 'k', 'LineWidth', 3);
+      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentResponsePeriodic+theConeBackgroundPhotoCurrent, '-', 'Color', 'k', 'LineWidth', 3);
       hold on;
-      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentResponsePeriodic, '-', 'Color', theColor, 'LineWidth', 1.5);
-      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentBackgroundResponse, '--', 'Color', 'k', 'LineWidth', 1.0);
+      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentResponsePeriodic+theConeBackgroundPhotoCurrent, '-', 'Color', theColor, 'LineWidth', 1.5);
+      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentBackgroundResponseTransient, '--', 'Color', 'k', 'LineWidth', 1.0);
       set(gca, 'YLim', photocurrentRange , 'YTick', photocurrentTicks,  'XTick', timeTicks, 'XLim', [photocurrentResponseTimeAxisPeriodic(1) photocurrentResponseTimeAxisPeriodic(end)]*1e3, 'FontSize', 20);
       grid on; box off
       xtickangle(90);
-      title(sprintf('(+): %2.2f, (-): %2.2f', max(theConePhotoCurrentResponse), min(theConePhotoCurrentResponse)), 'FontWeight', 'Normal');
+      title(sprintf('(+): %2.2f, (-): %2.2f', max(theConePhotoCurrentDifferentialResponse), min(theConePhotoCurrentDifferentialResponse)), 'FontWeight', 'Normal');
       ylabel('pCurrent (pAmps)')
       xlabel('time (msec)');
 
@@ -459,12 +468,11 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
       % Make the cone excitation response periodic by concatenating nWarmUpPeriods
       theSingleConeExcitations = theConeMosaicExcitationResponseSequence(1:end-1,iConeIndex);
 
-      [~, theConePhotoCurrentResponse, theConeBackgroundPhotoCurrent, ...
-      theConeExcitationsSingleConePeriodic, photocurrentResponseTimeAxisPeriodic, thePcurrentResponsePeriodic] = ...
+      [~, theConePhotoCurrentDifferentialResponse, theConeBackgroundPhotoCurrent] = ...
           computeSingleConePhotocurrentResponse(eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, nWarmUpPeriods, ...
-            coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds);
+            coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, true);
 
-      theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentResponse;
+      theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
       theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
     end % parfor iConeIndex
   end
@@ -472,60 +480,34 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
 end
 
 
-function [temporalSupportPhotocurrent, theConePhotoCurrentResponse, backgroundPhotocurrent, theConeExcitationsSingleConePeriodic, photocurrentResponseTimeAxis, thePcurrentResponse, thePcurrentBackgroundResponse] = ...
-    computeSingleConePhotocurrentResponse(eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, nWarmUpPeriods, coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds)
+function [temporalSupportPhotocurrent, theConePhotoCurrentDifferentialResponse, backgroundPhotocurrent, ...
+    theConeExcitationsPeriodic, photocurrentResponseTimeAxis, ...
+    thePcurrentDifferentialPeriodicResponse, thePcurrentBackgroundResponseTransient] = computeSingleConePhotocurrentResponse(...
+            eccentricityDegs, theConeExcitations, temporalSupportSeconds, ...
+            nWarmUpPeriods, coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, skipAssertions)
 
     % Make the cone excitation response periodic by concatenating nWarmUpPeriods
-    theConeExcitationsSingleConePeriodic = reshape(theSingleConeExcitations, [1 numel(theSingleConeExcitations)]);
+    theConeExcitationsPeriodic = reshape(theConeExcitations, [1 numel(theConeExcitations)]);
     for k = 1:nWarmUpPeriods
-      theConeExcitationsSingleConePeriodic = cat(2, theConeExcitationsSingleConePeriodic, theConeExcitationsSingleConePeriodic(1:numel(theSingleConeExcitations)));
+      theConeExcitationsPeriodic = cat(2, theConeExcitationsPeriodic, theConeExcitationsPeriodic(1:numel(theConeExcitations)));
     end
 
     % Convert excitation counts to excitation rates
-    theConeExcitationsRateSingleConePeriodic = ...
-                theConeExcitationsSingleConePeriodic / coneMosaicIntegrationTime;
+    theConeExcitationsRatePeriodic = theConeExcitationsPeriodic(:) / coneMosaicIntegrationTime;
+    backgroundConeExcitationRate = mean(theConeExcitationsRatePeriodic);
 
+    % Compute the pCurrent response to the period stimulus
+    [thePcurrentDifferentialPeriodicResponse, photocurrentResponseTimeAxis, thePcurrentBackgroundResponseTransient] = ...
+        cMosaic.photocurrentFromConeExcitationRateUsingBiophysicalOSmodel(...
+            sqrt(sum(eccentricityDegs(:).^2)), ...
+            theConeExcitationsRatePeriodic, ...
+            backgroundConeExcitationRate, ...
+            coneMosaicIntegrationTime, ...
+            pCurrentTemporalResolutionSeconds, ...
+            'osTimeStepSeconds', osTimeStep, ...
+            'skipAssertions', skipAssertions);
 
-    % Setup biophysical model of outer segment for each cone
-    os = osBioPhys('eccentricity', sqrt(sum(eccentricityDegs(:).^2)));
-    os.timeStep = osTimeStep;
-    os.set('noise flag', 'none');
-
-    % Set the state
-    backgroundConeExcitationRate = mean(theConeExcitationsSingleConePeriodic(:))/coneMosaicIntegrationTime;
-    theState = os.osAdaptSteadyState(backgroundConeExcitationRate, [1 1]);
-
-    theState.timeStep = os.timeStep;
-    os.setModelState(theState);
-
-    % Upsample to osTimeStep
-    nTimeBins = size(theConeExcitationsSingleConePeriodic,2);
-    upSampleFactor = floor(coneMosaicIntegrationTime / osTimeStep);
-    theOSphotocurrentResponseTimeBinsNum = nTimeBins*upSampleFactor-1;
-
-    tIn = linspace(0,1,nTimeBins);
-    tOut = linspace(0,1,theOSphotocurrentResponseTimeBinsNum);
-    theOSphotoCurrentResponseTimeAxis = (0:(theOSphotocurrentResponseTimeBinsNum-1))*osTimeStep;
-    photocurrentResponseTimeAxis = 0:pCurrentTemporalResolutionSeconds:theOSphotoCurrentResponseTimeAxis(end);
-
-
-    % Compute background photocurrent
-    theOSphotoCurrentResponse = squeeze(...
-                os.osAdaptTemporal(ones(1, 1, theOSphotocurrentResponseTimeBinsNum) * backgroundConeExcitationRate));
-
-    % Downsample to the desired pCurrentTemporalResolutionSeconds
-    thePcurrentBackgroundResponse = qinterp1(theOSphotoCurrentResponseTimeAxis, theOSphotoCurrentResponse, photocurrentResponseTimeAxis,1);
-
-
-    % Upsample theConeExcitationsSingleConePeriodic to the os.timeStep timebase
-    theConeExcitationsRateSingleConePeriodic = qinterp1(tIn, theConeExcitationsRateSingleConePeriodic, tOut, 0);
-
-    % Compute full photocurrent model
-    theOSphotoCurrentResponse = squeeze(...
-                os.osAdaptTemporal(reshape(theConeExcitationsRateSingleConePeriodic, [1 1 numel(theConeExcitationsRateSingleConePeriodic)])));
-
-    % Downsample to the desired pCurrentTemporalResolutionSeconds
-    thePcurrentResponse = qinterp1(theOSphotoCurrentResponseTimeAxis, theOSphotoCurrentResponse, photocurrentResponseTimeAxis,1);
+    backgroundPhotocurrent = thePcurrentBackgroundResponseTransient(end);
 
     % Only keep pCurrent response during the last stimulus period
     dToriginal = temporalSupportSeconds(2)-temporalSupportSeconds(1);
@@ -533,114 +515,13 @@ function [temporalSupportPhotocurrent, theConePhotoCurrentResponse, backgroundPh
     tOneStimulusCycle = temporalSupportSeconds(end)-temporalSupportSeconds(1);
     idx = find(photocurrentResponseTimeAxis >= photocurrentResponseTimeAxis(end)-(tOneStimulusCycle+0.5*dToriginal-dT));
 
-    theConePhotoCurrentTimeAxis = photocurrentResponseTimeAxis(idx);
+    theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse(idx);
+    temporalSupportPhotocurrent = photocurrentResponseTimeAxis(idx);
 
     % Time support starts at 0 msec
-    temporalSupportPhotocurrent = theConePhotoCurrentTimeAxis - theConePhotoCurrentTimeAxis(1);
-
-    % Substract the bckground pCurrent at each time point, to compute the differential pCurrent (stim-background)
-    theConePhotoCurrentResponse = (thePcurrentResponse(idx)-thePcurrentBackgroundResponse(idx));
-
-    backgroundPhotocurrent = abs(thePcurrentBackgroundResponse(end));
-
-    % Make it a modulation with respect to background pCurrent at the last time point.
-    % We probably do not want to turn into modulation
-    %theConePhotoCurrentResponse = theConePhotoCurrentResponse / backgroundPhotocurrent;
+    temporalSupportPhotocurrent = temporalSupportPhotocurrent - temporalSupportPhotocurrent(1);
 end
 
-
-function Yi = qinterp1(x,Y,xi,methodflag)
-    % Performs fast interpolation compared to interp1
-    %
-    % qinterp1 provides a speedup over interp1 but requires an evenly spaced
-    % x array.  As x and y increase in length, the run-time for interp1 increases
-    % linearly, but the run-time for
-    % qinterp1 stays constant.  For small-length x, y, and xi, qinterp1 runs about
-    % 6x faster than interp1.
-    %
-    %
-    % Usage:
-    %   yi = qinterp1(x,Y,xi)  - Same usage as interp1
-    %   yi = qinterp1(x,Y,xi,flag)
-    %           flag = 0       - Nearest-neighbor
-    %           flag = 1       - Linear (default)
-    %
-    % Example:
-    %   x = [-5:0.01:5];   y = exp(-x.^2/2);
-    %   xi = [-4.23:0.3:4.56];
-    %   yi = qinterp1(x,y,xi,1);
-    %
-    % Usage restrictions
-    %    x must be monotonically and evenly increasing
-    %    e.g.,  x=-36:0.02:123;
-    %
-    %    Y may be up to two-dimensional
-    %
-    % Using with non-evenly spaced arrays:
-    %   Frequently the user will wish to make interpolations "on the fly" from
-    %   a fixed pair of library (i.e., x and y) vectors.  In this case, the
-    %   user can generate an equally-spaced set of library data by calling
-    %   interp1 once, and then storing this library data in a MAT-file or
-    %   equivalent.  Because the speed of qinterp1 is independent of the length
-    %   of the library vectors, the author recommends over-sampling this
-    %   generated set untill memory considerations start limitting program speed.
-    %
-    %   If the user wishes to use two or more spacings (i.e., a closely-spaced
-    %   library in the region of fine features, and a loosely-spaced library in
-    %   the region of coarse features), just create multiple libraries, record
-    %   the switching points, and send the search data to different qinterp1
-    %   calls depending on its value.
-    %
-    %   Example:
-    %       x1 = [-5:0.01:5];   x2 = [-40:1:-5 5:1:40];
-    %       y1 = exp(-x1.^2/3); y2 = exp(-x2.^2/3);
-    %       xi = [-30:0.3:30];
-    %       in = xi < 5 & xi > -5;
-    %       yi(in) = qinterp1(x1,y1,xi(in));
-    %       yi(~in) = qinterp1(x2,y2,xi(~in));
-    % Author: N. Brahms
-    % Copyright 2006
-    % Forces vectors to be columns
-    x = x(:); xi = xi(:);
-    sx = size(x); sY = size(Y);
-    if sx(1)~=sY(1)
-        if sx(1)==sY(2)
-            Y = Y';
-        else
-            error('x and Y must have the same number of rows');
-        end
-    end
-    if nargin>=4
-        method=methodflag;
-    else
-        method = 1;    % choose nearest-lower-neighbor, linear, etc.
-                       % uses integer over string for speed
-    end
-    % Gets the x spacing
-    ndx = 1/(x(2)-x(1)); % one over to perform divide only once
-    xi = xi - x(1);      % subtract minimum of x
-    % Fills Yi with NaNs
-    s = size(Y);
-    if length(s)>2
-        error('Y may only be one- or two-dimensional');
-    end
-    Yi = NaN*ones(length(xi),s(2));
-    switch method
-        case 0 %nearest-neighbor method
-            rxi = round(xi*ndx)+1;        % indices of nearest-neighbors
-            flag = rxi<1 | rxi>length(x) | isnan(xi);
-                                          % finds indices out of bounds
-            nflag = ~flag;                % finds indices in bounds
-            Yi(nflag,:) = Y(rxi(nflag),:);
-        case 1 %linear interpolation method
-            fxi = floor(xi*ndx)+1;          % indices of nearest-lower-neighbors
-            flag = fxi<1 | fxi>length(x)-1 | isnan(xi);
-                                            % finds indices out of bounds
-            nflag = ~flag;                  % finds indices in bounds
-            Yi(nflag,:) = (fxi(nflag)-xi(nflag)*ndx).*Y(fxi(nflag),:)+...
-                (1-fxi(nflag)+xi(nflag)*ndx).*Y(fxi(nflag)+1,:);
-    end
-end
 
 
 
