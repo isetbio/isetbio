@@ -7,7 +7,7 @@ function theDisplay = presentationDisplay(...
     p = inputParser;
     p.addParameter('bitDepth', 20, @isscalar);
     p.addParameter('meanLuminanceCdPerM2', 50, @isscalar);
-    p.addParameter('luminanceHeadroom', 1, @isscalar);
+    p.addParameter('luminanceHeadroom', 0.1, @isscalar);
     p.parse(varargin{:});
 
 

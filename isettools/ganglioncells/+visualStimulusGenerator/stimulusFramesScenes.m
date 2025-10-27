@@ -135,9 +135,11 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
 
         % Make sure we are in gamut (no subpixels with primary values outside of [0 1]
         outOfGamutPixels = numel(find((RGBimage(:)<0)|(RGBimage(:)>1)));
+        belowRangePixelPercentage = 100*numel(find((RGBimage(:)<0)))/numel(RGBimage);
+        aboveRangePixelPercentage = 100*numel(find((RGBimage(:)>1)))/numel(RGBimage);
         assert(outOfGamutPixels==0, ...
-            sprintf('%d subpixels with primary values > 1; %d subpixels with primary values < 0', ...
-            numel(find(RGBimage>1)), numel(find(RGBimage<0))));
+            sprintf('%d subpixels (%2.2f%%) with primary values > 1;\n%d (%2.2f%%) subpixels with primary values < 0', ...
+            numel(find(RGBimage>1)), aboveRangePixelPercentage, numel(find(RGBimage<0)), belowRangePixelPercentage));
 
         % Generate a gamma corrected RGB image (RGBsettings) that we can pop in the
         % isetbio scene straightforward
