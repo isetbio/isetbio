@@ -10,6 +10,9 @@ function [oi, psf, support, zCoeffs, subjID]  = oiPosition(zCoeffDatabase,vararg
 %   database (Artal2012 or Polans2015), at a given retinal
 %   eccentricity and pupil size.
 %
+%   N.B. The Artal and Polans analyses all assume 290 micronsPerDegree
+%   at the retina.
+%
 % Inputs
 %   zCoeffDatabase  - String, must be 'Polans2015' or 'Artal2012'.
 %
@@ -142,8 +145,10 @@ support.psfX = psfSupportMinutesX * (micronsPerDegree/60);
 support.psfY = psfSupportMinutesY * (micronsPerDegree/60);
 support.wave = psfSupportWavelength; 
 
-% Returns the central position in case it was the default.  Always
-% good to know.
+% Returns the central position in case it was the default.
 support.position = position;
+
+% This is an important assumption, so we carry it along.
+support.micronsPerDegree = micronsPerDegree;
 
 end
