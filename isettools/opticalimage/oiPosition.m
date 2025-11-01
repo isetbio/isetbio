@@ -65,7 +65,7 @@ varargin = ieParamFormat(varargin);
 
 p = inputParser;
 p.addRequired('zCoeffDatabase', @(x)(ismember(x, {'Polans2015', 'Artal2012'})));
-p.addParameter('position',[3 0],@isvector);
+p.addParameter('position',[3 0],@isvector);    % Visual field position deg
 p.addParameter('pupildiameter',3,@isnumeric)   % millimeters
 p.addParameter('subjectrank',1,@isnumeric);    % PSF quality (Strehl)
 p.addParameter('wave',550,@isscalar);          % nanometers
