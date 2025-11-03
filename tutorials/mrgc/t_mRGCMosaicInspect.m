@@ -21,6 +21,14 @@ function t_mRGCMosaicInspect(options)
 
 % Examples:
 %{
+
+%
+% NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
+% the directions discribed in:
+%    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
+% under section "Configuring ISETBio to access RGC resources and run RGC simulations"
+%
+
     t_mRGCMosaicInspect();
 
     % Visualize a mosaic synthesized at 10 deg along the temporal meridian
@@ -39,13 +47,15 @@ function t_mRGCMosaicInspect(options)
         'opticsSubjectName', 'PLOSpaperDefaultSubject');
 
     % Visualize a mosaic synthesized at 10 deg along the temporal meridian
-    % and the cone pooling maps of RGC with index 90
+    % and the cone pooling maps of RGC with index 490
     t_mRGCMosaicInspect(...
         'rgcMosaicName', 'PLOSpaperTemporal10DegsMosaic', ...
         'opticsSubjectName', 'PLOSpaperDefaultSubject', ...
         'targetRGCindexForVisualizingConePoolingMaps', 490);
 
-    % Visualize a mosaic synthesized at 4 deg along the temporal meridian
+% ETTBSkip
+
+    % Visualize a mosaic synthesized at 10 deg along the temporal meridian
     % and the cone pooling maps of RGCs along the horizontal meridian
     t_mRGCMosaicInspect(...
         'rgcMosaicName', 'PLOSpaperTemporal10DegsMosaic', ...

@@ -20,10 +20,41 @@ function t_mRGCMosaicSynthesizeAtStage1(options)
 
 % Examples:
 %{
+
+% UTTBSkip
+
+% Skip running these examples during autovalidation because some of them load
+% a lattice progression file to visualize the generation progress.
+% Such files are > 100 MBytes, so they cannot be included in a regular (non-gitlfs)
+% github repository.
+
+% NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
+% the directions discribed in:
+%    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
+% under section "Configuring ISETBio to access RGC resources and run RGC simulations"
+%
+
     % Example #1: Simply inspect the generation of the default mRGC mosaic lattice
     t_mRGCMosaicSynthesizeAtStage1();
 
-    % Example #2: Inspect the generation of a specific lattice. Do the following:
+    % Example #2: Synthesize a lattice, here, a lattice of the
+    % mRGC mosaic in the right eye which is 16-deg wide
+    % Note: synthesizing lattices is an iterative, compute-intense
+    % operation which can take many hours to complete
+    % depending on the power of the computer it is run on
+    t_mRGCMosaicSynthesizeAtStage1(...
+        'whichEye', 'right eye', ...
+        'neuronType', 'midget ganglion cells', ...
+        'sourceLatticeSizeDegs', 16, ...
+        'maxIterations', 512, ...
+        'onlyInspectLattice', false);
+
+    % Example #3: Inspect the generation of a specific lattice.
+    % This example should not be run by regular users as the required lattice
+    % progress files exceed the 100 MByte limit of regular github repositories
+    % and are therefore not included in ISETBio.
+    %
+    % This is a multi-step process: Do the following:
     % Step1: Find filenames of lattices that are available with their
     generation progress history included
     theLatticePatchFileNames = retinalattice.listPrecomputedPatches(...
@@ -44,17 +75,6 @@ function t_mRGCMosaicSynthesizeAtStage1(options)
         'sourceLatticeSizeDegs', sourceLatticeSizeDegs, ...
         'onlyInspectLattice', true);
 
-    % Example #3: Synthesize a lattice, here, a lattice of the
-    % mRGC mosaic in the right eye which is 16-deg wide
-    % Note: synthesizing lattices is an iterative, compute-intense 
-    % operation which can take many hours to complete 
-    % depending on the power of the computer it is run on
-    t_mRGCMosaicSynthesizeAtStage1(...
-        'whichEye', 'right eye', ...
-        'neuronType', 'midget ganglion cells', ...
-        'sourceLatticeSizeDegs', 16, ...
-        'maxIterations', 512, ...
-        'onlyInspectLattice', false);
 %}
 
 arguments
