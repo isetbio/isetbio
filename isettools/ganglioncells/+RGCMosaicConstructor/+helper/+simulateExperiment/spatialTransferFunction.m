@@ -8,6 +8,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
 
   p = inputParser;
   p.addParameter('computeInputConeMosaicResponses', false, @islogical);
+  p.addParameter('inspectInputConeMosaicResponses', false, @islogical);
   p.addParameter('computeMRGCMosaicResponses', false, @islogical);
   p.addParameter('debugInputConeMosaicPcurrentResponse', false, @islogical);
   p.addParameter('visualizeResponse', false, @islogical);
@@ -21,6 +22,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   % Execute the parser
   p.parse(varargin{:});
   computeInputConeMosaicResponses = p.Results.computeInputConeMosaicResponses;
+  inspectInputConeMosaicResponses = p.Results.inspectInputConeMosaicResponses;
   computeMRGCMosaicResponses = p.Results.computeMRGCMosaicResponses;
   mRGCNonLinearityParams = p.Results.mRGCNonLinearityParams;
   customTemporalFrequencyAndContrast = p.Results.customTemporalFrequencyAndContrast;
@@ -51,10 +53,22 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
          validateScenes, visualizeCustomConeFundamentals);
   end
 
+  if (inspectInputConeMosaicResponses)
+      onlyInspectInputConeMosaicResponses = true;
+
+      computeMRGCMosaicSTF(theMRGCMosaic, theInputConeMosaicSTFResponsesFullFileName, ...
+        theMRGCMosaicSTFResponsesFullFileName, visualizeResponse, ...
+        mRGCNonLinearityParams, ...
+        onlyInspectInputConeMosaicResponses);
+  end
+
   if (computeMRGCMosaicResponses)
-    computeMRGCMosaicSTF(theMRGCMosaic, theInputConeMosaicSTFResponsesFullFileName, ...
-      theMRGCMosaicSTFResponsesFullFileName, visualizeResponse, ...
-      mRGCNonLinearityParams);
+      onlyInspectInputConeMosaicResponses = false;
+
+      computeMRGCMosaicSTF(theMRGCMosaic, theInputConeMosaicSTFResponsesFullFileName, ...
+        theMRGCMosaicSTFResponsesFullFileName, visualizeResponse, ...
+        mRGCNonLinearityParams, ...
+        onlyInspectInputConeMosaicResponses);
   end
 
 end
@@ -285,6 +299,7 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
 
 
    if (debugInputConeMosaicPcurrentResponse)
+    fprintf('Paused execution!!')
     pause
    end
 
@@ -350,128 +365,50 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
   if (debugInputConeMosaicPcurrentResponse)
     for iConeIndex = 1:size(theConeMosaicExcitationResponseSequence,2)
 
-      % Make the cone excitation response periodic by concatenating nWarmUpPeriods
-      theSingleConeExcitations = theConeMosaicExcitationResponseSequence(1:end-1,iConeIndex);
+        % Retrieve the cone excitation response
+        theSingleConeExcitations = theConeMosaicExcitationResponseSequence(1:end-1,iConeIndex);
 
-      [~, theConePhotoCurrentDifferentialResponse, ...
-       theConeBackgroundPhotoCurrent, ...
-       theConeExcitationsSingleConePeriodic, ...
-       photocurrentResponseTimeAxisPeriodic, ...
-       thePcurrentResponsePeriodic, ...
-       thePcurrentBackgroundResponseTransient] = computeSingleConePhotocurrentResponse(...
+        % Compute photocurrent for this cone making the cone excitation response periodic by concatenating nWarmUpPeriods
+        [~, theConePhotoCurrentDifferentialResponse, ...
+           theConeBackgroundPhotoCurrent, ...
+           theConeExcitationsSingleConePeriodic, ...
+           photocurrentResponseTimeAxisPeriodic, ...
+           thePcurrentResponsePeriodic, ...
+           thePcurrentBackgroundResponseTransient] = computeSingleConePhotocurrentResponse(...
                 eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
                 nWarmUpPeriods, coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, true);
 
-      theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
-      theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
-
-      switch (coneTypes(iConeIndex))
-        case cMosaic.LCONE_ID
-          theColor = [231 187 192]/255;
-        case cMosaic.MCONE_ID
-          theColor = [128 207 218]/255;
-        case cMosaic.SCONE_ID
-          theColor = [0 0 1];
-      end
-
-      theResponse = squeeze(theConeMosaicExcitationResponseSequence(:,iConeIndex));
-      m1 = max(theResponse(:));
-      m2 = min(theResponse(:));
-      coneContrast = (m1-m2)/(m1+m2);
-      dt = (temporalSupportSeconds(2)-temporalSupportSeconds(1))/2;
-
-      coneExcitationsRange = [0 1800];
-      coneExcitationsTicks = 0:100:2000;
-
-      coneExcitationsRange = [0 500];
-      coneExcitationsTicks = 0:50:2000;
-
-      coneExcitationRateRange = [0 20000];
-      coneExcitationRateTicks = 0:2000:30000;
-
-      coneExcitationRateTickLabels = cell(1, numel(coneExcitationRateTicks));
-      for i = 1:numel(coneExcitationRateTicks)
-        coneExcitationRateTickLabels{i} = sprintf('%2.0fk', coneExcitationRateTicks(i)/1000);
-      end
-
-      photocurrentRange = [-75 -15];
-      deltaPhotocurrentRange = [-25 25];
-
-      %photocurrentRange = [-80 -0];
-      %deltaPhotocurrentRange = [-45 35]
-
-      photocurrentTicks = -80:5:80;
-      timeTicks = 0:100:10000;
-
-      dTSeconds = temporalSupportSeconds(2)-temporalSupportSeconds(1);
-
-      hFig = figure(33); clf;
-      set(hFig, 'Position', [10 10 1600 1150], 'Color', [1 1 1]);
-      subplot(2,3,3);
-
-      stairs(temporalSupportSeconds*1e3, theResponse/dTSeconds, 'Color', 'k', 'LineWidth', 3.0);
-      hold on;
-      stairs(temporalSupportSeconds*1e3, theResponse/dTSeconds, 'Color', theColor, 'LineWidth', 1.5);
-      plot([temporalSupportSeconds(1) temporalSupportSeconds(end)]*1e3, 0.5*(m1+m2)/dTSeconds*[1 1], '--', 'LineWidth', 1.0, 'Color', 'k', 'LineWidth', 1.0);
-      ylabel('cone excitation rate (R*/sec)')
-      xlabel('time (msec)');
-      xtickangle(90);
-
-      title(sprintf('response modulation: %2.2f', coneContrast), 'FontWeight', 'Normal');
-      set(gca, 'YLim', coneExcitationRateRange, 'YTick', coneExcitationRateTicks, 'YTickLabel', coneExcitationRateTickLabels, ...
-        'XTick', timeTicks, 'XLim', [temporalSupportSeconds(1) temporalSupportSeconds(end)+dt]*1e3, 'FontSize', 20);
-      grid on; box off
-
-      subplot(2,3,[1 2]);
-      stairs(temporalSupportSecondsPeriodic*1e3, theConeExcitationsSingleConePeriodic/dTSeconds, 'Color', 'k', 'LineWidth', 3);
-      hold on;
-      stairs(temporalSupportSecondsPeriodic*1e3, theConeExcitationsSingleConePeriodic/dTSeconds, 'Color', theColor, 'LineWidth', 1.5);
-      plot([temporalSupportSecondsPeriodic(1) temporalSupportSecondsPeriodic(end)]*1e3, 0.5*(m1+m2)/dTSeconds*[1 1], '--', 'LineWidth', 1.0, 'Color', 'k', 'LineWidth', 1.0);
-      ylabel('cone excitation rate (R*/sec)')
-      xlabel('time (msec)');
-      title(sprintf('response modulation: %2.2f', coneContrast), 'FontWeight', 'Normal');
-      xtickangle(90);
-      set(gca, 'YLim', coneExcitationRateRange, 'YTick', coneExcitationRateTicks, 'YTickLabel', coneExcitationRateTickLabels, ...
-        'XTick', timeTicks, 'XLim', [temporalSupportSecondsPeriodic(1) temporalSupportSecondsPeriodic(end)]*1e3, 'FontSize', 20);
-      grid on; box off
-
-      subplot(2,3,6);
-      plot(temporalSupportPhotocurrent*1e3, theConePhotoCurrentDifferentialResponse, '-', 'Color', 'k', 'LineWidth', 3);
-      hold on
-      plot(temporalSupportPhotocurrent*1e3, theConePhotoCurrentDifferentialResponse, '-', 'Color', theColor, 'LineWidth', 1.5);
-      plot(temporalSupportPhotocurrent*1e3,  temporalSupportPhotocurrent*0, 'k--');
-      title(sprintf('(+): %2.2f, (-): %2.2f', max(theConePhotoCurrentDifferentialResponse), min(theConePhotoCurrentDifferentialResponse)), 'FontWeight', 'Normal');
-      ylabel('differential pCurrent (pAmps)')
-      xlabel('time (msec)');
-      xtickangle(90);
-      grid on; box off
-      set(gca, 'YLim', deltaPhotocurrentRange, 'YTick', photocurrentTicks, 'XTick', timeTicks, 'XLim', [temporalSupportPhotocurrent(1) temporalSupportPhotocurrent(end)+dt]*1e3, 'FontSize', 20);
+        % Retrieve the photocurrent response
+        theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
+        theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
 
 
-      subplot(2,3,[4 5]);
-      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentResponsePeriodic+theConeBackgroundPhotoCurrent, '-', 'Color', 'k', 'LineWidth', 3);
-      hold on;
-      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentResponsePeriodic+theConeBackgroundPhotoCurrent, '-', 'Color', theColor, 'LineWidth', 1.5);
-      plot(photocurrentResponseTimeAxisPeriodic*1e3, thePcurrentBackgroundResponseTransient, '--', 'Color', 'k', 'LineWidth', 1.0);
-      set(gca, 'YLim', photocurrentRange , 'YTick', photocurrentTicks,  'XTick', timeTicks, 'XLim', [photocurrentResponseTimeAxisPeriodic(1) photocurrentResponseTimeAxisPeriodic(end)]*1e3, 'FontSize', 20);
-      grid on; box off
-      xtickangle(90);
-      title(sprintf('(+): %2.2f, (-): %2.2f', max(theConePhotoCurrentDifferentialResponse), min(theConePhotoCurrentDifferentialResponse)), 'FontWeight', 'Normal');
-      ylabel('pCurrent (pAmps)')
-      xlabel('time (msec)');
+        % Contrast cone excitations to photocurrents
+        RGCMosaicAnalyzer.visualize.coneExcitationsVsPhotocurrentResponse(coneTypes(iConeIndex), ...
+          temporalSupportSeconds, ...
+          theSingleConeExcitations, ...
+          temporalSupportPhotocurrent, ...
+          theConePhotoCurrentDifferentialResponse, ...
+          theConeBackgroundPhotoCurrent, ...
+          theConeExcitationsSingleConePeriodic, ...
+          temporalSupportSecondsPeriodic);
 
       disp('Hit enter to continue')
       pause
+
     end % for iConeIndex
   else
     parfor iConeIndex = 1:size(theConeMosaicExcitationResponseSequence,2)
-      % Make the cone excitation response periodic by concatenating nWarmUpPeriods
+
+      % Retrieve the cone excitation response
       theSingleConeExcitations = theConeMosaicExcitationResponseSequence(1:end-1,iConeIndex);
 
+      % Compute photocurrent for this cone making the cone excitation response periodic by concatenating nWarmUpPeriods
       [~, theConePhotoCurrentDifferentialResponse, theConeBackgroundPhotoCurrent] = ...
           computeSingleConePhotocurrentResponse(eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, nWarmUpPeriods, ...
             coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, true);
 
+      % Retrieve the photocurrent response
       theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
       theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
     end % parfor iConeIndex
@@ -525,8 +462,13 @@ end
 
 
 
-function computeMRGCMosaicSTF(thePassedMRGCMosaic, theInputConeMosaicSTFResponsesFullFileName, ...
-  theMRGCMosaicSTFResponsesFullFileName, visualizeComputedMRCMosaicSpatioTemporalResponse, mRGCNonLinearityParams)
+function computeMRGCMosaicSTF(...
+  thePassedMRGCMosaic, ...
+  theInputConeMosaicSTFResponsesFullFileName, ...
+  theMRGCMosaicSTFResponsesFullFileName, ...
+  visualizeComputedMRCMosaicSpatioTemporalResponse, ...
+  mRGCNonLinearityParams, ...
+  onlyInspectInputConeMosaicResponses)
 
 
   if (~isempty(mRGCNonLinearityParams)) && (strcmp(mRGCNonLinearityParams.type, 'photocurrent'))
@@ -548,12 +490,36 @@ function computeMRGCMosaicSTF(thePassedMRGCMosaic, theInputConeMosaicSTFResponse
 
      theInputConeMosaicSTFresponses = theInputConeMosaicPhotocurrents;
      theConeMosaicResponseTemporalSupportSeconds = theInputConeMosaicPhotocurrentTemporalSupportSeconds;
+
+     if (onlyInspectInputConeMosaicResponses)
+       inspectInputConeMosaicSpatioTemporalResponses(...
+          stimParams, ...
+          theMRGCMosaic.inputConeMosaic, ...
+          theInputConeMosaicSTFresponses, ...
+          theConeMosaicResponseTemporalSupportSeconds, ...
+          theInputConeMosaicPhotocurrents);
+
+       return;
+     end
+
   else
 
     fprintf('Loading computed input cone mosaic STF responses from %s.\n', theInputConeMosaicSTFResponsesFullFileName);
     load(theInputConeMosaicSTFResponsesFullFileName, 'theMRGCMosaic', 'stimParams', 'theInputConeMosaicSTFresponses');
 
     theConeMosaicResponseTemporalSupportSeconds = stimParams.temporalSupportSeconds;
+
+    if (onlyInspectInputConeMosaicResponses)
+      inspectInputConeMosaicSpatioTemporalResponses(...
+        stimParams, ...
+        theMRGCMosaic.inputConeMosaic, ...
+        theInputConeMosaicSTFresponses, ...
+        theConeMosaicResponseTemporalSupportSeconds, ...
+        []);
+
+      return;
+    end
+
   end
 
 
@@ -567,37 +533,6 @@ function computeMRGCMosaicSTF(thePassedMRGCMosaic, theInputConeMosaicSTFResponse
   % input cone mosaic
   clear 'theMRGCMosaic'
   theMRGCMosaic = thePassedMRGCMosaic;
-
-
-  debugConnectivity = false;
-  if (debugConnectivity)
-      hFig = figure(44);
-      ax = subplot(1,1,1);
-      for theRGCindex = 1:theMRGCMosaic.rgcsNum
-
-        centerConeIndices = theMRGCMosaic.singleCellConnectivityStats( theRGCindex, 'center', ...
-            'inputConeIndicesOnly', true, ...
-            'minConeWeightIncluded', 0.0001);
-
-        surroundConeIndices = theMRGCMosaic.singleCellConnectivityStats( theRGCindex, 'surround', ...
-            'inputConeIndicesOnly', true, ...
-            'minConeWeightIncluded', 0.0001);
-
-        plot(ax,...
-            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundConeIndices,1), ...
-            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundConeIndices,2), ...
-            'bo');
-        
-        hold(ax, 'on')
-        plot(ax,...
-            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(centerConeIndices,1), ...
-            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(centerConeIndices,2), ...
-            'r.');
-        drawnow;
-        hold(ax, 'off')
-      end % for theRGCindex 
-  end % if (debugConnectivity)
-
 
 
 
@@ -656,5 +591,84 @@ function computeMRGCMosaicSTF(thePassedMRGCMosaic, theInputConeMosaicSTFResponse
     end % for iSF
   end % for iOri
 
-  save(theMRGCMosaicSTFResponsesFullFileName, 'theMRGCMosaic', 'stimParams', 'theNoiseFreeSpatioTemporalMRGCMosaicResponses2DSTF', 'theMRGCMosaicResponseTemporalSupportSeconds');
+  save(theMRGCMosaicSTFResponsesFullFileName, ...
+    'theMRGCMosaic', 'stimParams', ...
+    'theNoiseFreeSpatioTemporalMRGCMosaicResponses2DSTF', ...
+    'theMRGCMosaicResponseTemporalSupportSeconds');
 end
+
+
+function inspectInputConeMosaicSpatioTemporalResponses(...
+  stimParams, ...
+  theInputConeMosaic, ...
+        theInputConeMosaicSTFresponses, ...
+        theInputConeMosaicResponseTemporalSupportSeconds, ...
+        theInputConeMosaicPhotocurrents)
+
+  orientationsNum = size(theInputConeMosaicSTFresponses,1);
+  sfsNum = size(theInputConeMosaicSTFresponses,2);
+
+  coneMosaicResponseSize = [1 numel(theConeMosaicResponseTemporalSupportSeconds) theInputConeMosaic.conesNum];
+
+  theNoiseFreeConeMosaicSpatioTemporalPhotocurrentResponses = [];
+
+  stimParams
+  pause
+  coneExcitationsResponseRange = [min(theInputConeMosaicSTFresponses(:)) max(theInputConeMosaicSTFresponses(:))];
+
+  hFig = figure(44);clf;
+  ax1 = subplot(1,2,1);
+  ax2 = subplot(1,2,2);
+
+  for iOri = 1:orientationsNum
+    for iSF = 1:sfsNum
+
+      theNoiseFreeConeMosaicSpatioTemporalExcitationsResponses = ...
+            reshape(squeeze(theInputConeMosaicSTFresponses(iOri, iSF, :,:)), coneMosaicResponseSize);
+
+      if (~isempty(theInputConeMosaicPhotocurrents))
+        theNoiseFreeConeMosaicSpatioTemporalPhotocurrentResponses = ...
+            reshape(squeeze(theInputConeMosaicPhotocurrents(iOri, iSF, :,:)), coneMosaicResponseSize);
+      end
+
+      for iTimeBin = 1:numel(theInputConeMosaicResponseTemporalSupportSeconds)
+              theFrameResponse = theNoiseFreeSpatioTemporalMRCMosaicResponse(1,iTimeBin,:);
+              theMRGCMosaic.visualize(...
+                'figureHandle', hFig, ...
+                'axesHandle', ax1, ...
+                'activation', theFrameResponse, ...
+                'activationRange', coneExcitationsResponseRange, ...
+                'title', sprintf('cone excitations (%d msec)', 1000*theInputConeMosaicResponseTemporalSupportSeconds(iTimeBin)));
+
+              if (~isempty(theInputConeMosaicPhotocurrents))
+                theFrameResponse = theNoiseFreeConeMosaicSpatioTemporalPhotocurrentResponses(1,iTimeBin,:);
+                theMRGCMosaic.visualize(...
+                  'figureHandle', hFig, ...
+                  'axesHandle', ax1, ...
+                  'activation', theFrameResponse, ...
+                  'activationRange', photocurrentResponseRange, ...
+                  'title', 'photocurrents');
+              end
+
+
+
+          %    RGCMosaicAnalyzer.visualize.coneExcitationsVsPhotocurrentResponse(coneTypes(iConeIndex), ...
+          %temporalSupportSeconds, ...
+          %theSingleConeExcitations, ...
+          %temporalSupportPhotocurrent, ...
+          %theConePhotoCurrentDifferentialResponse, ...
+          %theConeBackgroundPhotoCurrent, ...
+          %theConeExcitationsSingleConePeriodic, ...
+          %temporalSupportSecondsPeriodic);
+
+
+
+              pause
+              drawnow;
+      end
+
+    end % for iSF
+  end
+
+end
+
