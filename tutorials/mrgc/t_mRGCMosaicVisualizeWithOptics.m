@@ -33,6 +33,10 @@ function t_mRGCMosaicVisualizeWithOptics(options)
         'croppedMosaicSizeDegs', [2 1], ...
         'croppedMosaicEccentricityDegs', [-12 0]);
 
+% ETTBSkip
+
+    t_mRGCMosaicVisualizeWithOptics('promptUserForMosaic', true)
+
 %}
 
 arguments
@@ -46,6 +50,9 @@ arguments
 
     % Prompt user for mosaic?
     options.promptUserForMosaic (1,1) logical = false;
+
+    options.exportVisualizationPDF (1,1) logical = false;
+    options.exportVisualizationPNG (1,1) logical = false;
 end % arguments
 
 
@@ -54,6 +61,9 @@ end % arguments
 % Mosaic crop params 
 croppedMosaicSizeDegs = options.croppedMosaicSizeDegs;
 croppedMosaicEccentricityDegs = options.croppedMosaicEccentricityDegs;
+
+exportVisualizationPDF = options.exportVisualizationPDF;
+exportVisualizationPNG = options.exportVisualizationPNG;
 
 % Close previously open figures
 closePreviouslyOpenFigures = options.closePreviouslyOpenFigures;
@@ -78,7 +88,6 @@ else
     else
     mRGCMosaicFilename = theFiles(1).name;
 end
-
 
 % Load the user-selected prebaked mRGCmosaic
 load(fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic');
@@ -216,8 +225,8 @@ theMRGCMosaic.visualize(...
     'plotTitle', sprintf('min center weight visualized: %2.3f', minCenterConeWeight), ...
     'withFigureFormat', ff, ...
     'visualizationPDFfileName', sprintf('zoomedInMRGCmosaicWithPSFminCenterConeWeight_%2.3f', minCenterConeWeight), ...
-    'exportVisualizationPDF', true, ...
-    'exportVisualizationPNG', true, ...
+    'exportVisualizationPDF', exportVisualizationPDF, ...
+    'exportVisualizationPNG', exportVisualizationPNG, ...
     'exportVisualizationPDFdirectory', exportVisualizationPDFdirectory);
 
 
