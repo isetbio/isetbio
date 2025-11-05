@@ -7,9 +7,9 @@ function [H, spatialSupportDegs, spatialPhasesDegs, temporalSupportSeconds, temp
 
     if (isfield(stimParams, 'temporalFrequencyHz') && (isfield(stimParams, 'durationSeconds')))
         oneCycleDurationSeconds = 1.0/stimParams.temporalFrequencyHz;
-        framesNumPerCycle = 1 + 360/stimParams.spatialPhaseIncrementDegs;
+        framesNumPerCycle = 360/stimParams.spatialPhaseIncrementDegs;
         frameDurationSeconds = oneCycleDurationSeconds / framesNumPerCycle;
-        framesNum = round(stimParams.durationSeconds / frameDurationSeconds);
+        framesNum = 1+round(stimParams.durationSeconds / frameDurationSeconds);
         spatialPhasesDegs = (0:(framesNum-1)) * stimParams.spatialPhaseIncrementDegs;
     else
         % Only generate one cycle
