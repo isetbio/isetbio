@@ -31,7 +31,7 @@ classdef constants
         % found in isetbio/calculators/opticsAssessment
          function ranking = subjectRanking(whichEye)
              switch (whichEye)
-                 case ArtalOptics.constants.leftEye
+                 case {ArtalOptics.constants.leftEye,'left','lefteye'}
                      % Ranking strategy: 'resolution' (see analyzeArtalOptics.m)
                      ranking = [ ...
                           34    91    85    90    69    15 ...
@@ -44,7 +44,7 @@ classdef constants
                           52   119    28    48    97     5  ...
                           127    63    31    56    78    32];  
                          
-                 case ArtalOptics.constants.rightEye
+                 case {ArtalOptics.constants.rightEye,'right','righteye'}
                      % Ranking strategy: 'resolution' (see analyzeArtalOptics.m)
                      ranking = [ ...
                          49    69   101    26    51    70  ...
