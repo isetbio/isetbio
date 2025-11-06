@@ -148,11 +148,11 @@ function t_examplesVSS2024talk(options)
             'osBiophysicalModelWarmUpTimeSeconds', 1.0, ...         % time for the OSbiophysical model to warm up around its steady state
             'osBiophysicalModelTemporalResolutionSeconds', 1e-5, ... % very high temporal resolution required for accurate computation of the OSbiophysical model
             'pCurrentTemporalResolutionSeconds', pCurrentTemporalResolutionSeconds), ...    % resolution for saving (downsampling) of the computed photocurrents
-        'computeInputConeMosaicResponses', ~true, ...                      % computation stage 1
-        'computeInputConeMosaicResponsesBasedOnConeExcitations', true, ... % computation sub-stage 1A: compute the cone excitations
-        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  ~true, ... % computation sub-stage 1B: compute the photocurrents
+        'computeInputConeMosaicResponses', true, ...                      % computation stage 1
+        'computeInputConeMosaicResponsesBasedOnConeExcitations', ~true, ... % computation sub-stage 1A: compute the cone excitations
+        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  true, ... % computation sub-stage 1B: compute the photocurrents
         'visualizeInputConeMosaicResponses', ~true, ...                    % set this to true to visualize the dynamic cone mosaic response during step 1A
-        'inspectInputConeMosaicResponses', true, ...                       % computation sub-stage 1C: visualize exemplar cone excitation & photocurrent responses
+        'inspectInputConeMosaicResponses', ~true, ...                       % computation sub-stage 1C: visualize exemplar cone excitation & photocurrent responses
         'computeMRGCMosaicResponses', false ...                            % computation stage 2:  compute the mRGC responses
         );
 
