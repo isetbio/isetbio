@@ -126,6 +126,7 @@ p.addParameter('dataonly',false,@islogical);   % NYI
 p.addParameter('labelcones',false,@islogical)  % for excitations, show cones colored by type
 p.addParameter('lens',[],@(x)(isa(x,'Lens')));
 p.addParameter('coneslinewidth',2,@isnumeric);
+p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
 
 % Horizontal line key val pairs
 p.addParameter('xdeg',0,@isnumeric);
@@ -148,7 +149,13 @@ end
 switch ieParamFormat(plotType)
     case {'conemosaic','mosaic'}
         % We should enable passing in params
-        cmosaic.visualize;
+        tmp = cmosaic.visualize;        
+        hdl = tmp.axesHandle;
+        frame = getframe(hdl);
+        uData.img = frame.cdata;
+        uData.xlim = get(hdl,'xlim');
+        uData.ylim = get(hdl,'ylim');
+
     case {'excitations','activations'}
         % Show the activations in an image
         % We should choose one - excitations or activations - for
@@ -163,6 +170,7 @@ switch ieParamFormat(plotType)
         params.figureHandle = hdl;
         params.coneslinewidth = p.Results.coneslinewidth;  % Thickness of surrounding lines
         params.labelConesInActivationMap = p.Results.labelcones;
+        params.domain = p.Results.domain;
 
         % Return
         tmp = cmosaic.visualize(params);
