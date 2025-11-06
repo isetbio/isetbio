@@ -149,6 +149,9 @@ arguments
     % ---- Choices of actions to perform ----
     % Whether to compute the input cone mosaic STF responses
     options.computeInputConeMosaicResponses (1,1) logical = false;
+    options.computeInputConeMosaicResponsesBasedOnConeExcitations (1,1) logical = true;
+    options.computeInputConeMosaicResponsesBasedOnPhotocurrents (1,1) logical = true;
+
 
     % Whether to inspect the input cone mosaic STF responses
     options.inspectInputConeMosaicResponses (1,1) logical = false;
@@ -202,6 +205,8 @@ visualizeInputConeMosaicResponses = options.visualizeInputConeMosaicResponses;
 
 % Actions to perform
 computeInputConeMosaicResponses = options.computeInputConeMosaicResponses;
+computeInputConeMosaicResponsesBasedOnConeExcitations = options.computeInputConeMosaicResponsesBasedOnConeExcitations;
+computeInputConeMosaicResponsesBasedOnPhotocurrents = options.computeInputConeMosaicResponsesBasedOnPhotocurrents;
 inspectInputConeMosaicResponses = options.inspectInputConeMosaicResponses;
 computeMRGCMosaicResponses = options.computeMRGCMosaicResponses;
 
@@ -233,15 +238,21 @@ postFix = sprintf('%s_%s_Ecc_%2.1f_%2.1f_Size_%2.1f_%2.1f', ...
     theMRGCmosaic.sizeDegs(1), ...
     theMRGCmosaic.sizeDegs(2));
    
-theInputConeMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('LS_ConeMosaicSTFresponses%s.mat', postFix));
+theInputConeMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('LScMosaicSTF_%s.mat', postFix));
 theInputConeMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
         intermediateDataDir, theInputConeMosaicSTFResponsesFileName, ...
         'generateMissingSubDirs', true);
 
-theMRGCMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('LS_MRGCMosaicSTFresponses%s.mat', postFix));
+theMRGCMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('LS_mRGCMosaicSTF%s.mat', postFix));
 theMRGCMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
         intermediateDataDir, theMRGCMosaicSTFResponsesFileName, ...
         'generateMissingSubDirs', true);
+
+% Test that we can save to disk
+dummy = '1';
+save(theInputConeMosaicSTFResponsesFullFileName, 'dummy');
+save(theMRGCMosaicSTFResponsesFullFileName, 'dummy');
+fprintf('Saved dummy to:\n\t%s\nand to\n\t%s\n\n', theInputConeMosaicSTFResponsesFullFileName,theMRGCMosaicSTFResponsesFullFileName);
 
 %theLeeShapleyAnalysisFileName = fullfile('scratchspace', sprintf('LeeShapleyAnalysis_%s.mat', postFix));
 %theLeeShapleyAnalysisFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
@@ -312,6 +323,8 @@ RGCMosaicAnalyzer.compute.inputConeMosaicSTFsForStimulusChromaticityAndOptics(..
     'orientationDeltaDegs', STForientationDeltaDegs, ...
     'visualizeStimulusSequence', visualizeStimulusSequence, ...
     'computeInputConeMosaicResponses', computeInputConeMosaicResponses, ...
+    'computeInputConeMosaicResponsesBasedOnConeExcitations', computeInputConeMosaicResponsesBasedOnConeExcitations, ...
+    'computeInputConeMosaicResponsesBasedOnPhotocurrents', computeInputConeMosaicResponsesBasedOnPhotocurrents, ...
     'inspectInputConeMosaicResponses', inspectInputConeMosaicResponses, ...
     'computeMRGCMosaicResponses', computeMRGCMosaicResponses);
 
