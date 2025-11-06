@@ -109,6 +109,7 @@ arguments
     options.STFcontrast (1,1) double = 0.5;
     options.STForientationDeltaDegs (1,1) double = 30;
 
+    options.displayType (1,:) char = '';
     options.displayLuminanceHeadroomPercentage (1,1) double = 5/100;
     options.coneFundamentalsOptimizedForStimPosition (1,1) logical = false;
 
@@ -157,6 +158,7 @@ STFtemporalFrequencyHz = options.STFtemporalFrequencyHz;
 STFsfSupport = options.STFsfSupport;
 STForientationDeltaDegs = options.STForientationDeltaDegs;
 
+displayType = options.displayType;
 displayLuminanceHeadroomPercentage = options.displayLuminanceHeadroomPercentage;
 coneFundamentalsOptimizedForStimPosition = options.coneFundamentalsOptimizedForStimPosition;
 
@@ -263,6 +265,7 @@ if (computeInputConeMosaicResponses) || inspectInputConeMosaicResponses || (comp
             theInputConeMosaicSTFResponsesFullFileName, ...
             theMRGCMosaicSTFResponsesFullFileName, ...
             visualizeInputConeMosaicResponses, ...
+            'displayType', displayType, ...
             'displayLuminanceHeadroomPercentage', displayLuminanceHeadroomPercentage, ...
             'customTemporalFrequencyAndContrast', customTemporalFrequencyAndContrast, ...
             'mRGCNonLinearityParams', mRGCNonLinearityParamsStruct, ...
