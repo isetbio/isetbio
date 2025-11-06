@@ -8,15 +8,21 @@ function theDisplay = presentationDisplay(...
     p.addParameter('bitDepth', 20, @isscalar);
     p.addParameter('meanLuminanceCdPerM2', 50, @isscalar);
     p.addParameter('luminanceHeadroom', 0.1, @isscalar);
+    p.addParameter('displayType', '', @ischar);
     p.parse(varargin{:});
 
 
     displayParams = generateConventionalxyYDisplayDefaultParams;
 
+    if (~isempty(p.Results.displayType))
+        displayParams.whichDisplay = p.Results.displayType;
+    end
     displayParams.viewingDistanceMeters = viewingDistanceMeters;
     displayParams.spectralSupport = wavelengthSupport;
     displayParams.meanLuminanceCdPerM2 = p.Results.meanLuminanceCdPerM2;
     displayParams.luminanceHeadroom = p.Results.luminanceHeadroom;
+
+    % Generate display
     theDisplay = generateConventionalxyYDisplay(displayParams);
 
     % Linear LUT

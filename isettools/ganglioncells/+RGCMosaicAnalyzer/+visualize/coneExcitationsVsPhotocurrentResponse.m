@@ -34,7 +34,7 @@ function coneExcitationsVsPhotocurrentResponse(...
     	coneResponseMaxModulation = max(abs([m1 m2]));
     end
 
-    dt = (temporalSupportSeconds(2)-temporalSupportSeconds(1))/2;
+    dTseconds = (temporalSupportSeconds(2)-temporalSupportSeconds(1))/2;
 
     if (coneExcitationsTransformedIntoResponseModulations)
     	coneExcitationRateRange = [-1 1];
@@ -44,14 +44,14 @@ function coneExcitationsVsPhotocurrentResponse(...
 	        coneExcitationRateTickLabels{i} = sprintf('%+0.1f', coneExcitationRateTicks(i));
 	    end
     else
-	    coneExcitationRateRange = [0 5000];
-	    coneExcitationRateTicks = 0:1000:5000;
+	    coneExcitationRateRange = [0 40000];
+	    coneExcitationRateTicks = 0:5000:40000;
 	    coneExcitationRateTickLabels = cell(1, numel(coneExcitationRateTicks));
 	    for i = 1:numel(coneExcitationRateTicks)
 	        coneExcitationRateTickLabels{i} = sprintf('%2.0fk', coneExcitationRateTicks(i)/1000);
 	    end
-	    theSingleConeExcitationsResponse = theSingleConeExcitationsResponse/dTSeconds;
-	    theConeExcitationsSingleConePeriodic = theConeExcitationsSingleConePeriodic/dTseconds;
+	    theSingleConeExcitationsResponse = theSingleConeExcitationsResponse/dTseconds ;
+	    theConeExcitationsSingleConePeriodic = theConeExcitationsSingleConePeriodic/dTseconds ;
 	    m1 = m1 / dTseconds;
 	    m2 = m2 / dTseconds;
 	end
@@ -66,7 +66,6 @@ function coneExcitationsVsPhotocurrentResponse(...
     photocurrentTicks = -80:5:80;
     timeTicks = 0:100:10000;
 
-    dTSeconds = temporalSupportSeconds(2)-temporalSupportSeconds(1);
 
     hFig = figure(33); clf;
     if (~isempty(photocurrentResponseTimeAxisPeriodic))
@@ -103,7 +102,7 @@ function coneExcitationsVsPhotocurrentResponse(...
       end
 
       set(gca, 'YLim', coneExcitationRateRange, 'YTick', coneExcitationRateTicks, 'YTickLabel', coneExcitationRateTickLabels, ...
-        'XTick', timeTicks, 'XLim', [temporalSupportSeconds(1) temporalSupportSeconds(end)+dt]*1e3, 'FontSize', 20);
+        'XTick', timeTicks, 'XLim', [temporalSupportSeconds(1) temporalSupportSeconds(end)+dTseconds]*1e3, 'FontSize', 20);
       grid on; box off
 
     % The photocurrent response (1 period)
@@ -123,7 +122,7 @@ function coneExcitationsVsPhotocurrentResponse(...
 	  xlabel('time (msec)');
 	  xtickangle(90);
 	  grid on; box off
-	  set(gca, 'YLim', deltaPhotocurrentRange, 'YTick', photocurrentTicks, 'XTick', timeTicks, 'XLim', [temporalSupportPhotocurrent(1) temporalSupportPhotocurrent(end)+dt]*1e3, 'FontSize', 20);
+	  set(gca, 'YLim', deltaPhotocurrentRange, 'YTick', photocurrentTicks, 'XTick', timeTicks, 'XLim', [temporalSupportPhotocurrent(1) temporalSupportPhotocurrent(end)+dTseconds]*1e3, 'FontSize', 20);
 
 
 	if (~isempty(photocurrentResponseTimeAxisPeriodic))
