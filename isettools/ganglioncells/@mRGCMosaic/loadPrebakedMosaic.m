@@ -1,4 +1,4 @@
-function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilename] = loadPrebakedMosaic(...
+function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilename, opticsParams] = loadPrebakedMosaic(...
     coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, varargin)
 
     % Parse input
@@ -21,7 +21,6 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
     % Extract mosaic and optics params for the original prebaked mosaic
     [mosaicParams, opticsParams] = RGCMosaicConstructor.helper.utils.extractSynthesizedMosaicAndOpticsParams(...
         pStruct);
-
 
     % Update mosaicParams with optional cropParams
     if (~isempty(cropParams))
@@ -81,6 +80,7 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
 
     theFileName = fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename);
     if (~isfile(theFileName))
+        theFileName
         fprintf(2, 'Could not locate a prebaked mosaic with the provided specifiers.\n');
         fprintf(2, 'See ''t_visualizePrebakedMosaicAndOptics'' for a different way to load prebaked mosaics\n');
         return;
@@ -123,5 +123,6 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
         theOI = [];
         thePSF = [];
     end
+
  end
 

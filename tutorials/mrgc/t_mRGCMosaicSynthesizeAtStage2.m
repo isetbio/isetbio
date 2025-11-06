@@ -24,8 +24,16 @@ function t_mRGCMosaicSynthesizeAtStage2(options)
 
 % Examples:
 %{
+
+%
+% NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
+% the directions discribed in:
+%    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
+% under section "Configuring ISETBio to access RGC resources and run RGC simulations"
+%
+
     % Visualize the default center-connected mRGC mosaic 
-    % using the default minimum visualized center cone weights
+    % using the default visualized center cone weights
     t_mRGCMosaicSynthesizeAtStage2(...
         'visualizeMosaicAtStage2C', true);
 

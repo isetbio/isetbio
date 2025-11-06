@@ -24,7 +24,18 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(options)
 % Examples:
 %{
 
-    
+% UTTBSkip
+
+% Skip running these examples during autovalidation because they require material
+% not included in the ISETBio repository.
+
+%
+% NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
+% the directions discribed in:
+%    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
+% under section "Configuring ISETBio to access RGC resources and run RGC simulations"
+%
+
     % Aggregate previously analyzed data over specific XY eccentricities
     t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(...
         'validationEccentricitiesDegsX', [2 3 4 5 6 7 8 9 10 11 12], ...

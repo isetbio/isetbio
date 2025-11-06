@@ -1,7 +1,7 @@
-% RGCMosaicConstructor.helper.utils.generateLocalPrefs(['useSLIMpaths', true])
+% RGCMosaicConstructor.helper.utils.generateLocalPrefs()
 function generateLocalPrefs(varargin)
     ip = inputParser;
-    ip.addParameter('useSLIMpaths', false, @islogical);
+    ip.addParameter('useSLIMpaths', false, @islogical); % Only for OLD mosaics
     % Execute the parser
     ip.parse(varargin{:});
     useSLIMpaths = ip.Results.useSLIMpaths;
@@ -17,7 +17,8 @@ function generateLocalPrefs(varargin)
     end % switch
 
     % Retrieve the location of the rgcResourcesRootDir. 
-    % This is computer/user specific
+    % This is computer/user specific.
+    % New users need to add a case for their computer
     switch (localHostName)
         case 'Lefkada'
             % User on Lefkada (Nicolas' laptop)
@@ -58,12 +59,14 @@ function generateLocalPrefs(varargin)
             % I want the code to stop and ask me if it is OK to generate a missing directory
             queryUserBeforeGeneratingMissingDir = false;
 
-        % Different computer names for different users here
+        % Different computer names for different users here.
+        % Add the paths for your computer here
         case 'YOUR_COMPUTER_NAME'
             % rgcResourcesRootDir  = '...';
             % intermediateDataDir = fullfile(rgcResourcesRootDir,'...');
             % figurePDFsDir = fullfile(rgcResourcesRootDir, '...');
             % queryUserBeforeGeneratingMissingDir = false;
+
         otherwise
             error('No rgcResourcesRootDir specified for computer with name: ''%s''. Edit generateLocalPrefs.m to generate specific ', p.localHostName);
     end

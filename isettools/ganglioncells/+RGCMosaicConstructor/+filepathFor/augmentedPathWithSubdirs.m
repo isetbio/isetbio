@@ -22,7 +22,8 @@ function theAugmentedFilePath = augmentedPathWithSubdirs(theRootDir, filePath, v
             augmentedPath = fullfile(augmentedPath, augmentedSubDirs{iSubDir});
             if (~isfolder(augmentedPath))
                 if (~generateMissingSubDirs)
-                    error('File ''%s'', does not exist. ', augmentedPath);
+                    errorMessage = sprintf('\nFile ''%s'' does not exist.\nHave you run ''RGCMosaicConstructor.helper.utils.generateLocalPrefs()''?\n\n', augmentedPath);
+                    error(errorMessage);
                 end
                 rgcResources = RGCMosaicConstructor.helper.utils.rgcResources();
                 if (isfield(rgcResources, 'queryUserBeforeGeneratingMissingDir')) && ...
