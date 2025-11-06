@@ -1,6 +1,8 @@
 function visualizePSF(theOI, targetWavelength, psfRangeArcMin, varargin)
 % visualizePSF - Visualizes the Point Spread Function (PSF) of an optical image.
 %
+% (Written by CoPilot)
+%
 % Syntax:
 %   visualizePSF(theOI, targetWavelength, psfRangeArcMin, 'ParameterName', ParameterValue, ...)
 %
