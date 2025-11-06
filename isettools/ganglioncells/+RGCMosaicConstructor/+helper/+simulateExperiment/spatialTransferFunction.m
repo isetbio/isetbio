@@ -194,7 +194,7 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
       stimParams.spatialFrequencyCPD = spatialFrequenciesExamined(iSF);
 
       % Feedback
-      fprintf('Computing input cone mosaic STF for ORI = %d degrees and SF = %2.3f c/deg\n', ...
+      fprintf('Computing input cone mosaic STF (cone excitations-based) for ORI = %d degrees and SF = %2.3f c/deg\n', ...
         stimParams.orientationDegs, stimParams.spatialFrequencyCPD);
 
       % Generate the spatial modulation patterns for all spatial phases of the drifting grating
@@ -295,6 +295,9 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
 
         % Compute the photocurrent response
         plotTitle = sprintf('ori: %d degs, sf: %2.1f cpd', stimParams.orientationDegs(iOri), stimParams.spatialFrequencyCPD(iSF));
+
+        fprintf('Computing input cone mosaic STF (photocurrent-based) for ORI = %d degrees and SF = %2.3f c/deg\n', ...
+            stimParams.orientationDegs(iOri), stimParams.spatialFrequencyCPD(iSF));
 
         [theInputConeMosaicPhotocurrentTemporalSupportSeconds, ...
          theInputConeMosaicPhotocurrents(iOri, iSF,:,:), ...
