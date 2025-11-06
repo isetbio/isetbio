@@ -339,7 +339,6 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
       visualizedConeIndices(numel(visualizedConeIndices)+1) = idxS(1);
     end
 
-
     for iConeIndex = 1:size(theConeMosaicExcitationResponseSequence,2)
 
         fprintf('Computing photocurrent for cone %d of %d\n', iConeIndex, size(theConeMosaicExcitationResponseSequence,2));
@@ -388,9 +387,12 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     end % for iConeIndex
   else
 
+
+    fprintf('Computing photocurrents\n');
+    tic
     parfor iConeIndex = 1:size(theConeMosaicExcitationResponseSequence,2)
 
-      fprintf('Computing photocurrent for cone %d of %d\n', iConeIndex, size(theConeMosaicExcitationResponseSequence,2));
+     % fprintf('Computing photocurrent for cone %d of %d\n', iConeIndex, size(theConeMosaicExcitationResponseSequence,2));
 
       % Retrieve the cone excitation response
       theSingleConeExcitations = theConeMosaicExcitationResponseSequence(1:end-1,iConeIndex);
@@ -404,6 +406,10 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
       theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
       theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
     end % parfor iConeIndex
+
+
+    fprintf('Photocurrents computed in %2.1f minutes\n', toc/60);
+    
   end
 
 end

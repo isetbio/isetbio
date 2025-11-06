@@ -105,8 +105,8 @@ function t_examplesVSS2024talk(options)
 
     CRT_refresh_Hz = 150;
     stimulus_TF_Hz = 2.5;
-    spatialPhaseIncrementDegs = 360 / (CRT_refresh_Hz / stimulus_TF_Hz)
-    spatialPhaseIncrementDegs = 12;
+    spatialPhaseIncrementDegsOptimal = 360 / (CRT_refresh_Hz / stimulus_TF_Hz)
+    spatialPhaseIncrementDegs = 12
 
     framesNumPerPeriod = 360/ spatialPhaseIncrementDegs;
     frameDurationSeconds = (1/stimulus_TF_Hz)/framesNumPerPeriod
