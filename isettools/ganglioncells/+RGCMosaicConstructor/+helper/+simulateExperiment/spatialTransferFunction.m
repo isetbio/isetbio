@@ -150,10 +150,6 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
     else
       temporalFrequencyHz = customTemporalFrequencyAndContrast.temporalFrequencyHz;
       totalContrast = customTemporalFrequencyAndContrast.totalContrast;
-      backgroundLuminanceMultiplier = customTemporalFrequencyAndContrast.backgroundLuminanceMultiplier;
-      % Apply backgroundLuminanceMultiplier to the background cone excitations
-      % **** This should be eliminated ****
-      assert(backgroundLuminanceMultiplier == 1, sprintf('Why is the background luminance multiplier %f, not 1', backgroundLuminanceMultiplier));
     end
 
     stimParams = struct(...
