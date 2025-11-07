@@ -321,7 +321,7 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
         'theInputConeMosaicBackgroundPhotocurrents', ...
         '-append');
 
-    end %if (computePhotocurrent)
+    end %if (strcmp(theSignal, 'photocurrents'))
 
 end
 
