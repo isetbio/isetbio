@@ -144,7 +144,7 @@ arguments
 
     % Visualizations
     options.visualizeStimulusSequence (1,1) logical = false;
-    options.visualizeInputConeMosaicResponses (1,1) logical = false;
+    options.visualizeMosaicResponses (1,1) logical = false;
 
     % ---- Choices of actions to perform ----
     % Whether to compute the input cone mosaic STF responses
@@ -159,6 +159,9 @@ arguments
     % Whether to compute the input cone mosaic STF responses
     options.computeMRGCMosaicResponses (1,1) logical = false;
     
+    % Whether to inspect the mRGC mosaic STF responses
+    options.inspectMRGCMosaicResponses (1,1) logical = false;
+
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
 
@@ -200,7 +203,7 @@ cropParams = options.cropParams;
 
 % Visualizations
 visualizeStimulusSequence = options.visualizeStimulusSequence;
-visualizeInputConeMosaicResponses = options.visualizeInputConeMosaicResponses;
+visualizeMosaicResponses = options.visualizeMosaicResponses;
 
 
 % Actions to perform
@@ -209,7 +212,7 @@ computeInputConeMosaicResponsesBasedOnConeExcitations = options.computeInputCone
 computeInputConeMosaicResponsesBasedOnPhotocurrents = options.computeInputConeMosaicResponsesBasedOnPhotocurrents;
 inspectInputConeMosaicResponses = options.inspectInputConeMosaicResponses;
 computeMRGCMosaicResponses = options.computeMRGCMosaicResponses;
-
+inspectMRGCMosaicResponses = options.inspectMRGCMosaicResponses;
 
 
 
@@ -238,42 +241,35 @@ postFix = sprintf('%s_%s_Ecc_%2.1f_%2.1f_Size_%2.1f_%2.1f', ...
     theMRGCmosaic.sizeDegs(1), ...
     theMRGCmosaic.sizeDegs(2));
    
-theInputConeMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('LScMosaicSTF_%s.mat', postFix));
+theInputConeMosaicSTFResponsesFileName = fullfile('LeeShapley', sprintf('cMosaicSTF_%s.mat', postFix));
 theInputConeMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
         intermediateDataDir, theInputConeMosaicSTFResponsesFileName, ...
         'generateMissingSubDirs', true);
 
-theMRGCMosaicSTFResponsesFileName = fullfile('scratchspace', sprintf('LS_mRGCMosaicSTF%s.mat', postFix));
+theMRGCMosaicSTFResponsesFileName = fullfile('LeeShapley', sprintf('mRGCMosaicSTF%s.mat', postFix));
 theMRGCMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
         intermediateDataDir, theMRGCMosaicSTFResponsesFileName, ...
         'generateMissingSubDirs', true);
 
-% Test that we can save to disk
-dummy = '1';
-save(theInputConeMosaicSTFResponsesFullFileName, 'dummy');
-save(theMRGCMosaicSTFResponsesFullFileName, 'dummy');
-fprintf('Saved dummy to:\n\t%s\nand to\n\t%s\n\n', theInputConeMosaicSTFResponsesFullFileName,theMRGCMosaicSTFResponsesFullFileName);
-
-%theLeeShapleyAnalysisFileName = fullfile('scratchspace', sprintf('LeeShapleyAnalysis_%s.mat', postFix));
-%theLeeShapleyAnalysisFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-%        intermediateDataDir, theLeeShapleyAnalysisFileName, ...
-%        'generateMissingSubDirs', true);
+theLeeShapleyAnalysisFileName = fullfile('LeeShapley', sprintf('STFanalysis_%s.mat', postFix));
+theLeeShapleyAnalysisFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir, theLeeShapleyAnalysisFileName, ...
+        'generateMissingSubDirs', true);
 
 if (~isempty(mRGCNonLinearityParamsStruct))
     theInputConeMosaicSTFResponsesFullFileName = ...
         strrep(theInputConeMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
     theMRGCMosaicSTFResponsesFullFileName = ...
         strrep(theMRGCMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
-    %theLeeShapleyAnalysisFullFileName = ...
-    %    strrep(theLeeShapleyAnalysisFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
+    theLeeShapleyAnalysisFullFileName = ...
+        strrep(theLeeShapleyAnalysisFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
 end
 
 
 % Temporal frequency (only has an effect if mRGCNonLinearityParams.type = 'photocurrent');
 customTemporalFrequencyAndContrast = struct(...
     'temporalFrequencyHz', STFtemporalFrequencyHz, ...
-    'totalContrast', STFcontrast, ...
-    'backgroundLuminanceMultiplier', 1.0);
+    'totalContrast', STFcontrast);
 
 % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
 % here, half of the cone spacing
@@ -291,19 +287,28 @@ if (computeInputConeMosaicResponses)
     debugInputConeMosaicPcurrentResponse = inspectInputConeMosaicResponses;
     inspectInputConeMosaicResponses = false;
     computeMRGCMosaicResponses = false;
+    inspectMRGCMosaicResponses = false;
 
 elseif (inspectInputConeMosaicResponses)
     debugInputConeMosaicPcurrentResponse = false;
     computeInputConeMosaicResponses = false;
     computeMRGCMosaicResponses = false;
+    inspectMRGCMosaicResponses = false;
 
 elseif (computeMRGCMosaicResponses)
     debugInputConeMosaicPcurrentResponse = false;
     computeInputConeMosaicResponses = false;
     inspectInputConeMosaicResponses = false;
+    inspectMRGCMosaicResponses = false;
+
+elseif (inspectMRGCMosaicResponses)
+    debugInputConeMosaicPcurrentResponse = false;
+    computeInputConeMosaicResponses = false;
+    inspectInputConeMosaicResponses = false;
+    computeMRGCMosaicResponses = false;
 end
 
-RGCMosaicAnalyzer.compute.inputConeMosaicSTFsForStimulusChromaticityAndOptics(...
+RGCMosaicAnalyzer.compute.mosaicSTFsForStimulusChromaticityAndOptics(...
     theMRGCmosaic, theOptics, ...
     STFmeanLuminanceCdM2, ...
     STFbackgroundXYchromaticity, ...
@@ -313,7 +318,7 @@ RGCMosaicAnalyzer.compute.inputConeMosaicSTFsForStimulusChromaticityAndOptics(..
     coneFundamentalsOptimizedForStimPosition, ...
     theInputConeMosaicSTFResponsesFullFileName, ...
     theMRGCMosaicSTFResponsesFullFileName, ...
-    visualizeInputConeMosaicResponses, ...
+    visualizeMosaicResponses, ...
     'displayType', displayType, ...
     'displayLuminanceHeadroomPercentage', displayLuminanceHeadroomPercentage, ...
     'customTemporalFrequencyAndContrast', customTemporalFrequencyAndContrast, ...
@@ -326,5 +331,6 @@ RGCMosaicAnalyzer.compute.inputConeMosaicSTFsForStimulusChromaticityAndOptics(..
     'computeInputConeMosaicResponsesBasedOnConeExcitations', computeInputConeMosaicResponsesBasedOnConeExcitations, ...
     'computeInputConeMosaicResponsesBasedOnPhotocurrents', computeInputConeMosaicResponsesBasedOnPhotocurrents, ...
     'inspectInputConeMosaicResponses', inspectInputConeMosaicResponses, ...
-    'computeMRGCMosaicResponses', computeMRGCMosaicResponses);
+    'computeMRGCMosaicResponses', computeMRGCMosaicResponses, ...
+    'inspectMRGCMosaicResponses', inspectMRGCMosaicResponses);
 

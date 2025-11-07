@@ -33,6 +33,7 @@ function [hFig,ax] = visualize(obj, varargin)
     p.addParameter('inputConesAlpha', 0.7, @isscalar);
     p.addParameter('plotRFoutlines', true, @islogical);
     p.addParameter('plottedRFoutlineLineWidth', 1.0, @isscalar);
+    p.addParameter('plottedRFoutlineEdgeColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plottedRFoutlineFaceColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plottedRFoutlineFaceAlpha', 1.0, @isscalar);
     p.addParameter('renderSourceLatticeInsteadOfConnectedRFcenters', false, @islogical);
@@ -55,7 +56,7 @@ function [hFig,ax] = visualize(obj, varargin)
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
     p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 
-    p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('backgroundColor', [0 0 0], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
     p.addParameter('plotTitleFontSize', 16, @isscalar);
@@ -116,6 +117,7 @@ function [hFig,ax] = visualize(obj, varargin)
     inputConesAlpha = p.Results.inputConesAlpha;
     plotRFoutlines = p.Results.plotRFoutlines;
     plottedRFoutlineLineWidth = p.Results.plottedRFoutlineLineWidth;
+    plottedRFoutlineEdgeColor = p.Results.plottedRFoutlineEdgeColor;
     plottedRFoutlineFaceColor = p.Results.plottedRFoutlineFaceColor;
     plottedRFoutlineFaceAlpha = p.Results.plottedRFoutlineFaceAlpha;
 
@@ -162,6 +164,10 @@ function [hFig,ax] = visualize(obj, varargin)
         plottedRFoutlineFaceColor = [0 1 0.4];
         plottedRFoutlineFaceAlpha = 0.75;
         backgroundColor = [0 0 0];
+    end
+
+    if (isempty(plottedRFoutlineEdgeColor))
+        plottedRFoutlineEdgeColor = [0 0 0];
     end
 
     hFig = p.Results.figureHandle;
@@ -323,7 +329,7 @@ function [hFig,ax] = visualize(obj, varargin)
         pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
         scaleBarDegs, doNotLabelScaleBar, ...
-        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
+        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineEdgeColor, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
         superimposedPSF, superimposedPSFcontourLineColor, ...
         superimposedRect, superimposedRectLineWidth, superimposedRectColor, superimposedRectAlpha, ...
         activation, activationRange, activationColorMap, ...
@@ -377,7 +383,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
         scaleBarDegs, doNotLabelScaleBar, ...
-        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
+        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineEdgeColor, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
         superimposedPSF, superimposedPSFcontourLineColor, ...
         superimposedRect, superimposedRectLineWidth, superimposedRectColor, superimposedRectAlpha, ...
         activation, activationRange, activationColorMap, ...
@@ -417,6 +423,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
             backgroundColor = squeeze(cMap(1,:));
         end
         
+
         if (isempty(activationRange))
             activationRange = [min(activation(:)) max(activation(:))];
         end
@@ -432,6 +439,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
             obj.visualizationCache.rfCenterPatchData.faceVertexCData(idx,:) = activation(iRGC);
             currentFacesNum = currentFacesNum + newVerticesNum;
         end
+
     else
         if (isempty(backgroundColor))
             backgroundColor = [1 1 1];
@@ -441,6 +449,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         cMap = [0 0 0; 0.5 0.5 0.5; 0 0 0];
         S.FaceVertexCData = obj.visualizationCache.rfCenterPatchData.faceVertexCData*0+0.5;
     end
+
 
     if (plotRFoutlines) || (~isempty(activation))
         % Plot the RFs
@@ -461,6 +470,10 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
             end
         end
 
+        if (~isempty(plottedRFoutlineEdgeColor))
+            S.EdgeColor = plottedRFoutlineEdgeColor;
+        end
+
         if (isempty(activation))
             S.FaceAlpha = plottedRFoutlineFaceAlpha;
         else
@@ -471,6 +484,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         S.LineWidth = plottedRFoutlineLineWidth;
         patch(S, 'Parent', ax);
     end
+
 
     if (identifyPooledCones)
         hold(ax, 'on')
@@ -486,6 +500,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         % Render line segments from centroid to pulled cones
         renderPooledConesLineSegments(obj, ax, lConeInputLineColor, mConeInputLineColor, pooledConesLineWidth);
     end
+
 
     % Identify input cones
     if (identifyInputCones)
@@ -548,18 +563,19 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
             end
         end
     else
-        hold(ax, 'on')
-        obj.inputConeMosaic.visualize(...
-            'figureHandle', hFig, 'axesHandle', ax, ...
-            'clearAxesBeforeDrawing', false, ...
-            'labelCones', false, ...
-            'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
-            'withSuperimposedPSF', superimposedPSF, ...
-            'withSuperimposedPSFcontourLineColor', superimposedPSFcontourLineColor, ...
-            'labelRetinalMeridians', labelRetinalMeridians, ...
-            'domainVisualizationTicks', domainVisualizationTicks, ...
-            'domainVisualizationLimits', domainVisualizationLimits, ...
-            'backgroundColor', backgroundColor);
+        if (isempty(activation))
+            obj.inputConeMosaic.visualize(...
+                'figureHandle', hFig, 'axesHandle', ax, ...
+                'clearAxesBeforeDrawing', false, ...
+                'labelCones', false, ...
+                'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
+                'withSuperimposedPSF', superimposedPSF, ...
+                'withSuperimposedPSFcontourLineColor', superimposedPSFcontourLineColor, ...
+                'labelRetinalMeridians', labelRetinalMeridians, ...
+                'domainVisualizationTicks', domainVisualizationTicks, ...
+                'domainVisualizationLimits', domainVisualizationLimits, ...
+                'backgroundColor', backgroundColor);
+        end
     end
 
 
@@ -600,7 +616,6 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         end
     end
 
-
     if (~isempty(superimposedRect))
         hold(ax, 'on');
         if (isempty(superimposedRectColor))
@@ -625,6 +640,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         end % iRect
     end
 
+
     % Add a scale bar for comparison with physiology
     if (~isempty(scaleBarDegs)) && (scaleBarDegs > 0) 
         hold(ax, 'on');
@@ -646,6 +662,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
             end
         end
     end
+
 
     % Finalize plot
     hold(ax, 'off');
@@ -671,6 +688,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
     if (~identifyInputCones)
         colormap(ax, cMap);
     end
+
 
     if (isempty(backgroundColor))
         set(ax, 'CLim', [0 1], 'Color', 'none');
@@ -725,7 +743,9 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
             colorbar(ax, 'off');
         end
     else
+
         colorbar(ax, 'off');
+
     end
 
     if (noXLabel)
@@ -734,7 +754,6 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
     if (noYLabel)
         ylabel(ax, '');
     end
-
 
     title(ax, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
     drawnow;
