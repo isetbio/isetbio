@@ -159,6 +159,9 @@ arguments
     % Whether to compute the input cone mosaic STF responses
     options.computeMRGCMosaicResponses (1,1) logical = false;
     
+    % Whether to inspect the mRGC mosaic STF responses
+    options.inspectMRGCMosaicResponses (1,1) logical = false;
+
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
 
@@ -209,7 +212,7 @@ computeInputConeMosaicResponsesBasedOnConeExcitations = options.computeInputCone
 computeInputConeMosaicResponsesBasedOnPhotocurrents = options.computeInputConeMosaicResponsesBasedOnPhotocurrents;
 inspectInputConeMosaicResponses = options.inspectInputConeMosaicResponses;
 computeMRGCMosaicResponses = options.computeMRGCMosaicResponses;
-
+inspectMRGCMosaicResponses = options.inspectMRGCMosaicResponses;
 
 
 
@@ -284,16 +287,25 @@ if (computeInputConeMosaicResponses)
     debugInputConeMosaicPcurrentResponse = inspectInputConeMosaicResponses;
     inspectInputConeMosaicResponses = false;
     computeMRGCMosaicResponses = false;
+    inspectMRGCMosaicResponses = false;
 
 elseif (inspectInputConeMosaicResponses)
     debugInputConeMosaicPcurrentResponse = false;
     computeInputConeMosaicResponses = false;
     computeMRGCMosaicResponses = false;
+    inspectMRGCMosaicResponses = false;
 
 elseif (computeMRGCMosaicResponses)
     debugInputConeMosaicPcurrentResponse = false;
     computeInputConeMosaicResponses = false;
     inspectInputConeMosaicResponses = false;
+    inspectMRGCMosaicResponses = false;
+
+elseif (inspectMRGCMosaicResponses)
+    debugInputConeMosaicPcurrentResponse = false;
+    computeInputConeMosaicResponses = false;
+    inspectInputConeMosaicResponses = false;
+    computeMRGCMosaicResponses = false;
 end
 
 RGCMosaicAnalyzer.compute.mosaicSTFsForStimulusChromaticityAndOptics(...
@@ -319,5 +331,6 @@ RGCMosaicAnalyzer.compute.mosaicSTFsForStimulusChromaticityAndOptics(...
     'computeInputConeMosaicResponsesBasedOnConeExcitations', computeInputConeMosaicResponsesBasedOnConeExcitations, ...
     'computeInputConeMosaicResponsesBasedOnPhotocurrents', computeInputConeMosaicResponsesBasedOnPhotocurrents, ...
     'inspectInputConeMosaicResponses', inspectInputConeMosaicResponses, ...
-    'computeMRGCMosaicResponses', computeMRGCMosaicResponses);
+    'computeMRGCMosaicResponses', computeMRGCMosaicResponses, ...
+    'inspectMRGCMosaicResponses', inspectMRGCMosaicResponses);
 

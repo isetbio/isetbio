@@ -33,6 +33,7 @@ function [hFig,ax] = visualize(obj, varargin)
     p.addParameter('inputConesAlpha', 0.7, @isscalar);
     p.addParameter('plotRFoutlines', true, @islogical);
     p.addParameter('plottedRFoutlineLineWidth', 1.0, @isscalar);
+    p.addParameter('plottedRFoutlineEdgeColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plottedRFoutlineFaceColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plottedRFoutlineFaceAlpha', 1.0, @isscalar);
     p.addParameter('renderSourceLatticeInsteadOfConnectedRFcenters', false, @islogical);
@@ -116,6 +117,7 @@ function [hFig,ax] = visualize(obj, varargin)
     inputConesAlpha = p.Results.inputConesAlpha;
     plotRFoutlines = p.Results.plotRFoutlines;
     plottedRFoutlineLineWidth = p.Results.plottedRFoutlineLineWidth;
+    plottedRFoutlineEdgeColor = p.Results.plottedRFoutlineEdgeColor;
     plottedRFoutlineFaceColor = p.Results.plottedRFoutlineFaceColor;
     plottedRFoutlineFaceAlpha = p.Results.plottedRFoutlineFaceAlpha;
 
@@ -162,6 +164,10 @@ function [hFig,ax] = visualize(obj, varargin)
         plottedRFoutlineFaceColor = [0 1 0.4];
         plottedRFoutlineFaceAlpha = 0.75;
         backgroundColor = [0 0 0];
+    end
+
+    if (isempty(plottedRFoutlineEdgeColor))
+        plottedRFoutlineEdgeColor = [0 0 0];
     end
 
     hFig = p.Results.figureHandle;
@@ -323,7 +329,7 @@ function [hFig,ax] = visualize(obj, varargin)
         pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
         scaleBarDegs, doNotLabelScaleBar, ...
-        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
+        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineEdgeColor, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
         superimposedPSF, superimposedPSFcontourLineColor, ...
         superimposedRect, superimposedRectLineWidth, superimposedRectColor, superimposedRectAlpha, ...
         activation, activationRange, activationColorMap, ...
@@ -377,7 +383,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
         pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
         scaleBarDegs, doNotLabelScaleBar, ...
-        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
+        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineEdgeColor, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
         superimposedPSF, superimposedPSFcontourLineColor, ...
         superimposedRect, superimposedRectLineWidth, superimposedRectColor, superimposedRectAlpha, ...
         activation, activationRange, activationColorMap, ...
@@ -462,6 +468,10 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
                 S.FaceColor = plottedRFoutlineFaceColor;
                 S.EdgeColor = S.FaceColor*0.25;
             end
+        end
+
+        if (~isempty(plottedRFoutlineEdgeColor))
+            S.EdgeColor = plottedRFoutlineEdgeColor;
         end
 
         if (isempty(activation))
