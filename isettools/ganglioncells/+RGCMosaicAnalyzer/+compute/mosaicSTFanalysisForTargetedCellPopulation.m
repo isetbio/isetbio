@@ -11,10 +11,7 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
     targetedSurroundPurityRange, ...
     targetedRadialEccentricityRange)
 
-    theMRGCMosaicSTFResponsesFullFileName
-    pause
     theData = who('-file', theMRGCMosaicSTFResponsesFullFileName)
-    pause
     photocurrentBasedSTFsComputed = ismember('theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds', theData);
 
     theNoiseFreeSpatioTemporalMRGCMosaicPcurrentBasedResponses2DSTF = [];
@@ -62,137 +59,161 @@ function analyzeSTFresponsesForTargetMRGCs(...
     targetedRadialEccentricityRange, ...
     analyzedSTFsFileName)
 
-% Find the RGCs with the desired target properties
-[targetRGCindices, theSurroundConePurities, theCenterConeDominances, ...
-    theCenterConeNumerosities, theCenterConePurities] = theMRGCMosaic.indicesOfRGCsWithinTargetedPropertyRanges( ...
-    targetedCenterConeNumerosityRange, ...
-    targetedSurroundPurityRange, ...
-    targetedRadialEccentricityRange, ...
-    targetedCenterPurityRange);
+    % Find the RGCs with the desired target properties
+    [targetRGCindices, theSurroundConePurities, theCenterConeDominances, ...
+        theCenterConeNumerosities, theCenterConePurities] = theMRGCMosaic.indicesOfRGCsWithinTargetedPropertyRanges( ...
+        targetedCenterConeNumerosityRange, ...
+        targetedSurroundPurityRange, ...
+        targetedRadialEccentricityRange, ...
+        targetedCenterPurityRange);
 
-fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum)
-examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))]
-examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))]
-examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))]
-examinedSurroundConePurityRange   = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
-fprintf('\n\n');
+    fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum)
+    examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))]
+    examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))]
+    examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))]
+    examinedSurroundConePurityRange   = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
+    fprintf('\n\n');
 
-% Sort cells according to their center cone numerosity
-[~,idx] = sort(theCenterConeNumerosities, 'ascend');
+    % Sort cells according to their center cone numerosity
+    [~,idx] = sort(theCenterConeNumerosities, 'ascend');
 
-targetRGCindices = targetRGCindices(idx);
-theCenterConePurities = theCenterConePurities(idx);
-theCenterConeNumerosities = theCenterConeNumerosities(idx);
-theCenterConeDominances = theCenterConeDominances(idx);
-theSurroundConePurities = theSurroundConePurities(idx);
+    targetRGCindices = targetRGCindices(idx);
+    theCenterConePurities = theCenterConePurities(idx);
+    theCenterConeNumerosities = theCenterConeNumerosities(idx);
+    theCenterConeDominances = theCenterConeDominances(idx);
+    theSurroundConePurities = theSurroundConePurities(idx);
 
-orientationsNum = size(theMRGCMosaicConeExcitationsBasedResponses,1)
-sfsNum = size(theMRGCMosaicConeExcitationsBasedResponses,2)
+    orientationsNum = size(theMRGCMosaicConeExcitationsBasedResponses,1)
+    sfsNum = size(theMRGCMosaicConeExcitationsBasedResponses,2)
 
-theExcitationsBasedTargetSTFamplitudeSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
-thePhotocurrentsBasedTargetSTFamplitudeSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
-theExcitationsBasedTargetSTFphaseSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
-thePhotocurrentsBasedTargetSTFphaseSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+    theExcitationsBasedTargetSTFamplitudeSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+    thePhotocurrentsBasedTargetSTFamplitudeSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+    theExcitationsBasedTargetSTFphaseSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+    thePhotocurrentsBasedTargetSTFphaseSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
 
-fprintf('Computing STFs for %d target mRGCs', numel(targetRGCindices));
+    fprintf('Computing STFs for %d target mRGCs', numel(targetRGCindices));
 
-parfor iRGC = 1:numel(targetRGCindices)
-    theRGCindex = targetRGCindices(iRGC);
+    % The computed BPIs
+    theConeExcitationsBasedBPIs = nan(numel(targetRGCindices), orientationsNum);
+    thePhotocurrentsBasedBPIs = nan(numel(targetRGCindices), orientationsNum);
 
-    for iOri = 1:orientationsNum
+    parfor iRGC = 1:numel(targetRGCindices)
+        theRGCindex = targetRGCindices(iRGC);
 
-        [theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
-            theExcitationsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
-            theMRGCMosaicConeExcitationsResponseTemporalSupportSeconds, ...
-            squeeze(theMRGCMosaicConeExcitationsBasedResponses(iOri, :, :, theRGCindex)), ...
-            stimParams.temporalFrequencyHz);
+        for iOri = 1:orientationsNum
 
-        [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
-            thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
-            theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
-            squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex)), ...
-            stimParams.temporalFrequencyHz);
+            [theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
+                theExcitationsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+                theMRGCMosaicConeExcitationsResponseTemporalSupportSeconds, ...
+                squeeze(theMRGCMosaicConeExcitationsBasedResponses(iOri, :, :, theRGCindex)), ...
+                stimParams.temporalFrequencyHz);
 
-    end % iOri
-end % for iRGC
+            [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
+                thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+                theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
+                squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex)), ...
+                stimParams.temporalFrequencyHz);
 
-save(analyzedSTFsFileName, ...
-    'stimParams', ...
-    'targetRGCindices', ...
-    'theCenterConePurities', ...
-    'theCenterConeNumerosities', ...
-    'theCenterConeDominances', ...
-    'theSurroundConePurities', ...
-    'theExcitationsBasedTargetSTFamplitudeSpectra', ...
-    'thePhotocurrentsBasedTargetSTFamplitudeSpectra', ...
-    'theExcitationsBasedTargetSTFphaseSpectra', ...
-    'thePhotocurrentsBasedTargetSTFphaseSpectra');
+            excitationsSTF = squeeze(theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
+            photocurrentsSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
 
-fprintf('\n\nSaved STFs to %s\n\n', analyzedSTFsFileName);
+            theConeExcitationsBasedBPIs(iRGC, iOri) = ...
+                bandPassIndex(stimParams.spatialFrequencyCPD, excitationsSTF);
 
+            thePhotocurrentsBasedBPIs(iRGC, iOri) = ...
+                bandPassIndex(stimParams.spatialFrequencyCPD, photocurrentsSTF);
 
-for iRGC = 1:numel(targetRGCindices)
+        end % iOri
 
-    if (stimParams.coneContrasts(1) == 1) && ...
-       (stimParams.coneContrasts(2) == 0) && ...
-       (stimParams.coneContrasts(3) == 0) && ...
-       (theCenterConeDominances(iRGC) ~= cMosaic.LCONE_ID)
+    end % for iRGC
 
-        % Skip. L-cone isolating stimulus but not L-cone dominated RF center
-        continue;
-    end
+    save(analyzedSTFsFileName, ...
+        'stimParams', ...
+        'targetRGCindices', ...
+        'theCenterConePurities', ...
+        'theCenterConeNumerosities', ...
+        'theCenterConeDominances', ...
+        'theSurroundConePurities', ...
+        'theExcitationsBasedTargetSTFamplitudeSpectra', ...
+        'thePhotocurrentsBasedTargetSTFamplitudeSpectra', ...
+        'theExcitationsBasedTargetSTFphaseSpectra', ...
+        'thePhotocurrentsBasedTargetSTFphaseSpectra', ...
+        'theConeExcitationsBasedBPIs', ...
+        'thePhotocurrentsBasedBPIs');
 
-    if (stimParams.coneContrasts(1) == 0) && ...
-       (stimParams.coneContrasts(2) == 1) && ...
-       (stimParams.coneContrasts(3) == 0) && ...
-       (theCenterConeDominances(iRGC) ~= cMosaic.MCONE_ID)
-
-        % Skip. M-cone isolating stimulus but not M-cone dominated RF center
-        continue;
-    end
-
-    % For non cone-isolating gratings we do the analysis no matter what the RF center dominance
+    fprintf('\n\nSaved STFs to %s\n\n', analyzedSTFsFileName);
 
 
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
-    for iOri = 1:orientationsNum
 
-        ax = subplot(1,orientationsNum,iOri);
-        normExcitationsSTF = squeeze(theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
-        normPhotocurrentSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
-        [p1,peakSFindex1] = max(normExcitationsSTF);
-        [p2,peakSFindex2] = max(normPhotocurrentSTF);
-        if (p1 > p2)
-            peakSFindex = peakSFindex1;
-        else
-            peakSFindex = peakSFindex2;
+    for iRGC = 1:numel(targetRGCindices)
+
+        if (stimParams.coneContrasts(1) == 1) && ...
+           (stimParams.coneContrasts(2) == 0) && ...
+           (stimParams.coneContrasts(3) == 0) && ...
+           (theCenterConeDominances(iRGC) ~= cMosaic.LCONE_ID)
+
+            % Skip. L-cone isolating stimulus but not L-cone dominated RF center
+            continue;
         end
 
-        factorToMatchLowSFs = normExcitationsSTF(peakSFindex)/normPhotocurrentSTF(peakSFindex);
-        plot(ax, stimParams.spatialFrequencyCPD, normExcitationsSTF, 'ko-', 'LineWidth', 1.5, 'MarkerSize', 12);
-        hold(ax, 'on');
-        plot(ax, stimParams.spatialFrequencyCPD, normPhotocurrentSTF*factorToMatchLowSFs, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 12);
-        set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], 'FontSize', 20, 'YLim', [0 1.0], 'YTick', 0:0.1:2);
-        legend(ax, {'cone excitations based', 'photocurrent based'});
+        if (stimParams.coneContrasts(1) == 0) && ...
+           (stimParams.coneContrasts(2) == 1) && ...
+           (stimParams.coneContrasts(3) == 0) && ...
+           (theCenterConeDominances(iRGC) ~= cMosaic.MCONE_ID)
 
-        if (theCenterConeDominances(iRGC) == cMosaic.LCONE_ID)
-            title(ax,sprintf('%d-cone RF center (L-cone dom.)\nstim. orientation = %d (degs)', ...
-                theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
-        elseif (theCenterConeDominances(iRGC) == cMosaic.MCONE_ID)
-            title(ax,sprintf('%d-cone RF center (M-cone dom.)\nstim. orientation = %d (degs)', ...
-                theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
-        elseif (theCenterConeDominances(iRGC) == cMosaic.SCONE_ID)
-            title(ax,sprintf('%d-cone RF center (S-cone dom.)\nstim. orientation = %d (degs)', ...
-                theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
+            % Skip. M-cone isolating stimulus but not M-cone dominated RF center
+            continue;
         end
 
-        grid(ax, 'on')
-    end % for iOri
-    drawnow;
-    disp('Hit enter to continue')
-    pause
-end % for iRGC
+        % For non cone-isolating gratings we do the analysis no matter what the RF center dominance
+
+
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
+
+        for iOri = 1:orientationsNum
+
+            excitationsSTF = squeeze(theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
+            photocurrentsSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
+
+            ax = subplot(1,orientationsNum,iOri);
+            [p1,peakSFindex1] = max(excitationsSTF);
+            [p2,peakSFindex2] = max(photocurrentsSTF);
+            if (p1 > p2)
+                peakSFindex = peakSFindex1;
+            else
+                peakSFindex = peakSFindex2;
+            end
+
+            factorToMatchLowSFs = excitationsSTF(peakSFindex)/photocurrentsSTF(peakSFindex);
+            plot(ax, stimParams.spatialFrequencyCPD, excitationsSTF, 'ko-', 'LineWidth', 1.5, 'MarkerSize', 12);
+            hold(ax, 'on');
+            plot(ax, stimParams.spatialFrequencyCPD, photocurrentsSTF*factorToMatchLowSFs, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 12);
+            set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], 'FontSize', 20, 'YLim', [0 1.0], 'YTick', 0:0.1:2);
+            legend(ax, {'cone excitations based', 'photocurrent based'});
+
+            if (theCenterConeDominances(iRGC) == cMosaic.LCONE_ID)
+                title(ax,sprintf('%d-(L-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
+                    theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)), ...
+                    theConeExcitationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri));
+
+            elseif (theCenterConeDominances(iRGC) == cMosaic.MCONE_ID)
+                title(ax,sprintf('%d-(M-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
+                    theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)), ...
+                    theConeExcitationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri));
+
+            elseif (theCenterConeDominances(iRGC) == cMosaic.SCONE_ID)
+                title(ax,sprintf('%d-(S-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
+                    theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)), ...
+                    theConeExcitationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri));
+            end
+
+            grid(ax, 'on')
+        end % for iOri
+        drawnow;
+        disp('Hit enter to continue')
+        pause
+    end % for iRGC
 
 end
 
@@ -200,31 +221,53 @@ end
 function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum] = computeSTFamplitude(...
     temporalSupportSeconds, allSFresponseTimeSeries, temporalFrequencyHz)
 
-theSFsNum = size(allSFresponseTimeSeries,1);
-theSTFamplitude = zeros(1, theSFsNum);
-theSTFphaseDegs = zeros(1, theSFsNum);
+    theSFsNum = size(allSFresponseTimeSeries,1);
+    theSTFamplitude = zeros(1, theSFsNum);
+    theSTFphaseDegs = zeros(1, theSFsNum);
 
-for iSF = 1:theSFsNum
-    theResponseTimeSeries = allSFresponseTimeSeries(iSF,:);
-    [theFittedSinusoid, fittedParams] = ...
-        RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries(...
-        temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportSeconds);
+    for iSF = 1:theSFsNum
+        theResponseTimeSeries = allSFresponseTimeSeries(iSF,:);
+        [theFittedSinusoid, fittedParams] = ...
+            RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries(...
+            temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportSeconds);
 
-    theSTFamplitudeSpectrum(iSF) = fittedParams(1);
-    theSTFphaseDegsSpectrum(iSF) = fittedParams(2);
+        theSTFamplitudeSpectrum(iSF) = fittedParams(1);
+        theSTFphaseDegsSpectrum(iSF) = fittedParams(2);
 
-    debugFit = false;
-    if (debugFit)
-        figure(44);
-        plot(temporalSupportSeconds, theResponseTimeSeries, 'ro', 'MarkerFaceColor', [1 0.5 0.5])
+        debugFit = false;
+        if (debugFit)
+            figure(44);
+            plot(temporalSupportSeconds, theResponseTimeSeries, 'ro', 'MarkerFaceColor', [1 0.5 0.5])
+            hold on;
+            plot(temporalSupportSeconds, theFittedSinusoid, 'k-', 'LineWidth', 1.0);
+            fittedParams
+            drawnow
+            disp('hit enter to continue')
+            pause
+        end
+
+    end % iSF
+end
+
+
+function theBPI = bandPassIndex(theSpatialFrequencySupport, theSTF)
+
+    [~, lowestSFindex] = min(theSpatialFrequencySupport(:));
+    Ro = theSTF(lowestSFindex);
+    [Rmax, indexOfMaxResponse] = max(theSTF(:));
+
+    theBPI = Ro/Rmax;
+
+    if (1==2)
+        figure(9);
+        plot(theSpatialFrequencySupport, theSTF, 'k-', 'LineWidth', 1.5);
         hold on;
-        plot(temporalSupportSeconds, theFittedSinusoid, 'k-', 'LineWidth', 1.0);
-        fittedParams
-        drawnow
-        disp('hit enter to continue')
+        plot(theSpatialFrequencySupport(lowestSFindex), Ro, 'ro', 'MarkerSize', 16);
+        plot(theSpatialFrequencySupport(indexOfMaxResponse), Rmax,  'bo', 'MarkerSize', 16);
+        set(gca, 'XScale', 'log', 'XLim', [0.01 150]);
+        title(sprintf('BPI = %2.3f', theBPI));
+        drawnow;
         pause
     end
-
-end % iSF
 end
 
