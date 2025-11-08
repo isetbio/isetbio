@@ -89,6 +89,9 @@ arguments
     % Crop params
     options.cropParams = [];
 
+    % Different options for the optics
+    options.opticsToEmploy = [];
+
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
 
@@ -107,6 +110,9 @@ rgcMosaicName = options.rgcMosaicName;
 coneMosaicSpecies = options.coneMosaicSpecies;
 opticsSubjectName = options.opticsSubjectName;
 targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
+
+% Optics to employ for the computations
+opticsToEmploy  = options.opticsToEmploy;
 
 % Mosaic cropping
 cropParams = options.cropParams;
@@ -158,6 +164,7 @@ else
     [theMRGCMosaic, theOIatTheMosaicEccentricity, thePSFatTheMosaicEccentricity] = mRGCMosaic.loadPrebakedMosaic(...
         coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
         'computeTheMosaicOptics', true, ...
+        'opticsToEmploy', opticsToEmploy, ...
         'cropParams', cropParams);
 end
 
