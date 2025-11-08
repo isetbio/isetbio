@@ -145,6 +145,8 @@ arguments
     % Visualizations
     options.visualizeStimulusSequence (1,1) logical = false;
     options.visualizeMosaicResponses (1,1) logical = false;
+    options.visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses (1,1) logical = false;
+    options.visualizeConeExcitationVsPhotocurrentSTFs (1,1) logical = false;
 
     % ---- Choices of actions to perform ----
     % Whether to compute the input cone mosaic STF responses
@@ -205,6 +207,8 @@ cropParams = options.cropParams;
 visualizeStimulusSequence = options.visualizeStimulusSequence;
 visualizeMosaicResponses = options.visualizeMosaicResponses;
 
+visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses = options.visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses;
+visualizeConeExcitationVsPhotocurrentSTFs = options.visualizeConeExcitationVsPhotocurrentSTFs;
 
 % Actions to perform
 computeInputConeMosaicResponses = options.computeInputConeMosaicResponses;
@@ -354,6 +358,8 @@ if (analyzeSTFresponsesForTargetCells)
         targetedCenterPurityRange, ...
         targetedCenterConeNumerosityRange, ...
         targetedSurroundPurityRange, ...
-        targetedRadialEccentricityRange);
+        targetedRadialEccentricityRange, ...
+        visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, ...
+        visualizeConeExcitationVsPhotocurrentSTFs);
 
 end
