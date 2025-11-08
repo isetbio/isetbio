@@ -12,7 +12,8 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   p.addParameter('computeInputConeMosaicResponsesBasedOnPhotocurrents', true, @islogical);
   p.addParameter('inspectInputConeMosaicResponses', false, @islogical);
   p.addParameter('computeMRGCMosaicResponses', false, @islogical);
-  p.addParameter('inspectMRGCMosaicResponses', false, @islogical);
+  p.addParameter('analyzeSTFresponsesForTargetCells', false, @islogical);
+  p.addParameter('analyzedSTFsFileName', '', @ischar);
   p.addParameter('debugInputConeMosaicPcurrentResponse', false, @islogical);
   p.addParameter('visualizeResponse', false, @islogical);
   p.addParameter('visualizeStimulusSequence', false, @islogical);
@@ -30,7 +31,8 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
   computeInputConeMosaicResponsesBasedOnPhotocurrents = p.Results.computeInputConeMosaicResponsesBasedOnPhotocurrents;
   inspectInputConeMosaicResponses = p.Results.inspectInputConeMosaicResponses;
   computeMRGCMosaicResponses = p.Results.computeMRGCMosaicResponses;
-  inspectMRGCMosaicResponses = p.Results.inspectMRGCMosaicResponses;
+  analyzeSTFresponsesForTargetCells = p.Results.analyzeSTFresponsesForTargetCells;
+  analyzedSTFsFileName = p.Results.analyzedSTFsFileName;
   mRGCNonLinearityParams = p.Results.mRGCNonLinearityParams;
   customTemporalFrequencyAndContrast = p.Results.customTemporalFrequencyAndContrast;
   visualizeResponse = p.Results.visualizeResponse;
@@ -74,42 +76,15 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
     end
   end % if (computeInputConeMosaicResponses)
 
-  if (inspectInputConeMosaicResponses)
-      onlyInspectInputConeMosaicResponses = true;
-      onlyInspectMRGCMosaicResponses = false;
 
-      computeMRGCMosaicSTF(theMRGCMosaic, theInputConeMosaicSTFResponsesFullFileName, ...
-        theMRGCMosaicSTFResponsesFullFileName, ...
-        visualizeResponse, ...
-        mRGCNonLinearityParams, ...
-        onlyInspectInputConeMosaicResponses, ...
-        onlyInspectMRGCMosaicResponses);
-  end
-
-
-  if (computeMRGCMosaicResponses)
-      onlyInspectInputConeMosaicResponses = false;
-      onlyInspectMRGCMosaicResponses = false;
-
-      computeMRGCMosaicSTF(theMRGCMosaic, theInputConeMosaicSTFResponsesFullFileName, ...
-        theMRGCMosaicSTFResponsesFullFileName, ...
-        visualizeResponse, ...
-        mRGCNonLinearityParams, ...
-        onlyInspectInputConeMosaicResponses, ...
-        onlyInspectMRGCMosaicResponses);
-  end
-
-  if (inspectMRGCMosaicResponses)
-    onlyInspectInputConeMosaicResponses = false;
-    onlyInspectMRGCMosaicResponses = true;
-
-    computeMRGCMosaicSTF(theMRGCMosaic, theInputConeMosaicSTFResponsesFullFileName, ...
-        theMRGCMosaicSTFResponsesFullFileName, ...
-        visualizeResponse, ...
-        mRGCNonLinearityParams, ...
-        onlyInspectInputConeMosaicResponses, ...
-        onlyInspectMRGCMosaicResponses);
-  end
+  computeMRGCMosaicSTF(theMRGCMosaic, ...
+    theInputConeMosaicSTFResponsesFullFileName, ...
+    theMRGCMosaicSTFResponsesFullFileName, ...
+    visualizeResponse, ...
+    mRGCNonLinearityParams, ...
+    inspectInputConeMosaicResponses, ...
+    analyzeSTFresponsesForTargetCells, ...
+    analyzedSTFsFileName);
 
 end
 
@@ -523,10 +498,11 @@ function computeMRGCMosaicSTF(...
   visualizeResponse, ...
   mRGCNonLinearityParams, ...
   onlyInspectInputConeMosaicResponses, ...
-  onlyInspectMRGCMosaicResponses);
+  analyzeSTFresponsesForTargetCells, ...
+  analyzedSTFsFileName);
 
 
-  if (onlyInspectMRGCMosaicResponses)
+  if (analyzeSTFresponsesForTargetCells)
     computedSTFs = who('-file', theMRGCMosaicSTFResponsesFullFileName);
     photocurrentBasedSTFsComputed = ismember('theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds', computedSTFs);
 
@@ -548,13 +524,29 @@ function computeMRGCMosaicSTF(...
         'theMRGCMosaicResponseTemporalSupportSeconds');
     end
 
-    inspectMRGCMosaicSpatioTemporalResponses(...
+    % We will analyze cells with a center purity range of 1.0, i.e., all center cones are of the same type
+    targetedCenterPurityRange = [1 1];          % [] Empty means Target RGCs with any center specificity
+
+    % Any center cone numerosity
+    targetedCenterConeNumerosityRange = [];     % [1 2];
+
+    %
+    targetedSurroundPurityRange = [];           % [0.4 0.6]; (around 50/50 L/M cone net weight in the surround)
+    targetedRadialEccentricityRange = [];   % [4.9 5.5];       % Empty means full range
+
+
+    analyzeSTFresponsesForTargetMRGCs(...
           stimParams, ...
           theMRGCMosaic, ...
           theNoiseFreeSpatioTemporalMRGCMosaicResponses2DSTF, ...
           theMRGCMosaicResponseTemporalSupportSeconds, ...
           theNoiseFreeSpatioTemporalMRGCMosaicPcurrentBasedResponses2DSTF, ...
-          theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds);
+          theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds, ...
+          targetedCenterPurityRange, ...
+          targetedCenterConeNumerosityRange, ...
+          targetedSurroundPurityRange, ...
+          targetedRadialEccentricityRange, ...
+          analyzedSTFsFileName);
 
     return;
   end
@@ -766,32 +758,20 @@ function [theSpatioTemporalMRGCMosaicResponses2DSTF, theMRGCMosaicResponseTempor
 end
 
 
-function inspectMRGCMosaicSpatioTemporalResponses(...
+function analyzeSTFresponsesForTargetMRGCs(...
     stimParams, ...
     theMRGCMosaic, ...
     theMRGCMosaicConeExcitationsBasedResponses, ...
     theMRGCMosaicConeExcitationsResponseTemporalSupportSeconds, ...
     theMRGCMosaicPhotocurrentBasedResponses, ...
-    theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds)
+    theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
+    targetedCenterPurityRange, ...
+    targetedCenterConeNumerosityRange, ...
+    targetedSurroundPurityRange, ...
+    targetedRadialEccentricityRange, ...
+    analyzedSTFsFileName)
 
-  orientationsNum = size(theMRGCMosaicConeExcitationsBasedResponses,1)
-  sfsNum = size(theMRGCMosaicConeExcitationsBasedResponses,2)
-
-  mRGCMosaicResponseSize = [1 numel(theMRGCMosaicConeExcitationsResponseTemporalSupportSeconds) theMRGCMosaic.rgcsNum];
-  mRGCMosaicPhotocurrentResponseSize = [1 numel(theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds) theMRGCMosaic.rgcsNum];
-
-  coneExcitationsResponseRange = [min(theMRGCMosaicConeExcitationsBasedResponses(:)) max(theMRGCMosaicConeExcitationsBasedResponses(:))];
-  photocurrentResponseRange = [min(theMRGCMosaicPhotocurrentBasedResponses(:)) max(theMRGCMosaicPhotocurrentBasedResponses(:))];
-
-
-  % Target RGCs with surround specificity around 0.5 (i.e., 50/50 L/M cone net weight in the surround)
-  targetedSurroundPurityRange = [];           % [0.4 0.6];
-  targetedRadialEccentricityRange = []; % [4.9 5.5];       % Empty means full range
-  targetedCenterConeNumerosityRange = []; % [1 2];     % all center cone numerosities
-
-  % Target RGCs with high degree of center purity
-  targetedCenterPurityRange = [1 1];     % [] Empty means Target RGCs with any center specificity
-
+  % Find the RGCs with the desired target properties
   [targetRGCindices, theSurroundConePurities, theCenterConeDominances, ...
    theCenterConeNumerosities, theCenterConePurities] = theMRGCMosaic.indicesOfRGCsWithinTargetedPropertyRanges( ...
                             targetedCenterConeNumerosityRange, ...
@@ -800,11 +780,136 @@ function inspectMRGCMosaicSpatioTemporalResponses(...
                             targetedCenterPurityRange);
 
   fprintf('Stats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum)
-  examinedCenterConePurityRange = [min(theCenterConePurities(:)) max(theCenterConePurities(:))]
-  examinedCenterConeDominanceRange = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))]
+  examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))]
+  examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))]
   examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))]
-  examinedSurroundConePurityRange = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
+  examinedSurroundConePurityRange   = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
 
+
+  % Sort cells according to their center cone numerosity
+  [~,idx] = sort(theCenterConeNumerosities, 'ascend');
+
+  targetRGCindices = targetRGCindices(idx);
+  theCenterConePurities = theCenterConePurities(idx);
+  theCenterConeNumerosities = theCenterConeNumerosities(idx);
+  theCenterConeDominances = theCenterConeDominances(idx);
+  theSurroundConePurities = theSurroundConePurities(idx);
+
+  orientationsNum = size(theMRGCMosaicConeExcitationsBasedResponses,1)
+  sfsNum = size(theMRGCMosaicConeExcitationsBasedResponses,2)
+
+  theExcitationsBasedTargetSTFamplitudeSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+  thePhotocurrentsBasedTargetSTFamplitudeSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+  theExcitationsBasedTargetSTFphaseSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+  thePhotocurrentsBasedTargetSTFphaseSpectra = zeros(numel(targetRGCindices), orientationsNum, sfsNum);
+
+  fprintf('Computing STFs for %d target mRGCs', numel(targetRGCindices));
+
+  parfor iRGC = 1:numel(targetRGCindices)
+    theRGCindex = targetRGCindices(iRGC);
+
+    for iOri = 1:orientationsNum
+
+      [theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
+       theExcitationsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+          theMRGCMosaicConeExcitationsResponseTemporalSupportSeconds, ...
+          squeeze(theMRGCMosaicConeExcitationsBasedResponses(iOri, :, :, theRGCindex)), ...
+          stimParams.temporalFrequencyHz);
+
+      [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
+       thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+          theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
+          squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex)), ...
+          stimParams.temporalFrequencyHz);
+     end % iOri
+  end % for iRGC
+
+  save(analyzedSTFsFileName, ...
+    'stimParams', ...
+    'targetRGCindices', ...
+    'theCenterConePurities', ...
+    'theCenterConeNumerosities', ...
+    'theCenterConeDominances', ...
+    'theSurroundConePurities', ...
+    'theExcitationsBasedTargetSTFamplitudeSpectra', ...
+    'thePhotocurrentsBasedTargetSTFamplitudeSpectra', ...
+    'theExcitationsBasedTargetSTFphaseSpectra', ...
+    'thePhotocurrentsBasedTargetSTFphaseSpectra');
+
+  stimParams
+  for iRGC = 1:numel(targetRGCindices)
+
+     hFig = figure(1); clf;
+     set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
+     for iOri = 1:orientationsNum
+
+       ax = subplot(1,orientationsNum,iOri);
+       normExcitationsSTF = squeeze(theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
+       normPhotocurrentSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
+       [p1,peakSFindex1] = max(normExcitationsSTF);
+       [p2,peakSFindex2] = max(normPhotocurrentSTF);
+       if (p1 > p2)
+        peakSFindex = peakSFindex1;
+      else
+        peakSFindex = peakSFindex2;
+      end
+
+       factorToMatchLowSFs = normExcitationsSTF(peakSFindex)/normPhotocurrentSTF(peakSFindex);
+       plot(ax, stimParams.spatialFrequencyCPD, normExcitationsSTF, 'ko-', 'LineWidth', 1.5, 'MarkerSize', 12);
+       hold(ax, 'on');
+       plot(ax, stimParams.spatialFrequencyCPD, normPhotocurrentSTF*factorToMatchLowSFs, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 12);
+       set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], 'FontSize', 20, 'YLim', [0 1.0], 'YTick', 0:0.1:2);
+       legend(ax, {'cone excitations based', 'photocurrent based'});
+       if (theCenterConeDominances(iRGC)==cMosaic.LCONE_ID)
+         title(ax,sprintf('%d-cone RF center (L-cone dom.), ori:%d (degs)', ...
+          theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
+       elseif (theCenterConeDominances(iRGC)==cMosaic.MCONE_ID)
+         title(ax,sprintf('%d-cone RF center (M-cone dom.), ori:%d (degs)', ...
+          theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
+       elseif (theCenterConeDominances(iRGC)==cMosaic.SCONE_ID)
+         title(ax,sprintf('%d-cone RF center (S-cone dom.), ori:%d (degs)', ...
+          theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
+       end
+
+       grid(ax, 'on')
+      end % for iOri
+    drawnow;
+    disp('Hit enter to continue')
+    pause
+  end % for iRGC
+
+end
+
+
+function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum] = computeSTFamplitude(...
+  temporalSupportSeconds, allSFresponseTimeSeries, temporalFrequencyHz)
+
+  theSFsNum = size(allSFresponseTimeSeries,1);
+  theSTFamplitude = zeros(1, theSFsNum);
+  theSTFphaseDegs = zeros(1, theSFsNum);
+
+  for iSF = 1:theSFsNum
+    theResponseTimeSeries = allSFresponseTimeSeries(iSF,:);
+    [theFittedSinusoid, fittedParams] = ...
+      RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries(...
+        temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportSeconds);
+
+    theSTFamplitudeSpectrum(iSF) = fittedParams(1);
+    theSTFphaseDegsSpectrum(iSF) = fittedParams(2);
+
+    debugFit = false;
+    if (debugFit)
+      figure(44);
+      plot(temporalSupportSeconds, theResponseTimeSeries, 'ro', 'MarkerFaceColor', [1 0.5 0.5])
+      hold on;
+      plot(temporalSupportSeconds, theFittedSinusoid, 'k-', 'LineWidth', 1.0);
+      fittedParams
+      drawnow
+      disp('hit enter to continue')
+      pause
+    end
+
+  end % iSF
 end
 
 
@@ -853,7 +958,6 @@ function inspectInputConeMosaicSpatioTemporalResponses(...
   orientationsNum = size(theInputConeMosaicSTFresponses, 1);
   sfsNum = size(theInputConeMosaicSTFresponses, 2);
 
-  stimParams
   for iOri = 1:orientationsNum
     for iSF = 1:sfsNum
 
