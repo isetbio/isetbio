@@ -3,15 +3,19 @@
 % RGCMosaicAnalyzer.compute.mosaicSTFanalysisForTargetedCellPopulation()
 %
 %
-function mosaicSTFanalysisForTargetedCellPopulation(theMRGCMosaicSTFResponsesFullFileName, ...
+function mosaicSTFanalysisForTargetedCellPopulation(...
+    theMRGCMosaicSTFResponsesFullFileName, ...
     theAnalyzedSTFsFileName, ...
     targetedCenterPurityRange, ...
     targetedCenterConeNumerosityRange, ...
     targetedSurroundPurityRange, ...
     targetedRadialEccentricityRange)
 
-    computedSTFs = who('-file', theMRGCMosaicSTFResponsesFullFileName);
-    photocurrentBasedSTFsComputed = ismember('theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds', computedSTFs);
+    theMRGCMosaicSTFResponsesFullFileName
+    pause
+    theData = who('-file', theMRGCMosaicSTFResponsesFullFileName)
+    pause
+    photocurrentBasedSTFsComputed = ismember('theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds', theData);
 
     theNoiseFreeSpatioTemporalMRGCMosaicPcurrentBasedResponses2DSTF = [];
     theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds = [];
@@ -66,12 +70,12 @@ function analyzeSTFresponsesForTargetMRGCs(...
     targetedRadialEccentricityRange, ...
     targetedCenterPurityRange);
 
-fprintf('Stats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum)
+fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum)
 examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))]
 examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))]
 examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))]
 examinedSurroundConePurityRange   = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
-
+fprintf('\n\n');
 
 % Sort cells according to their center cone numerosity
 [~,idx] = sort(theCenterConeNumerosities, 'ascend');
@@ -124,8 +128,31 @@ save(analyzedSTFsFileName, ...
     'theExcitationsBasedTargetSTFphaseSpectra', ...
     'thePhotocurrentsBasedTargetSTFphaseSpectra');
 
-stimParams
+fprintf('\n\nSaved STFs to %s\n\n', analyzedSTFsFileName);
+
+
 for iRGC = 1:numel(targetRGCindices)
+
+    if (stimParams.coneContrasts(1) == 1) && ...
+       (stimParams.coneContrasts(2) == 0) && ...
+       (stimParams.coneContrasts(3) == 0) && ...
+       (theCenterConeDominances(iRGC) ~= cMosaic.LCONE_ID)
+
+        % Skip. L-cone isolating stimulus but not L-cone dominated RF center
+        continue;
+    end
+
+    if (stimParams.coneContrasts(1) == 0) && ...
+       (stimParams.coneContrasts(2) == 1) && ...
+       (stimParams.coneContrasts(3) == 0) && ...
+       (theCenterConeDominances(iRGC) ~= cMosaic.MCONE_ID)
+
+        % Skip. M-cone isolating stimulus but not M-cone dominated RF center
+        continue;
+    end
+
+    % For non cone-isolating gratings we do the analysis no matter what the RF center dominance
+
 
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
@@ -148,14 +175,15 @@ for iRGC = 1:numel(targetRGCindices)
         plot(ax, stimParams.spatialFrequencyCPD, normPhotocurrentSTF*factorToMatchLowSFs, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 12);
         set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], 'FontSize', 20, 'YLim', [0 1.0], 'YTick', 0:0.1:2);
         legend(ax, {'cone excitations based', 'photocurrent based'});
-        if (theCenterConeDominances(iRGC)==cMosaic.LCONE_ID)
-            title(ax,sprintf('%d-cone RF center (L-cone dom.), ori:%d (degs)', ...
+
+        if (theCenterConeDominances(iRGC) == cMosaic.LCONE_ID)
+            title(ax,sprintf('%d-cone RF center (L-cone dom.)\nstim. orientation = %d (degs)', ...
                 theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
-        elseif (theCenterConeDominances(iRGC)==cMosaic.MCONE_ID)
-            title(ax,sprintf('%d-cone RF center (M-cone dom.), ori:%d (degs)', ...
+        elseif (theCenterConeDominances(iRGC) == cMosaic.MCONE_ID)
+            title(ax,sprintf('%d-cone RF center (M-cone dom.)\nstim. orientation = %d (degs)', ...
                 theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
-        elseif (theCenterConeDominances(iRGC)==cMosaic.SCONE_ID)
-            title(ax,sprintf('%d-cone RF center (S-cone dom.), ori:%d (degs)', ...
+        elseif (theCenterConeDominances(iRGC) == cMosaic.SCONE_ID)
+            title(ax,sprintf('%d-cone RF center (S-cone dom.)\nstim. orientation = %d (degs)', ...
                 theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri)));
         end
 
