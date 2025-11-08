@@ -121,7 +121,6 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
     if (isempty(customTemporalFrequencyAndContrast))
       temporalFrequencyHz = 1.0;
       totalContrast = 0.75;
-      backgroundLuminanceMultiplier = 1.0;
     else
       temporalFrequencyHz = customTemporalFrequencyAndContrast.temporalFrequencyHz;
       totalContrast = customTemporalFrequencyAndContrast.totalContrast;

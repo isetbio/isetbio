@@ -1,3 +1,7 @@
+%
+% RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries
+%
+
 function [theFittedResponse, fittedParams] = sinusoidToResponseTimeSeries(...
     temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportHR)
 

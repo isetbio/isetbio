@@ -159,8 +159,8 @@ arguments
     % Whether to compute the input cone mosaic STF responses
     options.computeMRGCMosaicResponses (1,1) logical = false;
     
-    % Whether to inspect the mRGC mosaic STF responses
-    options.inspectMRGCMosaicResponses (1,1) logical = false;
+    % Whether to analyze the STF responses for select target mRGCs
+    options.analyzeSTFresponsesForTargetCells(1,1) logical = false;
 
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
@@ -212,7 +212,7 @@ computeInputConeMosaicResponsesBasedOnConeExcitations = options.computeInputCone
 computeInputConeMosaicResponsesBasedOnPhotocurrents = options.computeInputConeMosaicResponsesBasedOnPhotocurrents;
 inspectInputConeMosaicResponses = options.inspectInputConeMosaicResponses;
 computeMRGCMosaicResponses = options.computeMRGCMosaicResponses;
-inspectMRGCMosaicResponses = options.inspectMRGCMosaicResponses;
+analyzeSTFresponsesForTargetCells = options.analyzeSTFresponsesForTargetCells;
 
 
 
@@ -246,14 +246,14 @@ theInputConeMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.au
         intermediateDataDir, theInputConeMosaicSTFResponsesFileName, ...
         'generateMissingSubDirs', true);
 
-theMRGCMosaicSTFResponsesFileName = fullfile('LeeShapley', sprintf('mRGCMosaicSTF%s.mat', postFix));
+theMRGCMosaicSTFResponsesFileName = fullfile('LeeShapley', sprintf('mRGCMosaicSTF_%s.mat', postFix));
 theMRGCMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
         intermediateDataDir, theMRGCMosaicSTFResponsesFileName, ...
         'generateMissingSubDirs', true);
 
-theLeeShapleyAnalysisFileName = fullfile('LeeShapley', sprintf('STFanalysis_%s.mat', postFix));
-theLeeShapleyAnalysisFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-        intermediateDataDir, theLeeShapleyAnalysisFileName, ...
+theAnalyzedSTFsFileName = fullfile('LeeShapley', sprintf('targetCellsSTF_%s.mat', postFix));
+theAnalyzedSTFsFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir, theAnalyzedSTFsFileName, ...
         'generateMissingSubDirs', true);
 
 if (~isempty(mRGCNonLinearityParamsStruct))
@@ -261,8 +261,8 @@ if (~isempty(mRGCNonLinearityParamsStruct))
         strrep(theInputConeMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
     theMRGCMosaicSTFResponsesFullFileName = ...
         strrep(theMRGCMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
-    theLeeShapleyAnalysisFullFileName = ...
-        strrep(theLeeShapleyAnalysisFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
+    theAnalyzedSTFsFullFileName = ...
+        strrep(theAnalyzedSTFsFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
 end
 
 
@@ -283,25 +283,26 @@ targetRGCindices =  1:theMRGCmosaic.rgcsNum;
 STFstimulusResolutionDegs = RGCMosaicConstructor.helper.simulateExperiment.stimulusResolutionFromConeApertureOrConeSpacing(...
             theMRGCmosaic, targetRGCindices, theFraction, theMetric);
 
+
 if (computeInputConeMosaicResponses)
     debugInputConeMosaicPcurrentResponse = inspectInputConeMosaicResponses;
     inspectInputConeMosaicResponses = false;
     computeMRGCMosaicResponses = false;
-    inspectMRGCMosaicResponses = false;
+    analyzeSTFresponsesForTargetCells = false;
 
 elseif (inspectInputConeMosaicResponses)
     debugInputConeMosaicPcurrentResponse = false;
     computeInputConeMosaicResponses = false;
     computeMRGCMosaicResponses = false;
-    inspectMRGCMosaicResponses = false;
+    analyzeSTFresponsesForTargetCells= false;
 
 elseif (computeMRGCMosaicResponses)
     debugInputConeMosaicPcurrentResponse = false;
     computeInputConeMosaicResponses = false;
     inspectInputConeMosaicResponses = false;
-    inspectMRGCMosaicResponses = false;
+    analyzeSTFresponsesForTargetCells = false;
 
-elseif (inspectMRGCMosaicResponses)
+elseif (analyzeSTFresponsesForTargetCells)
     debugInputConeMosaicPcurrentResponse = false;
     computeInputConeMosaicResponses = false;
     inspectInputConeMosaicResponses = false;
@@ -332,5 +333,7 @@ RGCMosaicAnalyzer.compute.mosaicSTFsForStimulusChromaticityAndOptics(...
     'computeInputConeMosaicResponsesBasedOnPhotocurrents', computeInputConeMosaicResponsesBasedOnPhotocurrents, ...
     'inspectInputConeMosaicResponses', inspectInputConeMosaicResponses, ...
     'computeMRGCMosaicResponses', computeMRGCMosaicResponses, ...
-    'inspectMRGCMosaicResponses', inspectMRGCMosaicResponses);
+    'analyzeSTFresponsesForTargetCells', analyzeSTFresponsesForTargetCells, ...
+    'analyzedSTFsFileName', theAnalyzedSTFsFullFileName);
+
 
