@@ -54,7 +54,7 @@ function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, custom
                 'visualizePSF', visualizePSFonTopOfConeMosaic);
 
         otherwise
-            error('Unknown optics: ''%s''.', whichOptics)
+            error('Not allowed to generate optics for responses with this specification: ''%s''.', whichOptics);
    	end % switch
 
    	if (visualizePSFonTopOfConeMosaic)
