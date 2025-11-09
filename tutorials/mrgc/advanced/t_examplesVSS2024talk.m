@@ -221,7 +221,8 @@ function t_examplesVSS2024talk(options)
         'computeMRGCMosaicResponses', ~true, ...                            % computation stage 2:  compute the mRGC responses
         'visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses', ~true, ...
         'visualizeConeExcitationVsPhotocurrentSTFs', false, ...
-        'analyzeSTFresponsesForTargetCells', true ...
+        'analyzeSTFresponsesForTargetCells', ~true ,...
+        'contrastBPIsOfConeIsolatingVsAchromaticSTFs', true ...
         );
 
 
@@ -263,11 +264,12 @@ function t_examplesVSS2024talk(options)
             'pCurrentTemporalResolutionSeconds', pCurrentTemporalResolutionSeconds), ...    % resolution for saving (downsampling) of the computed photocurrents
         'computeInputConeMosaicResponses', ~true, ...                      % computation stage 1
         'computeInputConeMosaicResponsesBasedOnConeExcitations', ~true, ... % computation sub-stage 1A: compute the cone excitations
-        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  true, ... % computation sub-stage 1B: compute the photocurrents
+        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  ~true, ... % computation sub-stage 1B: compute the photocurrents
         'visualizeMosaicResponses', ~true, ...                              % set this to true to visualize the dynamic cone mosaic response during step 1A
         'inspectInputConeMosaicResponses', ~true, ...                       % computation sub-stage 1C: visualize exemplar cone excitation & photocurrent responses
         'computeMRGCMosaicResponses', ~true, ...                            % computation stage 2:  compute the mRGC responses
-        'analyzeSTFresponsesForTargetCells', ~true ...
+        'analyzeSTFresponsesForTargetCells', ~true, ...                      % compute the STFs
+        'contrastBPIsOfConeIsolatingVsAchromaticSTFs', true ...             % contrast the BPIs of the computed STFs
         );
 
 

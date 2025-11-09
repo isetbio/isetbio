@@ -164,6 +164,9 @@ arguments
     % Whether to analyze the STF responses for select target mRGCs
     options.analyzeSTFresponsesForTargetCells(1,1) logical = false;
 
+    % Whether to contrast the BPIs of the computed STF responses for select target mRGCs
+    options.contrastBPIsOfConeIsolatingVsAchromaticSTFs (1,1) logical = false;
+
     % Whether to close previously open figures
     options.closePreviouslyOpenFigures (1,1) logical = true;
 
@@ -217,7 +220,7 @@ computeInputConeMosaicResponsesBasedOnPhotocurrents = options.computeInputConeMo
 inspectInputConeMosaicResponses = options.inspectInputConeMosaicResponses;
 computeMRGCMosaicResponses = options.computeMRGCMosaicResponses;
 analyzeSTFresponsesForTargetCells = options.analyzeSTFresponsesForTargetCells;
-
+contrastBPIsOfConeIsolatingVsAchromaticSTFs = options.contrastBPIsOfConeIsolatingVsAchromaticSTFs;
 
 
 % Load the mRGCmosaic specified by the passed parameters:
@@ -363,3 +366,11 @@ if (analyzeSTFresponsesForTargetCells)
         visualizeConeExcitationVsPhotocurrentSTFs);
 
 end
+
+if (contrastBPIsOfConeIsolatingVsAchromaticSTFs)
+
+    RGCMosaicAnalyzer.compute.LeeShapleyBPIanalysis(...
+        theMRGCMosaicSTFResponsesFullFileName,...
+        theAnalyzedSTFsFullFileName)
+end
+
