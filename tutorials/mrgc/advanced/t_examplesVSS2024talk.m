@@ -213,16 +213,16 @@ function t_examplesVSS2024talk(options)
             'osBiophysicalModelWarmUpTimeSeconds', 1.0, ...         % time for the OSbiophysical model to warm up around its steady state
             'osBiophysicalModelTemporalResolutionSeconds', 1e-5, ... % very high temporal resolution required for accurate computation of the OSbiophysical model
             'pCurrentTemporalResolutionSeconds', pCurrentTemporalResolutionSeconds), ...    % resolution for saving (downsampling) of the computed photocurrents
-        'computeInputConeMosaicResponses', ~true, ...                      % computation stage 1
-        'computeInputConeMosaicResponsesBasedOnConeExcitations', ~true, ... % computation sub-stage 1A: compute the cone excitations
-        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  ~true, ... % computation sub-stage 1B: compute the photocurrents
-        'visualizeMosaicResponses', ~true, ...                              % set this to true to visualize the dynamic cone mosaic response during step 1A
-        'inspectInputConeMosaicResponses', ~true, ...                       % computation sub-stage 1C: visualize exemplar cone excitation & photocurrent responses
-        'computeMRGCMosaicResponses', ~true, ...                            % computation stage 2:  compute the mRGC responses
+        'computeInputConeMosaicResponses', ~true, ...                           % computation stage 1
+        'computeInputConeMosaicResponsesBasedOnConeExcitations', ~true, ...     % computation sub-stage 1A: compute the cone excitations
+        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  ~true, ...      % computation sub-stage 1B: compute the photocurrents
+        'visualizeMosaicResponses', ~true, ...                                  % set this to true to visualize the dynamic cone mosaic response during step 1A
+        'inspectInputConeMosaicResponses', ~true, ...                           % computation sub-stage 1C: visualize exemplar cone excitation & photocurrent responses
+        'computeMRGCMosaicResponses', ~true, ...                                % computation stage 2:  compute the mRGC responses
         'visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses', ~true, ...
         'visualizeConeExcitationVsPhotocurrentSTFs', false, ...
-        'analyzeSTFresponsesForTargetCells', ~true ,...
-        'contrastBPIsOfConeIsolatingVsAchromaticSTFs', true ...
+        'analyzeSTFresponsesForTargetCells', ~true ,...                         % compute the STFs
+        'contrastBPIsOfConeIsolatingVsAchromaticSTFs', true ...                 % contrast the BPIs of coneIsolating vs achromatic STFs
         );
 
 
@@ -248,28 +248,30 @@ function t_examplesVSS2024talk(options)
             'refractiveErrorDiopters', 0.0), ...
         'STFchromaticity', stimulusChroma, ...
         'STFcontrast', stimContrast(stimulusChroma), ...
-        'STForientationDeltaDegs', 90, ...                          % every 90 degs
-        'STFtemporalFrequencyHz', 2.5, ...                          % Matching Lee&Shapley 2012
-        'STFsfSupport', logspace(log10(0.1), log10(20), 15), ...    % logspace(log10(0.1), log10(25), 16), ...
-        'STFmeanLuminanceCdM2', 31.34, ...                          % Matching Lee&Shapley 2012
-        'STFbackgroundXYchromaticity', [0.436, 0.476], ...          % Matching Lee&Shapley 2012
-        'displayType', 'CRT-Sony-HorwitzLab', ...                   % SONY monitor like Lee & Shapley 2012
-        'displayLuminanceHeadroomPercentage', 200/100, ...          % Very large luminance headroom to generate these high cone contrasts
-        'spatialPhaseIncrementDegs', spatialPhaseIncrementDegs, ... % Optimal for the 150 Hz CRT of Lee&Shapley 2012. Their 2.5 Hz stimulus would correspond to 6 degs.
+        'STForientationDeltaDegs', 90, ...                              % every 90 degs
+        'STFtemporalFrequencyHz', 2.5, ...                              % Matching Lee&Shapley 2012
+        'STFsfSupport', logspace(log10(0.1), log10(20), 15), ...        % logspace(log10(0.1), log10(25), 16), ...
+        'STFmeanLuminanceCdM2', 31.34, ...                              % Matching Lee&Shapley 2012
+        'STFbackgroundXYchromaticity', [0.436, 0.476], ...              % Matching Lee&Shapley 2012
+        'displayType', 'CRT-Sony-HorwitzLab', ...                       % SONY monitor like Lee & Shapley 2012
+        'displayLuminanceHeadroomPercentage', 200/100, ...              % Very large luminance headroom to generate these high cone contrasts
+        'spatialPhaseIncrementDegs', spatialPhaseIncrementDegs, ...     % Optimal for the 150 Hz CRT of Lee&Shapley 2012. Their 2.5 Hz stimulus would correspond to 6 degs.
         'coneFundamentalsOptimizedForStimPosition', true, ...
-        'mRGCNonLinearityParamsStruct', struct(...                  % Photocurrent nonlinearity
+        'mRGCNonLinearityParamsStruct', struct(...                      % Photocurrent nonlinearity
             'type', 'photocurrent', ...
-            'osBiophysicalModelWarmUpTimeSeconds', 1.0, ...         % time for the OSbiophysical model to warm up around its steady state
-            'osBiophysicalModelTemporalResolutionSeconds', 1e-5, ... % very high temporal resolution required for accurate computation of the OSbiophysical model
+            'osBiophysicalModelWarmUpTimeSeconds', 1.0, ...             % time for the OSbiophysical model to warm up around its steady state
+            'osBiophysicalModelTemporalResolutionSeconds', 1e-5, ...    % very high temporal resolution required for accurate computation of the OSbiophysical model
             'pCurrentTemporalResolutionSeconds', pCurrentTemporalResolutionSeconds), ...    % resolution for saving (downsampling) of the computed photocurrents
-        'computeInputConeMosaicResponses', ~true, ...                      % computation stage 1
-        'computeInputConeMosaicResponsesBasedOnConeExcitations', ~true, ... % computation sub-stage 1A: compute the cone excitations
-        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  ~true, ... % computation sub-stage 1B: compute the photocurrents
-        'visualizeMosaicResponses', ~true, ...                              % set this to true to visualize the dynamic cone mosaic response during step 1A
-        'inspectInputConeMosaicResponses', ~true, ...                       % computation sub-stage 1C: visualize exemplar cone excitation & photocurrent responses
-        'computeMRGCMosaicResponses', ~true, ...                            % computation stage 2:  compute the mRGC responses
-        'analyzeSTFresponsesForTargetCells', ~true, ...                      % compute the STFs
-        'contrastBPIsOfConeIsolatingVsAchromaticSTFs', true ...             % contrast the BPIs of the computed STFs
+        'computeInputConeMosaicResponses', ~true, ...                           % computation stage 1
+        'computeInputConeMosaicResponsesBasedOnConeExcitations', ~true, ...     % computation sub-stage 1A: compute the cone excitations
+        'computeInputConeMosaicResponsesBasedOnPhotocurrents',  ~true, ...      % computation sub-stage 1B: compute the photocurrents
+        'visualizeMosaicResponses', ~true, ...                                  % set this to true to visualize the dynamic cone mosaic response during step 1A
+        'inspectInputConeMosaicResponses', ~true, ...                           % computation sub-stage 1C: visualize exemplar cone excitation & photocurrent responses
+        'computeMRGCMosaicResponses', ~true, ...                                % computation stage 2:  compute the mRGC responses
+        'visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses', ~true, ...
+        'visualizeConeExcitationVsPhotocurrentSTFs', false, ...
+        'analyzeSTFresponsesForTargetCells', ~true, ...                          % compute the STFs
+        'contrastBPIsOfConeIsolatingVsAchromaticSTFs', true ...                % contrast the BPIs of coneIsolating vs achromatic STFs
         );
 
 
