@@ -11,7 +11,11 @@ function computeConeApertures(obj, lowOpticalImageResolutionWarning)
 % Description
 %   Hairy code that NC wrote.  Will try to comment (BW). A lot of the work
 %   is done in the included method
-%   coneZonesFromApertureSizeAndOIresolutionve
+%   coneZonesFromApertureSizeAndOIresolution
+%
+%  I created computeConeAperturesRefactored.m and will see if that is
+%  helpful for simplification.  Copilot thinks it is more efficient,
+%  but who knows.
 %
 % Author: NC
 %
