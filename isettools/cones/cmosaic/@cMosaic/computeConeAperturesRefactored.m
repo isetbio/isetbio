@@ -1,8 +1,11 @@
-function computeConeAperturesRefactored(obj, lowOpticalImageResolutionWarning)
+function computeConeApertures(obj, lowOpticalImageResolutionWarning)
 % Compute apertures from the cone positions stored in obj.
 %
 % ---
-% Refactored for clarity by Gemini. Claims speed.  Not tested.
+% Refactored for clarity by Gemini, which claims speed up and clarity.
+% 
+% I compared the numerical outputs between this and the original.
+% They were identical (BW, Nov. 12, 2025.)
 % ---
 %
 % Original logic:

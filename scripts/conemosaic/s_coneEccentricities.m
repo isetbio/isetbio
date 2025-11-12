@@ -1,15 +1,19 @@
 % s_coneEccentricities
 %
-% Estimate the cone apertures as a function of eccentricity.
-% Uses the cMosaic
+% Generate plots to visualize the relationship between cone spacing,
+% cone aperture, and cone aperture area with respect to eccentricity
+% in degrees. 
+% 
+% The estimates are derived from a cMosaic object that simulates
+% the spatial arrangement of cones in the retina.  The aperture
+% diameters are calculated from the cone spacing, multiplying by a
+% reduction based on these factors and potentially a rod intrusion
+% factor.
 %
-% This script generates plots to visualize the relationship between
-% cone spacing, cone aperture, and cone aperture area with respect to
-% eccentricity in degrees. The data is derived from a cMosaic object
-% that simulates the spatial arrangement of cones in the retina.
+% eccVaryingApertures = obj.coneRFspacingsMicrons * ...
+%                      obj.coneDiameterToSpacingRatio * ...
+%                      obj.coneApertureToDiameterRatio;
 %
-% The script includes options for rod intrusion adjustment and exports
-% the resulting figures as PDFs based on the selected settings.
 %
 % See also
 %   cMosaic, NicePlot.exportFigToPDF

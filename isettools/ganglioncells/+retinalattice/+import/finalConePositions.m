@@ -23,7 +23,6 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
 %
 % Description
 %
-%
 % Also:  Read the chatGPT code below in which I asked it to shorten the
 % variable names.  Interesting.
 %
@@ -37,8 +36,9 @@ sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDe
 % Load cone positions
 p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
 theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
-fprintf('Loading cone mosaic data from %s.\n', theMosaicFileName);
+fprintf('Loading cone mosaic data from\n\t %s \n ...', theMosaicFileName);
 load(theMosaicFileName, 'rfPositions');
+fprintf('done.\n');
 
 % Reverse the polarity
 rfPositions = -rfPositions;

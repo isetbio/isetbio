@@ -1,6 +1,6 @@
 %% t_coneEccentricitySize
 %
-%  Create cone mosaics at different eccentricities.  The goal is to
+%  Create conerect mosaics at different eccentricities.  The goal is to
 %  illustrate how the cone apertures change in size and how this impacts
 %  properties such as total cone absorptions and the impact of eye
 %  movements.
