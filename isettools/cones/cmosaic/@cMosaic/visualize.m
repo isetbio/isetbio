@@ -352,8 +352,13 @@ end
 
 %% Set figure size
 if (isempty(figureHandle))
-    figureHandle = figure(); clf;
-    set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
+    % This was causing a crash in R2025b.  Not in other versions.
+    % Perhaps the units are the problem. We should be checking.
+    %
+    % figureHandle = figure(); clf;
+    % set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
+    %
+    figureHandle = ieFigure(); clf;
     axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
 else
     if (isempty(axesHandle))
