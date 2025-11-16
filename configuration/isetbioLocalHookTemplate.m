@@ -108,10 +108,12 @@ else
 end
 
 % Directory where all the mosaic generation intermediate data will be stored
-rgcIntermediateDataDir = fullfile(rgcResourcesRootDir,'IBIO_rgcMosaicResources/denovo/intermediateFiles/ONcenterMidgetRGCmosaics');
+% Probably you should customize this
+rgcIntermediateDataDir = fullfile(rgcResourcesRootDir,'IBIO_rgcMosaicResources/someuser/intermediateFiles/ONcenterMidgetRGCmosaics');
 
 % Directory where all generated figures will be saved
-rgcFigurePDFsDir = fullfile(rgcResourcesRootDir,'ManuscriptSupportMaterials/denovo/PLOS2024/figures');
+% Probably you should customize this
+rgcFigurePDFsDir = fullfile(rgcResourcesRootDir,'ManuscriptSupportMaterials/someuser/PLOS2024/figures');
 
 % Will the code stop and ask if it is OK to generate a missing directory
 rgcQueryUserBeforeGeneratingMissingDir = false;
