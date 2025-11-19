@@ -7,10 +7,11 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
 
     nTimeBins = size(theConeMosaicExcitationResponseSequence,1);
     nCones = size(theConeMosaicExcitationResponseSequence,2);
-    
+    dT = temporalSupportSeconds(2)-temporalSupportSeconds(1);
+    periodSeconds = temporalSupportSeconds(nTimeBins)+dT;
     temporalSupportSecondsPeriodic = reshape(temporalSupportSeconds, [1 numel(temporalSupportSeconds)]);
     for k = 1:nWarmUpPeriods
-        temporalSupportSecondsPeriodic = cat(2, temporalSupportSecondsPeriodic, temporalSupportSeconds(1:nTimeBins)+k*temporalSupportSeconds(nTimeBins+1));
+        temporalSupportSecondsPeriodic = cat(2, temporalSupportSecondsPeriodic, temporalSupportSeconds+k*periodSeconds);
     end
     
     % Cone mosaic integration time

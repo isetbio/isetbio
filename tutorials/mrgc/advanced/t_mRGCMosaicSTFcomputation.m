@@ -239,7 +239,7 @@ disp('Done loading mosaic and optics')
 % Filenames for intermediate responses
 intermediateDataDir = RGCMosaicConstructor.filepathFor.intermediateDataDir();
 
-% ENcode chromaticity, eccentricity and size of the mosaic
+% Encode chromaticity, eccentricity and size of the mosaic
 postFix = sprintf('%s_%s_Ecc_%2.1f_%2.1f_Size_%2.1f_%2.1f', ...
     STFchromaticity, ...
     strrep(prebakedMRGCMosaicFilename, '.mat', ''), ...
@@ -284,7 +284,8 @@ customTemporalFrequencyAndContrast = struct(...
 % Determine the stimulus pixel resolution to be a fraction of the minimum cone aperture or cone spacing in the mosaic
 % here, half of the cone spacing
 theMetric = 'cone aperture';  % choose from {'cone aperture' or cone spacing'}
-if ((strcmp(opticsForSTFresponses, 'adaptiveOptics6MM')) || (strcmp(opticsForSTFresponses, 'adaptiveOptics6MMwithLCA')))
+if (~isempty(opticsForSTFresponses)) && (isstruct(opticsForSTFresponses) && (isfield(opticsForSTFresponses, 'type'))) && ...
+   ((strcmp(opticsForSTFresponses.type, 'adaptiveOptics6MM')) || (strcmp(opticsForSTFresponses.type, 'adaptiveOptics6MMwithLCA')))
     theFraction = 0.1;
 else
     theFraction = 0.25;
