@@ -5,7 +5,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     p = inputParser;
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
-    p.addParameter('nonLinearityParams', [], @(x)(isempty(x))||(isstruct(x)));
+    p.addParameter('nonLinearitiesList', [], @(x)(isempty(x))||(iscell(x))||(isstruct(x)));
     p.addParameter('seed', [], @isnumeric);
 
 
@@ -13,7 +13,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     p.parse(varargin{:});
     mRGCMosaicNoisyResponseInstancesNum = p.Results.nTrials;
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
-    nonLinearityParams = p.Results.nonLinearityParams;
+    nonLinearitiesList = p.Results.nonLinearitiesList;
     noiseSeed = p.Results.seed;
 
     % Validate input: ensure theConeMosaicResponse is a 3D matrix
@@ -26,6 +26,30 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         'The size(theInputConeMosaicResponse,2) (%d) does not equal the length of temporal support (%d)', ...
         size(theInputConeMosaicResponse,2), numel(theInputConeMosaicResponseTemporalSupportSeconds));
 
+
+    if (isstruct(nonLinearitiesList))
+        theSingleNonLinearity = nonLinearitiesList;
+        nonLinearitiesList = cell(1,1)
+        nonLinearitiesList{1} = theSingleNonLinearity;
+    end
+
+    % Nonlinearities
+    if (numel(nonLinearitiesList)>0)
+        fprintf('Will apply %d RGC nonlinearities with params:', numel(nonLinearitiesList))
+        for iNonLinearityIdx = 1:numel(nonLinearitiesList)
+            nlParamsStruct = nonLinearitiesList{iNonLinearityIdx};
+            fprintf('#%d:\n', iNonLinearityIdx);
+            fprintf('\ttype: %s\n', nlParamsStruct.type);
+            fprintf('\tapplied to: %s\n', nlParamsStruct.sourceSignal);
+            fprintf('\twithParams: \n');
+
+            paramNames = fieldnames(nlParamsStruct.params);
+            for iParam = 1:numel(paramNames)
+                theParamName = paramNames{iParam};
+                fprintf('\t\t %s: %f\n', theParamName, nlParamsStruct.params.(theParamName));
+            end % iParam
+        end
+    end % Output static nonlinearity
 
     if (numel(theInputConeMosaicResponseTemporalSupportSeconds)>1)
         inputTimeResolutionSeconds = theInputConeMosaicResponseTemporalSupportSeconds(2)-theInputConeMosaicResponseTemporalSupportSeconds(1);
@@ -114,8 +138,40 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
             end
         end
 
+        % Apply any (center/surround) component response nonlinearities
+        if (numel(nonLinearitiesList)>0)
+            for iNonLinearityIdx = 1:numel(nonLinearitiesList)
+                nlParamsStruct = nonLinearitiesList{iNonLinearityIdx};
+                if (strcmp(nlParamsStruct.sourceSignal, 'centerComponentResponse'))
+                    centerSpatiallyIntegratedActivations = applyNonLinearity(centerSpatiallyIntegratedActivations, nlParamsStruct);
+                end
+            end % for iNonLinearityIdx
+
+            for iNonLinearityIdx = 1:numel(nonLinearitiesList)
+                nlParamsStruct = nonLinearitiesList{iNonLinearityIdx};
+                if (strcmp(nlParamsStruct.sourceSignal, 'surroundComponentResponse'))
+                    surroundSpatiallyIntegratedActivations = applyNonLinearity(surroundSpatiallyIntegratedActivations, nlParamsStruct);
+                end
+            end % for iNonLinearityIdx
+        end % Input nonlinearities
+
+
         % Composite respose
-        noiseFreeMRGCresponses(:,:,iRGC) = obj.responseGains(iRGC) * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
+        theNoiseFreeCompositeResponse = obj.responseGains(iRGC) * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
+
+
+        % Apply any composite response nonlinearities
+        if (numel(nonLinearitiesList)>0)
+            for iNonLinearityIdx = 1:numel(nonLinearitiesList)
+                nlParamsStruct = nonLinearitiesList{iNonLinearityIdx};
+                if (strcmp(nlParamsStruct.sourceSignal, 'compositeResponse'))
+                    theNoiseFreeCompositeResponse = applyNonLinearity(theNoiseFreeCompositeResponse, nlParamsStruct);
+                end
+            end % for iNonLinearityIdx
+        end % Output static nonlinearity
+
+        % Store the response
+        noiseFreeMRGCresponses(:,:,iRGC) = theNoiseFreeCompositeResponse;
     end % parfor
 
     % Check noiseFlag. If empty, set it to 'random'
@@ -132,6 +188,37 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     % Generate noisy instances
     noisyMRGCresponseInstances = obj.noisyResponseInstances(noiseFreeMRGCresponses, ...
         'seed', noiseSeed);
+end
+
+
+function theResponse = applyNonLinearity(theResponse, nlParamsStruct)
+    switch (nlParamsStruct.type)
+
+        case 'Naka Rushton'
+            fprintf('Will apply %s nonLinearity to %s with bias: %f, c50: %f, exponent: %f, super-saturation exponent: %f, and gain: %f\n', ...
+                nlParamsStruct.type, ...
+                nlParamsStruct.sourceSignal, ...
+                nlParamsStruct.params.bias, ...
+                nlParamsStruct.params.c50, ...
+                nlParamsStruct.params.n, ...
+                nlParamsStruct.params.s, ...
+                nlParamsStruct.params.k);
+
+                % Apply bias
+                theResponse = theResponse + nlParamsStruct.params.bias;
+
+                % Half-wave rectify
+                theResponse(theResponse<0) = 0;
+
+                % Pass through Naka Rushton activation function
+                Rn = theResponse.^(nlParamsStruct.params.n);
+                Rsn = theResponse.^(nlParamsStruct.params.s * nlParamsStruct.params.n);
+                c50sn = nlParamsStruct.params.c50 ^ (nlParamsStruct.params.s * nlParamsStruct.params.n);
+                theResponse = nlParamsStruct.params.k * Rn ./ (Rsn + c50sn);
+
+        otherwise
+            fprintf('Unknown %s non-linearity: ''%s''.', nlParamsStruct.source, nlParamsStruct.type)
+    end % switch
 end
 
 

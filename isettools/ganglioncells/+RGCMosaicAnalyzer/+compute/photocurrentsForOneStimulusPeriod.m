@@ -167,7 +167,7 @@ function [temporalSupportPhotocurrent, ...
         skipAssertions)
 
 % Make the cone excitation response periodic by concatenating nWarmUpPeriods
-theConeExcitations = theConeExcitations(1:end-1);
+theConeExcitations = theConeExcitations(1:end);
 theConeExcitationsPeriodic = reshape(theConeExcitations, [1 numel(theConeExcitations)]);
 for k = 1:nWarmUpPeriods
     theConeExcitationsPeriodic = cat(2, theConeExcitationsPeriodic, theConeExcitationsPeriodic(1:numel(theConeExcitations)));
