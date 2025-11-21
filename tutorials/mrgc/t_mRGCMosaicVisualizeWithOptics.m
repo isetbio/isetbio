@@ -208,39 +208,18 @@ else
             'cropParams', cropParams);
 
         % Generate the custom optics specified
-        [theOIatTheMosaicEccentricity, thePSFatTheMosaicEccentricity, ~, ~, ...
+        [theOIatTheMosaicEccentricity, thePSFatTheMosaicEccentricity, ...
+         theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio, ...
          examinedDefocusDiopters, StrehlRatioAsAFunctionOfDefocusDiopter] = RGCMosaicConstructor.helper.optics.generate(...
                 theMRGCMosaic.inputConeMosaic, ...
                 theMRGCMosaic.eccentricityDegs, ...
                 opticsToEmploy.customOpticsParams);
 
-        ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
-        hFig = figure(100);
-        theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-        ax = theAxes{1,1};
-
-        plot(ax,examinedDefocusDiopters, StrehlRatioAsAFunctionOfDefocusDiopter, 'ro-', ...
-            'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', ff.markerSize, 'LineWidth', ff.lineWidth);
-
-        xlabel(ax,'defocus (diopters)');
-        ylabel(ax,'Strehl ratio')
-        set(ax, 'XLim', [-7 7], 'XTick', -10:1:10, 'YTick', 0:0.1:1, 'YLim', [0. 0.8]);
-
-        % Finalize figure using the Publication-Ready format
-        PublicationReadyPlotLib.applyFormat(ax,ff);
-
-        visualizationPDFfileName = sprintf('StrehlRatio')
-        exportVisualizationPDFdirectory = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
-
-        % Generate the path if we need to
-        RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-            exportVisualizationPDFdirectory, theVisualizationPDFfilename, ...
-            'generateMissingSubDirs', true);
-
-        thePDFfileName = fullfile(exportVisualizationPDFdirectory, theVisualizationPDFfilename);
-        NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
-
+        % Visualize how Strehl ratio varies with defocus
+        visualizeStrehlRatioVariationWithDefocus(...
+            examinedDefocusDiopters, StrehlRatioAsAFunctionOfDefocusDiopter, ...
+            theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio, ...
+            sprintf('StrehlRatio'));
 
     else
         % Load the mRGCmosaic specified by the passed parameters:
@@ -380,7 +359,7 @@ theMRGCMosaic.visualize(...
     'axesHandle', ax, ...
     'identifyInputCones', true, ...
     'identifyPooledCones', true, ...
-    'inputConesAlpha', 0.5, ...
+    'inputConesAlpha', 0.25, ...
     'identifiedConeAperture', 'lightCollectingArea4sigma', ...
     'identifiedConeApertureThetaSamples', 16, ...
     'minConeWeightVisualized', minCenterConeWeight, ...
@@ -398,6 +377,42 @@ theMRGCMosaic.visualize(...
     'exportVisualizationPDFdirectory', exportVisualizationPDFdirectory);
 
 
+end
+
+
+function visualizeStrehlRatioVariationWithDefocus(...
+    examinedDefocusDiopters, StrehlRatioAsAFunctionOfDefocusDiopter, ...
+    theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio, ...
+    visualizationPDFfileName)
+
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    hFig = figure(100);
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    plot(ax,examinedDefocusDiopters, StrehlRatioAsAFunctionOfDefocusDiopter, 'ro-', ...
+        'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', ff.markerSize, 'LineWidth', ff.lineWidth);
+    hold (ax, 'on');
+    plot(ax, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio, 'k+', ...
+        'MarkerSize', ff.markerSize, 'LineWidth', ff.lineWidth);
+
+    xlabel(ax,'defocus (diopters)');
+    ylabel(ax,'Strehl ratio')
+    set(ax, 'XLim', [examinedDefocusDiopters(1)-1 examinedDefocusDiopters(end)+1], 'XTick', -10:1:10, 'YTick', 0:0.1:1, 'YLim', [0. 0.8]);
+
+    % Finalize figure using the Publication-Ready format
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+
+    exportVisualizationPDFdirectory = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        exportVisualizationPDFdirectory, theVisualizationPDFfilename, ...
+        'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(exportVisualizationPDFdirectory, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
 end
 
 
