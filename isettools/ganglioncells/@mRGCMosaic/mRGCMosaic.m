@@ -221,7 +221,8 @@ classdef mRGCMosaic < handle
         [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio] = nativeOI(obj, varargin);
 
         % Method to compute  the spatiotemporal response of the mRGCMosaic given the response of its input cone  mosaic
-        [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...
+        [noiseFreeMRGCresponses, noisyMRGCresponseInstances, ...
+         responseTemporalSupportSeconds, noiseFreeLinearMRGCresponses] = compute(obj, ...
             theInputConeMosaicResponse, theInputConeMosaicResponseTemporalSupportSeconds, varargin);
 
         % Method to enable S-cone inputs to select  target RGCs
@@ -249,7 +250,8 @@ classdef mRGCMosaic < handle
         generateRFcenterOverlap(obj, rfCenterOverlapParamsStruct, varargin);
 
         % Method to set the  rgcRFsurroundConeConnectivityMatrix, the gains, the rfSurroundConnectivityParams
-        bakeSurroundConeConnectivityMatrixAndFreeze(obj, rgcRFsurroundConeConnectivityMatrix, rfSurroundConnectivityParams, surroundVarianceInComputeReadyMosaic);
+        bakeSurroundConeConnectivityMatrixAndFreeze(obj, rgcRFsurroundConeConnectivityMatrix, ...
+            rfSurroundConnectivityParams, surroundVarianceInComputeReadyMosaic);
 
         % Method to compute the spatial and chromatic uniformity of cone inputs to the RF centers
         [theSpatialCompactnessCosts, theSpectralUniformityCosts, ...
@@ -258,7 +260,8 @@ classdef mRGCMosaic < handle
             rfCenterSpatioChromaticCosts(obj, varargin);
 
         % Method to compute the surround cone purities for all a set or all RGCs in the mosaic
-        [surroundConePurities, centerConeDominances, centerConeNumerosities, centerConePurities] = surroundConePurities(obj, theRGCindices, surroundConeSelection);
+        [surroundConePurities, centerConeDominances, centerConeNumerosities, centerConePurities] = ...
+            surroundConePurities(obj, theRGCindices, surroundConeSelection);
 
         % Method to return cone connectivity stats for theSubregion ('center' or 'surround') oftheRGCindex
         s = singleCellConnectivityStats(obj, theRGCindex, theSubregion, varargin);
