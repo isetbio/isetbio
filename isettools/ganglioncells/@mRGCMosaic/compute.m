@@ -8,7 +8,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     p.addParameter('nonLinearitiesList', [], @(x)(isempty(x))||(iscell(x))||(isstruct(x)));
     p.addParameter('flipLinearResponsePolarityForCellsWithIndices', [], @isnumeric);
     p.addParameter('seed', [], @isnumeric);
-
+    p.addParameter('beVerbose', false, @islogical);
 
     % Parse input
     p.parse(varargin{:});
@@ -16,8 +16,8 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
     nonLinearitiesList = p.Results.nonLinearitiesList;
     flipLinearResponsePolarityForCellsWithIndices = p.Results.flipLinearResponsePolarityForCellsWithIndices;
-
     noiseSeed = p.Results.seed;
+    beVerbose = p.Results.beVerbose;
 
     % Validate input: ensure theConeMosaicResponse is a 3D matrix
     assert(ndims(theInputConeMosaicResponse) == 3, ...
@@ -38,20 +38,22 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
 
     % Nonlinearities
     if (numel(nonLinearitiesList)>0)
-        fprintf('Will apply %d RGC nonlinearities with params:', numel(nonLinearitiesList))
-        for iNonLinearityIdx = 1:numel(nonLinearitiesList)
-            nlParamsStruct = nonLinearitiesList{iNonLinearityIdx};
-            fprintf('#%d:\n', iNonLinearityIdx);
-            fprintf('\ttype: %s\n', nlParamsStruct.type);
-            fprintf('\tapplied to: %s\n', nlParamsStruct.sourceSignal);
-            fprintf('\twithParams: \n');
+        if (beVerbose)
+            fprintf('Will apply %d RGC nonlinearities with params:', numel(nonLinearitiesList));
+            for iNonLinearityIdx = 1:numel(nonLinearitiesList)
+                nlParamsStruct = nonLinearitiesList{iNonLinearityIdx};
+                fprintf('#%d:\n', iNonLinearityIdx);
+                fprintf('\ttype: %s\n', nlParamsStruct.type);
+                fprintf('\tapplied to: %s\n', nlParamsStruct.sourceSignal);
+                fprintf('\twithParams: \n');
 
-            paramNames = fieldnames(nlParamsStruct.params);
-            for iParam = 1:numel(paramNames)
-                theParamName = paramNames{iParam};
-                fprintf('\t\t %s: %f\n', theParamName, nlParamsStruct.params.(theParamName));
-            end % iParam
-        end
+                paramNames = fieldnames(nlParamsStruct.params);
+                for iParam = 1:numel(paramNames)
+                    theParamName = paramNames{iParam};
+                    fprintf('\t\t %s: %f\n', theParamName, nlParamsStruct.params.(theParamName));
+                end % iParam
+            end
+        end % beVerbose
     end % if (numel(nonLinearitiesList)>0)
 
     if (numel(theInputConeMosaicResponseTemporalSupportSeconds)>1)
@@ -218,10 +220,10 @@ function theResponse = applyNonLinearity(theResponse, nlParamsStruct)
                     nlParamsStruct.params.c50, ...
                     nlParamsStruct.params.n, ...
                     nlParamsStruct.params.s, ...
-                    nlParamsStruct.params.k);
+                    nlParamsStruct.params.gain);
             end
 
-            % Scale response to normalized range
+            % Normalize response to [-1 1]
             maxResponse = max(abs(theResponse(:)));
             if (maxResponse > nlParamsStruct.params.maxLinearResponse)
                 error('nonLinearity maxLinearResponse (%f) should be set to a higher value. max abs(response) encountered: %f', nlParamsStruct.params.maxLinearResponse, maxResponse);
@@ -248,7 +250,7 @@ function theResponse = applyNonLinearity(theResponse, nlParamsStruct)
             Rn = theResponse.^(nlParamsStruct.params.n);
             Rsn = theResponse.^(nlParamsStruct.params.s * nlParamsStruct.params.n);
             c50sn = nlParamsStruct.params.c50 ^ (nlParamsStruct.params.s * nlParamsStruct.params.n);
-            theResponse = nlParamsStruct.params.k * Rn ./ (Rsn + c50sn);
+            theResponse = nlParamsStruct.params.gain * Rn ./ (Rsn + c50sn);
 
             % Ajust polarity for 'none', case rectification
             if (strcmp(nlParamsStruct.params.rectification, 'none'))
