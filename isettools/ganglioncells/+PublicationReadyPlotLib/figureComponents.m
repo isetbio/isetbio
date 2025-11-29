@@ -182,6 +182,38 @@ function f = figureComponents(panelFormat)
                     'bottomMargin',   0.07, ...
                     'topMargin',      0.03);
 
+        case '1x1 giant square mosaic with side plots'
+
+            f.reductionFactor = 0.24;
+            f.figureSize = [1250 1200];
+            f.tickDir = 'in';
+
+            f.subplotPosVectors(1,1) = NicePlot.getSubPlotPosVectors(...
+                    'rowsNum', 1, ...
+                    'colsNum', 1, ...
+                    'heightMargin',  0.05, ...
+                    'widthMargin',    0.00, ...
+                    'leftMargin',     0.08, ...
+                    'rightMargin',    0.01, ...
+                    'bottomMargin',   0.07, ...
+                    'topMargin',      0.03);
+
+            f.subplotPosVectors(1,1).v(1) = f.subplotPosVectors(1,1).v(1);
+            f.subplotPosVectors(1,1).v(2) = f.subplotPosVectors(1,1).v(2);
+            f.subplotPosVectors(1,1).v(3:4) = f.subplotPosVectors(1,1).v(3:4) * 0.85;
+
+            % Horizontal plot on the top
+            f.subplotPosVectors(1,2).v(1) = f.subplotPosVectors(1,1).v(1);
+            f.subplotPosVectors(1,2).v(2) = f.subplotPosVectors(1,1).v(2) + f.subplotPosVectors(1,1).v(4) + 0.04;
+            f.subplotPosVectors(1,2).v(3) = f.subplotPosVectors(1,1).v(3);
+            f.subplotPosVectors(1,2).v(4) = 0.1;
+
+            % Vertical plot on the right
+            f.subplotPosVectors(1,3).v(1) = f.subplotPosVectors(1,1).v(1) + f.subplotPosVectors(1,1).v(3) + 0.04;
+            f.subplotPosVectors(1,3).v(2) = f.subplotPosVectors(1,1).v(2);
+            f.subplotPosVectors(1,3).v(3) = 0.1;
+            f.subplotPosVectors(1,3).v(4) = f.subplotPosVectors(1,1).v(4);
+
         case '1x1 giant rectangular-wide mosaic'
            
             f.reductionFactor = 0.24;

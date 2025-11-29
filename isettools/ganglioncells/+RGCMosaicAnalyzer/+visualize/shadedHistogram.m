@@ -1,17 +1,27 @@
 function theBarPlotHandle = shadedHistogram(ax, theBins, theFrequency, theBinWidth, plotWithNegativePolarity, ...
-	faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
+	faceColor, edgeColor, faceAlpha, lineWidth, lineStyle, varargin)
 %
 % RGCMosaicAnalyzer.visualize.shadedHistogram(ax,theBins, theFrequency, theBinWidth, plotWithNegativePolarity,...
 %  faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
 %
+
+	p = inputParser;
+	p.addParameter('flipXY', false, @islogical);
+	p.parse(varargin{:});
+	flipXY = p.Results.flipXY;
 
 	[xx, yy] = generateHistogramOutline(theBins, theFrequency, theBinWidth);
 	if (plotWithNegativePolarity)
 		yy = -yy;
 	end
 
-    theBarPlotHandle = RGCMosaicAnalyzer.visualize.shadedAreaBetweenTwoLines(ax, xx, yy, yy*0, ...
-        faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
+	if (flipXY)
+		theBarPlotHandle = RGCMosaicAnalyzer.visualize.shadedAreaBetweenTwoLines(ax, yy, xx, xx*0, ...
+	        faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
+	else
+	    theBarPlotHandle = RGCMosaicAnalyzer.visualize.shadedAreaBetweenTwoLines(ax, xx, yy, yy*0, ...
+	        faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
+	end
 end
 
 
