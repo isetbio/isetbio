@@ -6,6 +6,8 @@ function t_mRGCMosaicNonLinearities(options)
 % Examples:
 %{
 
+% UTTBSkip
+
 %
 % NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
 % the directions discribed in:
@@ -45,11 +47,11 @@ function t_mRGCMosaicNonLinearities(options)
         'type', 'Naka Rushton', ...
         'params', struct(...
             'rectification', 'half', ...            % apply non-linearity to both response polarities % choose between {'half', 'full', 'none'}
-            'n', 1.4, ...                           % exponent
-            's', 1.0, ...                           % super-saturation exponent (super-saturating if s > 1)
+            'n', 2.0, ...                           % exponent
+            's', 1.4, ...                           % super-saturation exponent (super-saturating if s > 1)
             'bias', 0.0, ...                        % bias (in normalized range, based on the passed maxLinearResponse)
-            'c50', 0.07, ...                         % semi-saturation response (in normalized range, based on the passed maxLinearResponse)
-            'gain', 0.1, ...                        % post-non-linearity gain
+            'c50', 0.05, ...                         % semi-saturation response (in normalized range, based on the passed maxLinearResponse)
+            'gain', 0.05, ...                        % post-non-linearity gain
             'maxLinearResponse', 1.0) ...           % max absolute value that the linear excitations-based response can have (clipping after that)
         );
 
@@ -58,11 +60,11 @@ function t_mRGCMosaicNonLinearities(options)
         'type', 'Naka Rushton', ...
         'params', struct(...
             'rectification', 'none',  ...           % apply non-linearity to both response polarities % choose between {'half', 'full', 'none'}
-            'n', 1.4, ...                           % exponent
-            's', 1.0, ...                           % super-saturation exponent (super-saturating if s > 1)
+            'n', 2.0, ...                           % exponent
+            's', 1.4, ...                           % super-saturation exponent (super-saturating if s > 1)
             'bias', 0.0, ...                        % bias (in normalized range, based on the passed maxLinearResponse)
-            'c50', 0.07, ...                         % semi-saturation response (in normalized range, based on the passed maxLinearResponse)
-            'gain', 0.1, ...                        % post-non-linearity gain
+            'c50', 0.05, ...                         % semi-saturation response (in normalized range, based on the passed maxLinearResponse)
+            'gain', 0.05, ...                        % post-non-linearity gain
             'maxLinearResponse', 50.0) ...          % max absolute value that the linear photocurrent-based response can have (clipping after that)
         );
 
@@ -86,9 +88,9 @@ function t_mRGCMosaicNonLinearities(options)
         'orientationsDegs', orientationsDegs, ...
         'spatialFrequencyCPD', spatialFrequencyCPD, ...
         'computeInputConeMosaicResponses', true, ...
-        'computeInputConeMosaicResponsesBasedOnConeExcitations', true, ...
+        'computeInputConeMosaicResponsesBasedOnConeExcitations', ~true, ...
         'computeInputConeMosaicResponsesBasedOnPhotocurrents', ~true, ...
-        'computeMRGCMosaicResponses', ~true, ...
+        'computeMRGCMosaicResponses', true, ...
         'coneExcitationsBasedNonLinearityParamsStruct', coneExcitationsBasedNonLinearityParamsStruct, ...
         'photocurrentsBasedNonLinearityParamsStruct', photocurrentsBasedNonLinearityParamsStruct);
 
@@ -352,6 +354,7 @@ function [theInputConeMosaicResponsesFullFileName, theMRGCMosaicResponsesFullFil
                 opticsIsDiffractionLimited = true;
         end
 
+        % Params for generating 1 cycle of the stimulus
         stimParams = struct(...
             'displayType', 'CRT-Sony-HorwitzLab', ...
             'displayLuminanceHeadroomPercentage', 0.5, ...
@@ -362,7 +365,7 @@ function [theInputConeMosaicResponsesFullFileName, theMRGCMosaicResponsesFullFil
             'sizeDegs', 1.1*max(theMRGCmosaic.inputConeMosaic.sizeDegs), ...
             'spatialPhaseIncrementDegs', spatialPhaseIncrementDegs, ...
             'temporalFrequencyHz', temporalFrequencyHz, ...
-            'durationSeconds', 2.0/temporalFrequencyHz, ...
+            'durationSeconds', 1.0/temporalFrequencyHz, ...
             'orientationDegs', orientationsDegs, ...
             'spatialFrequencyCPD', spatialFrequencyCPD, ...
             'opticsIsDiffractionLimited', opticsIsDiffractionLimited);
@@ -447,8 +450,9 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
     % See if we have input cone mosaic photocurrent responses and if we do
     % compute the photocurrents based mRGC mosaic responses
     allData = who('-file', theInputConeMosaicResponsesFullFileName);
+    photocurrentResponsesHaveBeenComputed = ismember('theInputConeMosaicPeriodicPhotocurrentsResponse', allData);
 
-    if (ismember('theInputConeMosaicPhotocurrentsResponse', allData))
+    if (photocurrentResponsesHaveBeenComputed)
 
         % We have photocurrent based inputConeMosaic responses,
         % so compute mRGC responses based on those as well
@@ -486,7 +490,8 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
         % Extract single period responses
         dToriginal = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(2)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1);
         dT = temporalSupportSeconds(2)-temporalSupportSeconds(1);
-        tOneStimulusCycle = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(end)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1);
+        tOneStimulusCycle = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(end)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1)
+        pause
         idx = find(temporalSupportSeconds >= temporalSupportSeconds(end)-(tOneStimulusCycle+0.5*dToriginal-dT));
 
         temporalSupportSeconds = temporalSupportSeconds(idx);
@@ -509,10 +514,15 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
 
     % Visualize responses
     mRGCsNum = size(theMRGCmosaicExcitationBasedResponsesSinglePeriod.responses,3);
-    maxExcitationsBasedResponse = max(abs(theMRGCmosaicExcitationBasedResponsesSinglePeriod.responses(:)));
-    if (ismember('theInputConeMosaicPhotocurrentsResponse', allData))
+    maxExcitationsBasedResponse = max( ...
+        [max(abs(theMRGCmosaicExcitationBasedResponsesSinglePeriod.responses(:)))
+        max(abs(theMRGCmosaicExcitationBasedResponsesSinglePeriod.linearResponses(:))) ]);
+
+    if (photocurrentResponsesHaveBeenComputed)
         idx = find(theMRGCmosaicPhotocurrentsBasedResponsesPeriodic.temporalSupportSeconds>0.5);
-        maxPhotocurrentsBasedResponse = max(max(abs(squeeze(theMRGCmosaicPhotocurrentsBasedResponsesPeriodic.responses(1,idx,:)))));
+        maxPhotocurrentsBasedResponse = max(...
+            [max(max(abs(squeeze(theMRGCmosaicPhotocurrentsBasedResponsesPeriodic.responses(1,idx,:))))) ...
+            max(abs(theMRGCmosaicPhotocurrentsBasedResponsesSinglePeriod.linearResponses(:)))]);
     end
 
     hFig = figure(1); clf;
@@ -524,7 +534,7 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
     videoOBJ.open();
 
 
-    excitationsBasedTicks = -1:0.2:1;
+    excitationsBasedTicks = -1:0.1:1;
     photocurrentsBasedTicks = -20:2:20;
 
     for exemplarRGCindex = 1:mRGCsNum
@@ -539,7 +549,7 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
         plotNonLinearity(ax, theLinearResponse, theNonLinearResponse, maxExcitationsBasedResponse, ...
             excitationsBasedTicks, false, sprintf('cone excitations - based\nactivation function'));
 
-        if (ismember('theInputConeMosaicPhotocurrentsResponse', allData))
+        if (photocurrentResponsesHaveBeenComputed)
             % Photocurrents based response activation function (single period)
             ax = subplot('Position', [0.02 0.09 0.18 0.37]);
             theLinearResponse = theMRGCmosaicPhotocurrentsBasedResponsesSinglePeriod.linearResponses(1,:,exemplarRGCindex);
@@ -550,7 +560,7 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
 
 
         % The full response
-        if (ismember('theInputConeMosaicPhotocurrentsResponse', allData))
+        if (photocurrentResponsesHaveBeenComputed)
             % The periodic cone excitations based mRGC response
             ax = subplot('Position', [0.25 0.57 0.55 0.37]);
             theResponse = theMRGCmosaicExcitationsBasedResponsesPeriodic.responses(1,:,exemplarRGCindex);
@@ -578,7 +588,7 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
         plotResponse(ax, theTemporalSupport, theResponse, theLinearResponse, maxExcitationsBasedResponse, ...
             excitationsBasedTicks, false, false, sprintf('1 period'));
 
-        if (ismember('theInputConeMosaicPhotocurrentsResponse', allData))
+        if (photocurrentResponsesHaveBeenComputed)
             % One period of the photocurrents based mRGC response
             ax = subplot('Position', [0.86 0.09 0.13 0.35]);
             theResponse = theMRGCmosaicPhotocurrentsBasedResponsesSinglePeriod.responses(1,:,exemplarRGCindex);
@@ -587,9 +597,6 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
             plotResponse(ax, theTemporalSupport, theResponse, theLinearResponse, maxPhotocurrentsBasedResponse, ...
                 photocurrentsBasedTicks, true, false, sprintf('1 period'));
         end
-
-
-
 
         drawnow;
         videoOBJ.writeVideo(getframe(hFig));
@@ -613,16 +620,17 @@ function plotResponse(ax, theTemporalSupport, theResponse, theLinearResponse, ma
     hold(ax, 'on')
     plot(ax, theTemporalSupport*1e3, theResponse*0, 'k-', 'LineWidth', 1.0);
     if (showLegend)
-        legend(ax, [p1 p2], {'linear', 'non-linear'}, 'Location', 'NorthEast', 'NumColumns', 1);
+        legend(ax, [p1 p2], {'input mRGC response (L)', 'output mRGC respone (R)'}, 'Location', 'NorthEast', 'NumColumns', 1);
     end
     hold(ax, 'off')
+    xTickMilliseconds = 0:1000:30000;
     set(ax, 'YLim', maxResponse * [-1.05 1.05], 'XLim', [theTemporalSupport(1) theTemporalSupport(end)]*1e3, 'FontSize', 16);
-    set(ax, 'YTick', yTicks, 'XTick', 0:50:10000);
+    set(ax, 'YTick', yTicks, 'XTick', 0:1000:10000, 'XTickLabel', sprintf('%2.0f\n', xTickMilliseconds));
     xtickangle(ax, 90);
     grid(ax, 'on')
     title(plotTitle);
     if (showXlabel)
-        xlabel(ax, 'time (seconds)')
+        xlabel(ax, 'time (msec)')
     end
     ylabel(ax, 'mRGC response');
 end
@@ -646,9 +654,9 @@ function plotNonLinearity(ax, theLinearResponse, theResponse, maxResponse, xyTic
     axis(ax, 'square');
     title(plotTitle);
     if (showXlabel)
-        xlabel(ax, 'linear mRGC response');
+        xlabel(ax, 'input mRGC response (L)');
     end
-    ylabel(ax, 'mRGC response');
+    ylabel(ax, 'output mRGC response (R)');
 end
 
 
