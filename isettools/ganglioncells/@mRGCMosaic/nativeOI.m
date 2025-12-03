@@ -5,6 +5,7 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
     p.addParameter('opticsModification', '', @(x)(isempty(x)||ismember(x,obj.validOpticsModifications)));
     p.addParameter('noLCA', [], @(x)(isempty(x)||islogical(x)));
     p.addParameter('customRefractionDiopters', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('wavefrontSpatialSamples', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('eccentricityDegs', obj.eccentricityDegs, @(x)(isnumeric(x)&&(numel(x)==2)));
     p.addParameter('visualizePSF', false, @islogical);
     p.addParameter('visualizedWavelengths', [], @(x)(isempty(x)||isnumeric(x)));
@@ -15,6 +16,7 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
     visualizePSF = p.Results.visualizePSF;
     noLCA = p.Results.noLCA;
     customRefractionDiopters = p.Results.customRefractionDiopters;
+    wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     visualizedWavelengths = p.Results.visualizedWavelengths;
     
 	opticsParams = obj.rfSurroundConnectivityParams.opticsParamsStruct;
@@ -43,6 +45,7 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
 	[theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio] = RGCMosaicConstructor.helper.optics.generate(...
     	obj.inputConeMosaic, ...
     	eccentricityDegs, opticsParams, ...
+        'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
     	'visualizePSF', visualizePSF, ...
     	'visualizedWavelengths',visualizedWavelengths ,...
     	'visualizeStrehlRatioOptimization', false);

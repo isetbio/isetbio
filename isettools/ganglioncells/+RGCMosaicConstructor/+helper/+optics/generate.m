@@ -13,11 +13,13 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, ...
     p.addParameter('visualizedWavelengths', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('visualizeStrehlRatioOptimization', true, @islogical);
     p.addParameter('contrastMaxStrehlRatioPSFtoAsMeasuredAndCentralCorrection', false, @islogical);
+    p.addParameter('wavefrontSpatialSamples', [], @(x)(isempty(x)||isnumeric(x)));
     p.parse(varargin{:});
     visualizePSF = p.Results.visualizePSF;
     visualizeStrehlRatioOptimization = p.Results.visualizeStrehlRatioOptimization;
     visualizedWavelengths = p.Results.visualizedWavelengths;
     contrastMaxStrehlRatioPSFtoAsMeasuredAndCentralCorrection = p.Results.contrastMaxStrehlRatioPSFtoAsMeasuredAndCentralCorrection;
+    wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
 
 	% Compute ecc
 	opticsEcc = sqrt(sum(oiPositionDegs.^2,2));
@@ -31,11 +33,14 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, ...
 		psfUpsampleFactor = 2.0;
     end
 
-	if (opticsEcc > 10)
-		wavefrontSpatialSamples = 501;
-	else
-		wavefrontSpatialSamples = 701;
-	end
+    if (isempty(wavefrontSpatialSamples))
+        % Decide based on the eccentricity
+	    if (opticsEcc > 10)
+		    wavefrontSpatialSamples = 501;
+	    else
+		    wavefrontSpatialSamples = 701;
+        end
+    end
 
 	examinedRefractionErrorDiopters = [];
 	StrehlRatioAsAFunctionOfDefocus = [];

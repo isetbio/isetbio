@@ -4,23 +4,43 @@
 function [H, spatialSupportDegs, temporalPhasesDegs, temporalSupportSeconds, temporalRamp] = ...
     flickeringGratingModulationPatterns(stimParams)
 
-
     spatialSupportDegs = visualStimulusGenerator.spatialSupport(...
         stimParams.sizeDegs, stimParams.resolutionDegs);
     [X,Y] = meshgrid(spatialSupportDegs,spatialSupportDegs);
 
+
     if (isfield(stimParams, 'temporalFrequencyHz') && (isfield(stimParams, 'durationSeconds')))
-        oneCycleDurationSeconds = 1.0/stimParams.temporalFrequencyHz
-        if (~isempty(stimParams.frameDurationMsec))
-            framesPerCycle = round(oneCycleDurationSeconds*1e3 / stimParams.frameDurationMsec)
-            stimParams.temporalPhaseIncrementDegs = 360/framesPerCycle;
-        end
-        framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs;
-        frameDurationSeconds = oneCycleDurationSeconds / framesNumPerCycle;
-        if (~isempty(stimParams.frameDurationMsec))
-            fprintf('\nDesired frame duration: %2.3f (msec), actual: %2.3f (msec)\n', stimParams.frameDurationMsec, frameDurationSeconds*1e3)
+        oneCycleDurationSeconds = 1.0/stimParams.temporalFrequencyHz;
+
+        if (~isstruct(stimParams.temporalPhaseIncrementDegs))
+            error('''stimParams.temporalPhaseIncrementDegs'' is expected to be a struct with 2 fields: ''val'' and ''maxCorrespondingFrameDurationMsec''.');
         end
 
+        if (~isempty(stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec))
+            framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs.val;
+            frameDurationMsec = 1e3 * oneCycleDurationSeconds / framesNumPerCycle;
+            if (frameDurationMsec > stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec)
+
+                fprintf('\n\nAt the examined TF (%2.2f Hz), with a phase increment of %2.1f degs, the frame duration (%2.2f msec) is > the specified maxCorrespondingFrameDurationMsec (%2.2f msec). Adjusting ...', ...
+                    stimParams.temporalFrequencyHz, stimParams.temporalPhaseIncrementDegs.val, frameDurationMsec, stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec);
+                
+                desiredTemporalPhaseIncrementDegs = 360/(1e3*oneCycleDurationSeconds/stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec);
+                stimParams.temporalPhaseIncrementDegs = 360/round(360/desiredTemporalPhaseIncrementDegs);
+                framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs;
+                frameDurationMsec = 1e3 * oneCycleDurationSeconds / framesNumPerCycle;
+                correspondingTemporalFrequency = 1/(frameDurationMsec/1e3*framesNumPerCycle);
+
+                fprintf('\n\nSwitching to a temporal phase increment of %2.2f degs, which results in %d frames/cycle and a frame duration of %2.1f msec with an actual TF of %2.2f Hz (specified TF: %2.2f Hz)\n', ...
+                    stimParams.temporalPhaseIncrementDegs, framesNumPerCycle, frameDurationMsec, correspondingTemporalFrequency, stimParams.temporalFrequencyHz);
+            end
+            
+        else
+            stimParams.temporalPhaseIncrementDeg = stimParams.temporalPhaseIncrementDeg.val;
+            framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs;
+        end
+
+
+        frameDurationSeconds = oneCycleDurationSeconds / framesNumPerCycle;
         framesNum = 1+round(stimParams.durationSeconds / frameDurationSeconds);
         temporalPhasesDegs = (0:(framesNum-1)) * stimParams.temporalPhaseIncrementDegs;
     else

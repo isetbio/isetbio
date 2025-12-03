@@ -136,12 +136,6 @@ function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
         stimParams.temporalRamp = cell(1, numel(temporalFrequenciesExamined));
 
 
-        stimParams.frameDurationMsec = [];
-        if (stimParams.temporalPhaseIncrementDegs < 0)
-            stimParams.frameDurationMsec = -stimParams.temporalPhaseIncrementDegs;
-        end
-
-
         for iTF = 1:numel(temporalFrequenciesExamined)
 
             % Get stim params
