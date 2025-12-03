@@ -256,7 +256,7 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
             'theConeMosaicNullResponse');
     
         stimulusPeriodDuration = 1/stimParams.temporalFrequencyHz;
-        nWarmUpPeriods = ceil(photocurrentModelWarmUpTimeSeconds/stimulusPeriodDuration);
+        nWarmUpPeriods = max([1 ceil(photocurrentModelWarmUpTimeSeconds/stimulusPeriodDuration)]);
     
         for iOri = 1:numel(stimParams.orientationDegs)
         for iSF = 1:numel(stimParams.spatialFrequencyCPD)

@@ -99,7 +99,7 @@ function visualizeScene(scene, varargin)
         plot(ax,[0 0], [spatialSupportY(1) spatialSupportY(end)],  'k-');
     end
     
-    if (displayRadianceMaps)
+    if (displayRadianceMaps) || (displayContrastProfiles)
         % retrieve the radiance of the scene as emitted photon rate 
         % (photons/pixel/sec/nm)
         scenePhotonRate = sceneGet(scene, 'photons');
@@ -107,15 +107,15 @@ function visualizeScene(scene, varargin)
         wavelengthSupport = sceneGet(scene, 'wave');
         wavelengthBandsToVisualize = 400:30:700;
     
-        % Visualize radiance maps
-        visualizeSceneRadiance(spatialSupportMilliMeters, 'mm', ...
-            scenePhotonRate, wavelengthSupport, wavelengthBandsToVisualize);
-    end
-    
-    if (displayContrastProfiles)
-        visualizeSceneRadiance(spatialSupportMilliMeters, 'mm', ...
-        scenePhotonRate, wavelengthSupport, wavelengthBandsToVisualize, ...
-        'contrastProfilesOnly', true); 
+        if (displayContrastProfiles)
+            % Visualize radiance maps
+            visualizeSceneRadiance(spatialSupportMilliMeters, 'mm', ...
+                scenePhotonRate, wavelengthSupport, wavelengthBandsToVisualize);
+        else
+            visualizeSceneRadiance(spatialSupportMilliMeters, 'mm', ...
+                scenePhotonRate, wavelengthSupport, wavelengthBandsToVisualize, ...
+                'contrastProfilesOnly', true);
+        end
     end
 
     drawnow;

@@ -7,11 +7,13 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
     p = inputParser;
     p.addParameter('visualizeResponse', false, @islogical);
     p.addParameter('visualizeStimulusSequence', false, @islogical);
+    p.addParameter('visualizeStimulusOnMosaic', false, @islogical);
     p.addParameter('thePresentationDisplayForVisualizingOpticalSceneOrImage', [], @isstruct);
     p.addParameter('stimulusInfoString', '', @ischar);
     p.parse(varargin{:});
 
     visualizeStimulusSequence = p.Results.visualizeStimulusSequence;
+    visualizeStimulusOnMosaic = p.Results.visualizeStimulusOnMosaic;
     visualizeResponse = p.Results.visualizeResponse;
     thePresentationDisplay = p.Results.thePresentationDisplayForVisualizingOpticalSceneOrImage;
     stimulusInfoString = p.Results.stimulusInfoString;
@@ -45,7 +47,7 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
             theScene = theStimulusFrameSequence{iFrame};
             visualizeScene(theScene, ...
                 'presentationDisplay', thePresentationDisplay, ...
-                'displayContrastProfiles', false, ...
+                'displayContrastProfiles', true, ...
                 'displayRadianceMaps', false, ...
                 'avoidAutomaticRGBscaling', true, ...
                 'showSRGBimages', true, ...
@@ -54,6 +56,29 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
             drawnow
         end
     end
+
+    if (visualizeResponse) || (visualizeStimulusOnMosaic)
+  		dx = -1:0.2:1;
+  		domainVisualizationTicks = struct(...
+          		'x', theMRGCMosaic.eccentricityDegs(1)+dx, ...
+          		'y', theMRGCMosaic.eccentricityDegs(2)+dx);
+  		domainVisualizationTicksForSceneOrOpticalImage = struct(...
+          		'x', dx, ...
+          		'y', dx);
+
+  		domainVisualizationLimits(1:2) = ...
+  			theMRGCMosaic.inputConeMosaic.eccentricityDegs(1) + ...
+  			0.5*[-1 1] * theMRGCMosaic.inputConeMosaic.sizeDegs(1);
+  		domainVisualizationLimits(3:4) = ...
+  			theMRGCMosaic.inputConeMosaic.eccentricityDegs(2) + ...
+  			0.5*[-1 1] * theMRGCMosaic.inputConeMosaic.sizeDegs(2);
+
+  		domainVisualizationLimitsForSceneOrOpticalImage(1:2) = ...
+  			domainVisualizationLimits(1:2) - theMRGCMosaic.inputConeMosaic.eccentricityDegs(1);
+  		domainVisualizationLimitsForSceneOrOpticalImage(3:4) = ...
+  			domainVisualizationLimits(3:4) - theMRGCMosaic.inputConeMosaic.eccentricityDegs(2);
+  	end
+
 
   	% Compute mosaic responses to all frames
   	parfor iFrame = 1:numel(theStimulusFrameSequence)
@@ -74,32 +99,34 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
     	theConeMosaicFrameSequenceResponses(iFrame,:) = single(theConeMosaicFrameResponse(1,1,:));
   	end % iFrame
 
+  	temporalSupportMsec = ((1:numel(theStimulusFrameSequence))-1)*theMRGCMosaic.inputConeMosaic.integrationTime*1e3;
+  	if (visualizeStimulusOnMosaic)
+    	hFig = figure(220); clf
+  		set(hFig,'Position', [10 10 1800 900], 'Color', [1 1 1]);
+  		ax = subplot(1,1,1)
+  		for iFrame = 1:numel(theStimulusFrameSequence)
+    		theMRGCMosaic.inputConeMosaic.visualize(...
+	  			'figureHandle', hFig, ...
+	    		'axesHandle', ax, ...
+	    		'withSuperimposedOpticalImage', oiCompute(theOptics, theStimulusFrameSequence{iFrame}), ...
+				'withSuperimposedOpticalImageAlpha', 0.95, ...
+	    		'domainVisualizationLimits', domainVisualizationLimits, ...
+	        	'domainVisualizationTicks', domainVisualizationTicks, ...
+	        	'plotTitle', sprintf('stimulus frame %d of %d (t = %2.1f msec)', iFrame, numel(theStimulusFrameSequence), temporalSupportMsec(iFrame)));
+    		drawnow;
+    	end
+
+    end
+
   	if (visualizeResponse)
-  		dx = -1:0.2:1;
-  		domainVisualizationTicks = struct(...
-          		'x', theMRGCMosaic.eccentricityDegs(1)+dx, ...
-          		'y', theMRGCMosaic.eccentricityDegs(2)+dx);
-  		domainVisualizationTicksForSceneOrOpticalImage = struct(...
-          		'x', dx, ...
-          		'y', dx);
-
-  		domainVisualizationLimits(1:2) = ...
-  			theMRGCMosaic.inputConeMosaic.eccentricityDegs(1) + ...
-  			0.5*[-1 1] * theMRGCMosaic.inputConeMosaic.sizeDegs(1);
-  		domainVisualizationLimits(3:4) = ...
-  			theMRGCMosaic.inputConeMosaic.eccentricityDegs(2) + ...
-  			0.5*[-1 1] * theMRGCMosaic.inputConeMosaic.sizeDegs(2);
-
-  		domainVisualizationLimitsForSceneOrOpticalImage(1:2) = ...
-  			domainVisualizationLimits(1:2) - theMRGCMosaic.inputConeMosaic.eccentricityDegs(1);
-  		domainVisualizationLimitsForSceneOrOpticalImage(3:4) = ...
-  			domainVisualizationLimits(3:4) - theMRGCMosaic.inputConeMosaic.eccentricityDegs(2);
   		
   		hFig = figure(111); clf
-  		set(hFig,'Position', [10 10 1800 900], 'Color', [1 1 1]);
-  		axMosaic = subplot(1,3,1);
-  		axCmosaicResponse = subplot(1,3,2);
-  		axSceneOrOpticalImage = subplot(1,3,3); 
+  		set(hFig,'Position', [10 10 1800 1200], 'Color', [1 1 1]);
+  		axMosaic = subplot(3,3,1);
+  		axCmosaicResponse = subplot(3,3,2);
+  		axSceneOrOpticalImage = subplot(3,3,3);
+  		axSpatioTemporalResponse = subplot(3,3, [4 5 6]);
+  		axAllResponses = subplot(3,3, [7 8 9]);
 
   		theMRGCMosaic.visualize(...
   			'figureHandle', hFig, ...
@@ -117,7 +144,22 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
   			plotTitle = sprintf('%s (Response range: [%2.0f .. %2.0f])', stimulusInfoString, activationRange(1), activationRange(2));
   		end
 
+
   		for iFrame = 1:numel(theStimulusFrameSequence)
+  			dt = (temporalSupportMsec(2)-temporalSupportMsec(1))/2;
+  			imagesc(axSpatioTemporalResponse, temporalSupportMsec, 1:theMRGCMosaic.inputConeMosaic.conesNum,  theConeMosaicFrameSequenceResponses');
+  			set(axSpatioTemporalResponse, 'CLim', activationRange, 'XLim', [temporalSupportMsec(1)-dt temporalSupportMsec(iFrame)+dt], 'YLim', [1 theMRGCMosaic.inputConeMosaic.conesNum]);
+  			xlabel(axSpatioTemporalResponse, 'time (msec)');
+  			ylabel(axSpatioTemporalResponse, 'cone index')
+  			colormap(axSpatioTemporalResponse, gray(1024));
+
+  			plot(axAllResponses, temporalSupportMsec, theConeMosaicFrameSequenceResponses, 'r-');
+  			set(axAllResponses, 'XLim', [temporalSupportMsec(1)-dt temporalSupportMsec(iFrame)+dt], 'YLim', activationRange);
+  			xlabel(axAllResponses, 'time (msec)');
+  			ylabel(axAllResponses, 'response')
+
+  			drawnow;
+
 	  		theMRGCMosaic.inputConeMosaic.visualize(...
 	  			'figureHandle', hFig, ...
 	    		'axesHandle', axCmosaicResponse, ...
@@ -125,7 +167,7 @@ function [theConeMosaicFrameSequenceResponses,theConeMosaicNullResponse] = input
 	    		'activationRange', activationRange, ...
 	    		'domainVisualizationLimits', domainVisualizationLimits, ...
 	        	'domainVisualizationTicks', domainVisualizationTicks, ...
-	        	'plotTitle', plotTitle);
+	        	'plotTitle', sprintf('%s\n(t = %2.1f msec)', plotTitle, (iFrame-1)*theMRGCMosaic.inputConeMosaic.integrationTime*1e3));
   			
   			if (~isempty(thePresentationDisplay))
   				showScene = false;

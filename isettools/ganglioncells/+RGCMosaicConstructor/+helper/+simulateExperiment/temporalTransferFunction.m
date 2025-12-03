@@ -1,0 +1,288 @@
+%
+% RGCMosaicConstructor.helper.simulateExperiment.temporalTransferFunction
+%
+%
+function temporalTransferFunction(theMRGCMosaic, theOI, ...
+    TTFparamsStruct, theInputConeMosaicTTFResponsesFullFileName, ...
+    theMRGCMosaicTTFResponsesFullFileName, varargin)
+
+    p = inputParser;
+    p.addParameter('computeInputConeMosaicResponses', false, @islogical);
+    p.addParameter('computeInputConeMosaicResponsesBasedOnConeExcitations', true, @islogical);
+    p.addParameter('computeInputConeMosaicResponsesBasedOnPhotocurrents', true, @islogical);
+    p.addParameter('inspectInputConeMosaicResponses', false, @islogical);
+    p.addParameter('computeMRGCMosaicResponses', false, @islogical);
+    p.addParameter('debugInputConeMosaicPcurrentResponse', false, @islogical);
+    p.addParameter('visualizeResponse', false, @islogical);
+    p.addParameter('visualizeStimulusSequence', false, @islogical);
+    p.addParameter('visualizeStimulusOnMosaic', false, @islogical);
+    p.addParameter('mRGCNonLinearityParams', [], @(x)(isempty(x))||(isstruct(x)));
+    p.addParameter('validateScenes', false, @islogical);
+    p.addParameter('visualizeCustomConeFundamentals', false, @islogical);
+
+    % Execute the parser
+    p.parse(varargin{:});
+    computeInputConeMosaicResponses = p.Results.computeInputConeMosaicResponses;
+    computeInputConeMosaicResponsesBasedOnConeExcitations = p.Results.computeInputConeMosaicResponsesBasedOnConeExcitations;
+    computeInputConeMosaicResponsesBasedOnPhotocurrents = p.Results.computeInputConeMosaicResponsesBasedOnPhotocurrents;
+    inspectInputConeMosaicResponses = p.Results.inspectInputConeMosaicResponses;
+    computeMRGCMosaicResponses = p.Results.computeMRGCMosaicResponses;
+    mRGCNonLinearityParams = p.Results.mRGCNonLinearityParams;
+    visualizeResponse = p.Results.visualizeResponse;
+    visualizeStimulusSequence = p.Results.visualizeStimulusSequence;
+    visualizeStimulusOnMosaic = p.Results.visualizeStimulusOnMosaic;
+    debugInputConeMosaicPcurrentResponse = p.Results.debugInputConeMosaicPcurrentResponse;
+    validateScenes = p.Results.validateScenes;
+    visualizeCustomConeFundamentals = p.Results.visualizeCustomConeFundamentals;
+
+    if (computeInputConeMosaicResponses)
+        if (computeInputConeMosaicResponsesBasedOnConeExcitations)
+            pCurrentTemporalResolutionSeconds = [];
+            osBiophysicalModelWarmUpTimeSeconds = [];
+            osBiophysicalModelTimeStep = [];
+    
+            computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
+                theInputConeMosaicTTFResponsesFullFileName, ...
+                pCurrentTemporalResolutionSeconds, osBiophysicalModelWarmUpTimeSeconds, osBiophysicalModelTimeStep, ...
+                visualizeResponse, visualizeStimulusSequence, visualizeStimulusOnMosaic, debugInputConeMosaicPcurrentResponse, ...
+                validateScenes, visualizeCustomConeFundamentals, ...
+                'cone excitations');
+        end
+    
+    
+        if (computeInputConeMosaicResponsesBasedOnPhotocurrents) && ...
+           (~isempty(mRGCNonLinearityParams)) && (strcmp(mRGCNonLinearityParams.type, 'photocurrent'))
+    
+            osBiophysicalModelWarmUpTimeSeconds = mRGCNonLinearityParams.osBiophysicalModelWarmUpTimeSeconds;
+            osBiophysicalModelTimeStep = mRGCNonLinearityParams.osBiophysicalModelTemporalResolutionSeconds;
+            pCurrentTemporalResolutionSeconds = mRGCNonLinearityParams.pCurrentTemporalResolutionSeconds;
+    
+            computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
+                theInputConeMosaicTTFResponsesFullFileName, ...
+                pCurrentTemporalResolutionSeconds, osBiophysicalModelWarmUpTimeSeconds, osBiophysicalModelTimeStep, ...
+                visualizeResponse, visualizeStimulusSequence, visualizeStimulusOnMosaic, debugInputConeMosaicPcurrentResponse, ...
+                validateScenes, visualizeCustomConeFundamentals, ...
+                'photocurrents');
+        end
+    end % computeInputConeMosaicResponses
+
+    if (computeMRGCMosaicResponses)
+        error('MRGCmosaic TTF computation not implemented yet')
+        % Here we will need
+    end
+
+end
+
+
+function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
+    theInputConeMosaicTTFResponsesFullFileName, ...
+    pCurrentTemporalResolutionSeconds, photocurrentModelWarmUpTimeSeconds, osTimeStep, ...
+    visualizeResponse, visualizeStimulusSequence, visualizeStimulusOnMosaic, debugInputConeMosaicPcurrentResponse, ...
+    validateScenes, visualizeCustomConeFundamentals, theSignal)
+
+    % Compute the cone excitations
+    if (strcmp(theSignal,'cone excitations'))
+        fprintf('Input cone mosaic TTF responses will be saved in: \n%s\n', theInputConeMosaicTTFResponsesFullFileName);
+
+        temporalFrequenciesExamined = TTFparamsStruct.tfSupport;
+
+        % Compute cone contrasts for desired chromaticity
+        coneContrasts = ...
+            visualStimulusGenerator.coneContrastsFromChromaticity(TTFparamsStruct.chromaticity);
+
+        totalContrast = TTFparamsStruct.contrast;
+
+
+        stimParams = struct(...
+            'displayType', TTFparamsStruct.displayType, ...
+            'backgroundChromaticity', TTFparamsStruct.backgroundChromaticity, ...
+            'backgroundLuminanceCdM2', TTFparamsStruct.backgroundLuminanceCdM2, ...
+            'contrast', totalContrast, ...
+            'coneContrasts', coneContrasts, ...
+            'sizeDegs', TTFparamsStruct.sizeDegs, ...
+            'positionDegs', TTFparamsStruct.positionDegs, ...
+            'resolutionDegs', TTFparamsStruct.stimulusResolutionDegs, ...
+            'stimulusPositionDegs', TTFparamsStruct.stimulusPositionDegs, ...
+            'stimulusSizeDegs', TTFparamsStruct.stimulusSizeDegs, ...
+            'stimulusShape', TTFparamsStruct.stimulusShape, ...
+            'temporalPhaseIncrementDegs', TTFparamsStruct.temporalPhaseIncrementDegs, ...
+            'coneMosaicModulationBasedResponse',  true ...
+            );
+
+        % Generate presentation display, 20% luminance headroom
+        viewingDistanceMeters = 4;
+
+        thePresentationDisplay = visualStimulusGenerator.presentationDisplay(...
+            theMRGCMosaic.inputConeMosaic.wave, ...
+            TTFparamsStruct.stimulusResolutionDegs, ...
+            viewingDistanceMeters, ...
+            'displayType', TTFparamsStruct.displayType, ...
+            'bitDepth', 20, ...
+            'meanLuminanceCdPerM2', TTFparamsStruct.backgroundLuminanceCdM2, ...
+            'luminanceHeadroom', TTFparamsStruct.displayLuminanceHeadroomPercentage);
+
+
+        if (TTFparamsStruct.coneFundamentalsOptimizedForStimPosition)
+            % Compute custom cone fundamentals for the mosaic's eccentricity
+            maxConesNumForAveraging = 3;
+            customConeFundamentals = visualStimulusGenerator.coneFundamentalsForPositionWithinConeMosaic(...
+                theMRGCMosaic.inputConeMosaic, theOI, stimParams.positionDegs, stimParams.sizeDegs, maxConesNumForAveraging);
+        end
+
+        % Since different TFs will have different duration response, we are storing these in a cell array
+        theInputConeMosaicTTFresponses = cell(1, numel(temporalFrequenciesExamined));
+        stimParams.temporalSupportSeconds = cell(1, numel(temporalFrequenciesExamined));
+        stimParams.temporalPhasesDegs = cell(1, numel(temporalFrequenciesExamined));
+        stimParams.temporalRamp = cell(1, numel(temporalFrequenciesExamined));
+
+
+        stimParams.frameDurationMsec = [];
+        if (stimParams.temporalPhaseIncrementDegs < 0)
+            stimParams.frameDurationMsec = -stimParams.temporalPhaseIncrementDegs;
+        end
+
+
+        for iTF = 1:numel(temporalFrequenciesExamined)
+
+            % Get stim params
+            stimParams.temporalFrequencyHz = temporalFrequenciesExamined(iTF);
+            stimParams.durationSeconds =  1.0/stimParams.temporalFrequencyHz;
+
+            % Feedback
+            fprintf('Computing input cone mosaic TTF (cone excitations-based) for TF = %2.3f Hz\n', ...
+                stimParams.temporalFrequencyHz);
+
+            % Generate the spatial modulation patterns for all spatial phases of the drifting grating
+            [theFlickeringGratingSpatialModulationPatterns, spatialSupportDegs, temporalPhasesDegs, ...
+                temporalSupportSeconds, temporalRamp] = visualStimulusGenerator.flickeringGratingModulationPatterns(stimParams);
+
+
+            if (TTFparamsStruct.coneFundamentalsOptimizedForStimPosition)
+                if (iTF == 1)
+                    % Generate scenes for the different frames of the flickring grating and for the null stimulus
+                    [theFlickeringGratingFrameScenes, theNullStimulusScene, ~, theConeFundamentalsStruct] = visualStimulusGenerator.stimulusFramesScenes(...
+                        thePresentationDisplay, stimParams, theFlickeringGratingSpatialModulationPatterns, ...
+                        'frameIndexToCompute', [], ... % [] field indicates that all stimulus frame scenes must be computed
+                        'customConeFundamentals', customConeFundamentals, ...
+                        'announceEmployedConeFundamentals', true, ...
+                        'validateScenes', validateScenes, ...
+                        'visualizeCustomConeFundamentals', visualizeCustomConeFundamentals);
+                else
+                    [theFlickeringGratingFrameScenes, theNullStimulusScene] = visualStimulusGenerator.stimulusFramesScenes(...
+                        thePresentationDisplay, stimParams, theFlickeringGratingSpatialModulationPatterns, ...
+                        'frameIndexToCompute', [], ... % [] field indicates that all stimulus frame scenes must be computed
+                        'withPreviouslyComputedConeFundamentalsStruct', theConeFundamentalsStruct, ...
+                        'announceEmployedConeFundamentals', true, ...
+                        'validateScenes', ~true);
+                end
+
+            else
+                % Generate scenes for the different frames of the drifting grating and for the null stimulus
+                [theFlickeringGratingFrameScenes, theNullStimulusScene] = visualStimulusGenerator.stimulusFramesScenes(...
+                    thePresentationDisplay, stimParams, theFlickeringGratingSpatialModulationPatterns, ...
+                    'frameIndexToCompute', [], ... % [] field indicates that all stimulus frame scenes must be computed
+                    'validateScenes', ~true);
+            end
+
+            % Compute input cone mosaic response to this temporal frequency
+
+            % Place the stimulus at desired position
+            if (isempty(stimParams.stimulusPositionDegs))
+                stimulusPosition = 'mosaic-centered';
+            elseif (numel(stimParams.stimulusPositionDegs) == 2)
+                stimulusPosition = stimParams.stimulusPositionDegs;
+            else
+                stimParams.stimulusPositionDegs
+                error('stimulusPositionDegs must be either empty of a 2 element vector')
+            end
+
+            % Set the mosaic integration time equal to the duration of one stimulus frame
+            theMRGCMosaic.inputConeMosaic.integrationTime = temporalSupportSeconds(2)-temporalSupportSeconds(1);
+
+            % Compute cone mosaic responses to each stimulus frame
+            [theInputConeMosaicTTFresponses{iTF}, theConeMosaicNullResponse] = ...
+                RGCMosaicConstructor.helper.simulateExperiment.inputConeMosaicResponseToStimulusFrameSequence(...
+                theMRGCMosaic, theOI, theNullStimulusScene, theFlickeringGratingFrameScenes, ...
+                stimulusPosition, stimParams.coneMosaicModulationBasedResponse, ...
+                'visualizeResponse', visualizeResponse, ...
+                'visualizeStimulusSequence', visualizeStimulusSequence, ...
+                'visualizeStimulusOnMosaic', visualizeStimulusOnMosaic, ...
+                'thePresentationDisplayForVisualizingOpticalSceneOrImage', thePresentationDisplay, ...
+                'stimulusInfoString', sprintf('TF:%2.2f Hz', stimParams.temporalFrequencyHz));
+
+            stimParams.temporalSupportSeconds{iTF} = temporalSupportSeconds;
+            stimParams.temporalPhasesDegs{iTF} = stimParams.temporalPhasesDegs;
+            stimParams.temporalRamp{iTF} = temporalRamp;
+        end % iTF
+
+        % Save results
+        fprintf('Saving computed input cone mosaic TTF cone excitation responses to %s.\n', theInputConeMosaicTTFResponsesFullFileName);
+        stimParams.temporalFrequencyHz = temporalFrequenciesExamined;
+
+        save(theInputConeMosaicTTFResponsesFullFileName, ...
+            'theMRGCMosaic', ...
+            'TTFparamsStruct', ...
+            'stimParams', ...
+            'theInputConeMosaicTTFresponses', ...
+            'theConeMosaicNullResponse', ...
+            '-v7.3');
+    end % if (strcmp(theSignal,'cone excitations'))
+
+    % Compute the photocurrents
+    if (strcmp(theSignal, 'photocurrents'))
+        load(theInputConeMosaicTTFResponsesFullFileName, ...
+            'theMRGCMosaic', ...
+            'TTFparamsStruct', ...
+            'stimParams', ...
+            'theInputConeMosaicTTFresponses', ...
+            'theConeMosaicNullResponse');
+
+        theInputConeMosaicPhotocurrentTemporalSupportSeconds = cell(1, numel(stimParams.temporalFrequencyHz));
+        theInputConeMosaicPhotocurrents = cell(1, numel(stimParams.temporalFrequencyHz));
+        theInputConeMosaicBackgroundPhotocurrents = cell(1, numel(stimParams.temporalFrequencyHz));
+
+        for iTF = 1:numel(stimParams.temporalFrequencyHz)
+            stimulusPeriodDuration = 1/stimParams.temporalFrequencyHz(iTF);
+            nWarmUpPeriods = max([1 ceil(photocurrentModelWarmUpTimeSeconds/stimulusPeriodDuration)]);
+
+            theConeMosaicResponseSequence = theInputConeMosaicTTFresponses{iTF};
+            temporalSupportSeconds = stimParams.temporalSupportSeconds{iTF};
+
+            % Transform cone modulations to cone excitations
+            if (stimParams.coneMosaicModulationBasedResponse)
+                theConeMosaicNullResponse = squeeze(theConeMosaicNullResponse);
+                theConeMosaicNullResponse = reshape(theConeMosaicNullResponse, [1 numel(theConeMosaicNullResponse)]);
+
+                % Transform from modulations to excitations
+                %Rmod = (Recx-Ro)/Ro -> (Rmod+1)*Ro = RExc
+                theConeMosaicResponseSequence = theConeMosaicResponseSequence  + 1;
+                theConeMosaicResponseSequence = bsxfun(@times, theConeMosaicResponseSequence, theConeMosaicNullResponse);
+            end
+
+            % Compute the photocurrent response
+            plotTitle = sprintf('tf: %2.1f Hz', stimParams.temporalFrequencyHz(iTF));
+
+            fprintf('Computing input cone mosaic STF (photocurrent-based) for TF = %2.1f Hz\n', ...
+                stimParams.temporalFrequencyHz(iTF));
+
+            [theInputConeMosaicPhotocurrentTemporalSupportSeconds{iTF}, ...
+             theInputConeMosaicPhotocurrents{iTF}, ...
+             theInputConeMosaicBackgroundPhotocurrents{iTF}] = RGCMosaicAnalyzer.compute.photocurrentsForOneStimulusPeriod(...
+                    theMRGCMosaic.eccentricityDegs, ...
+                    temporalSupportSeconds(1:end-1), ...   % Get rid of last point which is a repeat of the first point
+                    theConeMosaicResponseSequence(1:end-1,:), ...       % Get rid of last point which is a repeat of the first point
+                    nWarmUpPeriods, ...
+                    pCurrentTemporalResolutionSeconds, osTimeStep, ...
+                    theMRGCMosaic.inputConeMosaic.coneTypes, ...
+                    debugInputConeMosaicPcurrentResponse, ...
+                    plotTitle);
+        end % iTF
+
+        save(theInputConeMosaicTTFResponsesFullFileName, ...
+            'theInputConeMosaicPhotocurrentTemporalSupportSeconds', ...
+            'theInputConeMosaicPhotocurrents', ...
+            'theInputConeMosaicBackgroundPhotocurrents', ...
+            '-append');
+
+    end %if (strcmp(theSignal, 'photocurrents'))
+end
