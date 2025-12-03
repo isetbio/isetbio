@@ -1,7 +1,8 @@
 function t_temporalImpulseResponse
 
 	% Compute TTF
-	temporalFrequencySupportHz = linspace(0.1, 64, 16);
+	temporalFrequencySupportHz = 0.25:0.5:64;
+    temporalFrequencySupportHz = 0.5:2:200;
 
     nL_tL_product = 48;
 
@@ -186,7 +187,7 @@ function  [TTFparams, theFittedTTF] = highPassNstageLowPassTTFtoArbitraryTTF(the
     multiStartsNum = 32;
 
     % Run the multi-start
-    TTFparams.finalValues = run(ms, problem, multiStartsNum)
+    TTFparams.finalValues = run(ms, problem, multiStartsNum);
 
 
     theFittedTTF = highPassNstageLowPassTTF(TTFparams.finalValues, temporalFrequencySupportHz);
