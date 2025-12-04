@@ -13,27 +13,28 @@ function [H, spatialSupportDegs, temporalPhasesDegs, temporalSupportSeconds, tem
         oneCycleDurationSeconds = 1.0/stimParams.temporalFrequencyHz;
 
         if (~isstruct(stimParams.temporalPhaseIncrementDegs))
-            error('''stimParams.temporalPhaseIncrementDegs'' is expected to be a struct with 2 fields: ''val'' and ''maxCorrespondingFrameDurationMsec''.');
+            error('''stimParams.temporalPhaseIncrementDegs'' is expected to be a struct with 2 fields: ''val'' and ''maxFrameDurationMsec''.');
         end
 
-        if (~isempty(stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec))
+        if (~isempty(stimParams.temporalPhaseIncrementDegs.maxFrameDurationMsec))
             framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs.val;
             frameDurationMsec = 1e3 * oneCycleDurationSeconds / framesNumPerCycle;
-            if (frameDurationMsec > stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec)
-
-                fprintf('\n\nAt the examined TF (%2.2f Hz), with a phase increment of %2.1f degs, the frame duration (%2.2f msec) is > the specified maxCorrespondingFrameDurationMsec (%2.2f msec). Adjusting ...', ...
-                    stimParams.temporalFrequencyHz, stimParams.temporalPhaseIncrementDegs.val, frameDurationMsec, stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec);
+            if (frameDurationMsec > stimParams.temporalPhaseIncrementDegs.maxFrameDurationMsec)
+                fprintf('\n\nAt the examined TF (%2.2f Hz), with a phase increment of %2.1f degs, the frame duration (%2.2f msec) is > the specified maxFrameDurationMsec (%2.2f msec). Adjusting ...', ...
+                    stimParams.temporalFrequencyHz, stimParams.temporalPhaseIncrementDegs.val, frameDurationMsec, stimParams.temporalPhaseIncrementDegs.maxFrameDurationMsec);
                 
-                desiredTemporalPhaseIncrementDegs = 360/(1e3*oneCycleDurationSeconds/stimParams.temporalPhaseIncrementDegs.maxCorrespondingFrameDurationMsec);
-                stimParams.temporalPhaseIncrementDegs = 360/round(360/desiredTemporalPhaseIncrementDegs);
-                framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs;
-                frameDurationMsec = 1e3 * oneCycleDurationSeconds / framesNumPerCycle;
-                correspondingTemporalFrequency = 1/(frameDurationMsec/1e3*framesNumPerCycle);
-
-                fprintf('\n\nSwitching to a temporal phase increment of %2.2f degs, which results in %d frames/cycle and a frame duration of %2.1f msec with an actual TF of %2.2f Hz (specified TF: %2.2f Hz)\n', ...
-                    stimParams.temporalPhaseIncrementDegs, framesNumPerCycle, frameDurationMsec, correspondingTemporalFrequency, stimParams.temporalFrequencyHz);
+                desiredTemporalPhaseIncrementDegs = 360/(1e3*oneCycleDurationSeconds/stimParams.temporalPhaseIncrementDegs.maxFrameDurationMsec);
+            else
+                desiredTemporalPhaseIncrementDegs = 360/(1e3*oneCycleDurationSeconds/frameDurationMsec);
             end
-            
+
+            stimParams.temporalPhaseIncrementDegs = 360/round(360/desiredTemporalPhaseIncrementDegs);
+            framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs;
+            frameDurationMsec = 1e3 * oneCycleDurationSeconds / framesNumPerCycle;
+            correspondingTemporalFrequency = 1/(frameDurationMsec/1e3*framesNumPerCycle);
+
+            fprintf('\nUsing a temporal phase increment of %2.2f degs, which results in %d frames/cycle and a frame duration of %2.1f msec with an actual TF of %2.2f Hz (specified TF: %2.2f Hz)\n', ...
+                    stimParams.temporalPhaseIncrementDegs, framesNumPerCycle, frameDurationMsec, correspondingTemporalFrequency, stimParams.temporalFrequencyHz);
         else
             stimParams.temporalPhaseIncrementDeg = stimParams.temporalPhaseIncrementDeg.val;
             framesNumPerCycle = 360/stimParams.temporalPhaseIncrementDegs;
@@ -64,11 +65,11 @@ function [H, spatialSupportDegs, temporalPhasesDegs, temporalSupportSeconds, tem
 
     switch (stimParams.stimulusShape)
         case 'spot'
-            Router = max(stimParams.stimulusSizeDegs);
+            Router = 0.5*max(stimParams.stimulusSizeDegs);
             theSpatialPattern(R > Router) = 0;
         case 'annulus'
-            Rinner = min(stimParams.stimulusSizeDegs);
-            Router = max(stimParams.stimulusSizeDegs);
+            Rinner = 0.5*min(stimParams.stimulusSizeDegs);
+            Router = 0.5*max(stimParams.stimulusSizeDegs);
             if (Rinner == Router)
                 error('Annulus stimulus must have 2 different sizes, inner, outer radii');
             end
@@ -76,7 +77,6 @@ function [H, spatialSupportDegs, temporalPhasesDegs, temporalSupportSeconds, tem
         otherwise
             error('Unknown stimulusShape: ''%s''. Only know how to make ''spot'', and ''annulus''.', stimParams.stimulusShape)
     end % switch
-
 
     H = zeros(framesNum, size(X,1), size(X,2));
     temporalSupportSeconds = zeros(1, framesNum);

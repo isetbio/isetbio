@@ -1,7 +1,7 @@
 function t_temporalImpulseResponse
 
 	% Compute TTF
-    temporalFrequencySupportHz = 0.5:0.5:200;
+    temporalFrequencySupportHz = 0.5:0.5:100;
 
     nL_tL_product = 48;
 
