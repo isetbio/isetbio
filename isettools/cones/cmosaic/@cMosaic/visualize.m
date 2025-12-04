@@ -540,7 +540,7 @@ if (visualizeCones)
     
     if (~isempty(activation))
         faceAlphaCones = 0.0;
-        edgeColor = [1 0 0];
+        edgeColor = obj.lConeColor;
         lineWidth = 0.5;
     end
 
@@ -569,7 +569,7 @@ if (visualizeCones)
     
     if (~isempty(activation))
         faceAlphaCones = 0.0;
-        edgeColor = [0 1 0];
+        edgeColor = obj.mConeColor;
         lineWidth = 0.5;
     end
 
@@ -599,7 +599,7 @@ if (visualizeCones)
 
     if (~isempty(activation))
         faceAlphaCones = 0.0;
-        edgeColor = [0 0.5 1];
+        edgeColor = obj.sConeColor;
         lineWidth = 0.5;
     end
 
