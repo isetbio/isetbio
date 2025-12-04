@@ -256,9 +256,47 @@ function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
             'theInputConeMosaicTTFresponses', ...
             'theConeMosaicNullResponse');
 
+        % Read in the non-NaN cone-excitation data for each frequency
+        % and compute the corresponding photocurrent response
+        examinedTemporalFrequencies = stimParams.temporalFrequencyHz;
+        for iTF = 1:numel(examinedTemporalFrequencies)
+            theTemporalSupportSecondsForThisTF = squeeze(stimParams.temporalSupportSeconds(iTF,:));
+            theTimeSeriesConeExcitationResponsesForThisTF = squeeze(theInputConeMosaicTTFresponses(iTF,:,:));
+            nanIndices = find(isnan(theTemporalSupportSecondsForThisTF));
+            if (isempty(nanIndices))
+                theTimeBins = 1:numel(theTemporalSupportSecondsForThisTF);
+            else
+                theTimeBins = 1:(nanIndices-1);
+            end
+            theTemporalSupportSecondsForThisTF = theTemporalSupportSecondsForThisTF(theTimeBins);
+            theTimeSeriesConeExcitationResponsesForThisTF = theTimeSeriesConeExcitationResponsesForThisTF(theTimeBins,:);
+
+            % Compute photocurrent here
+
+            % Plot cone excitation + photocurrents
+
+            figure(iTF); clf;
+            plot(theTemporalSupportSecondsForThisTF, theTimeSeriesConeExcitationResponsesForThisTF, 'r-');
+            if (iTF == 1)
+                XLims = [theTemporalSupportSecondsForThisTF(1) theTemporalSupportSecondsForThisTF(end)];
+            end
+            set(gca, 'XLim', XLims)
+            drawnow
+        end % iTF
+
+        size(theInputConeMosaicTTFresponses)
+        stimParams
+        pause
+        % CHANGE FROM CELLS TO NAN AS FOR CONE EXCITATIONS
+
+
         theInputConeMosaicPhotocurrentTemporalSupportSeconds = cell(1, numel(stimParams.temporalFrequencyHz));
         theInputConeMosaicPhotocurrents = cell(1, numel(stimParams.temporalFrequencyHz));
         theInputConeMosaicBackgroundPhotocurrents = cell(1, numel(stimParams.temporalFrequencyHz));
+
+
+
+
 
         for iTF = 1:numel(stimParams.temporalFrequencyHz)
             stimulusPeriodDuration = 1/stimParams.temporalFrequencyHz(iTF);
