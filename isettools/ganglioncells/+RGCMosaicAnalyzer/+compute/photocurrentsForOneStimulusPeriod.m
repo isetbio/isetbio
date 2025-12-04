@@ -38,29 +38,39 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     theConeBackgroundPhotocurrents = zeros(1, nCones);
     
     if (debugInputConeMosaicPcurrentResponse)
+
         thePeriodicConeMosaicExcitations = [];
 
-        % We will visualize cone excitations and photocurrents for 3 cones, 1L, 1M, 1S
-        idxL = find(coneTypes == cMosaic.LCONE_ID);
-        idxM = find(coneTypes == cMosaic.MCONE_ID);
-        idxS = find(coneTypes == cMosaic.SCONE_ID);
-    
-        visualizedConeIndices = [];
-        if (~isempty(idxL))
-            visualizedConeIndices(numel(visualizedConeIndices)+1) = idxL(1);
-        end
-        if (~isempty(idxM))
-            visualizedConeIndices(numel(visualizedConeIndices)+1) = idxM(1);
-        end
-        if (~isempty(idxS))
-            visualizedConeIndices(numel(visualizedConeIndices)+1) = idxS(1);
-        end
-    
-        hFig(1) = figure(33); clf;
-        set(hFig, 'Position', [10 10 1600 1150], 'Color', [1 1 1]);
+        % Sort cones according to responses
+        [~,sortedConeIndices] = sort(max(abs(theConeMosaicExcitationResponseSequence), [],1), 'descend');
 
-        for iConeIndex = 1:size(theConeMosaicExcitationResponseSequence,2)
-            fprintf('Computing photocurrent for cone %d of %d\n', iConeIndex, size(theConeMosaicExcitationResponseSequence,2));
+        visualizedConeIndices = [];
+        allConeIndicesForDebugVisualization = sortedConeIndices(1:100);
+
+        if (~isempty(allConeIndicesForDebugVisualization))
+            % We will visualize cone excitations and photocurrents for 3 cones, 1L, 1M, 1S
+            idxL = find(coneTypes(allConeIndicesForDebugVisualization) == cMosaic.LCONE_ID);
+            idxM = find(coneTypes(allConeIndicesForDebugVisualization) == cMosaic.MCONE_ID);
+            idxS = find(coneTypes(allConeIndicesForDebugVisualization) == cMosaic.SCONE_ID);
+
+            if (~isempty(idxL))
+                visualizedConeIndices(numel(visualizedConeIndices)+1) = allConeIndicesForDebugVisualization(idxL(1));
+            end
+            if (~isempty(idxM))
+                visualizedConeIndices(numel(visualizedConeIndices)+1) = allConeIndicesForDebugVisualization(idxM(1));
+            end
+            if (~isempty(idxS))
+                visualizedConeIndices(numel(visualizedConeIndices)+1) = allConeIndicesForDebugVisualization(idxS(1));
+            end
+
+        else
+            fprintf('Did not find any cones with significant response. No debug visualization')
+        end
+
+        for iDebugConeIndex = 1:numel(visualizedConeIndices)
+
+            iConeIndex = visualizedConeIndices(iDebugConeIndex);
+            fprintf('Serially computing (debugInputConeMosaicPcurrentResponse is ON) photocurrent for cone %d of %d\n', iConeIndex, size(theConeMosaicExcitationResponseSequence,2));
     
             % Retrieve the cone excitation response
             theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,iConeIndex);
@@ -81,6 +91,9 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
             theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
     
             if (ismember(iConeIndex, visualizedConeIndices))
+                hFig(1) = figure(33); clf;
+                set(hFig, 'Position', [10 10 1600 1150], 'Color', [1 1 1]);
+
                 % Contrast cone excitations to photocurrents
                 coneExcitationsTransformedIntoResponseModulations = false;
     
@@ -99,10 +112,10 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
                     photocurrentResponseTimeAxisPeriodic, ...
                     thePcurrentResponsePeriodic, ...
                     thePcurrentBackgroundResponseTransient);
-                disp('Hit enter to continue ...')
-                pause
+                disp('In debug mode. Hit enter to visualize another response, or Control C to exit.')
+                pause;
             end
-        end % for iConeIndex
+        end % for iDebugConeIndex
     else  % if (!debugInputConeMosaicPcurrentResponse)
     
         % Retrieve the cone excitation response
@@ -117,7 +130,7 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
 
         nConesNum = size(theConeMosaicExcitationResponseSequence,2);
 
-        fprintf('Computing photocurrents\n');
+        fprintf('Parfor computation of photocurrents\n');
         tic
         thePeriodicConeMosaicExcitations = zeros(nConesNum, numel(theSingleConeExcitationPeriodicResponse));
 
