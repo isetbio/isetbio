@@ -14,8 +14,10 @@ function [photocurrentDifferentialResponse, photocurrentResponseTimeAxis, thePcu
     osTimeStepSeconds = p.Results.osTimeStepSeconds;
     skipAssertions = p.Results.skipAssertions;
 
+
     nTimeBins = size(theConeExcitationRateResponse,1);
     theConeExcitationRateResponseDurationSeconds = nTimeBins * theConeIntegrationTimeSeconds;
+    theConeExcitationRateTimeAxis = (0:(nTimeBins-1)) * theConeIntegrationTimeSeconds;
 
     if (~skipAssertions)
 
@@ -34,19 +36,27 @@ function [photocurrentDifferentialResponse, photocurrentResponseTimeAxis, thePcu
         % Check that theConeExcitationRateResponse is at least 100 msec long
         assert(theConeExcitationRateResponseDurationSeconds >= 0.1, 'theConeExcitation response duration is too short (%f) seconds. Either pad the cone excitations response or make it periodic', theConeExcitationRateResponseDurationSeconds);
     
-        % Check that theConeIntegrationTimeSeconds is an integer multiple of osTimeStepSeconds
-        integerMultiplier = round(theConeIntegrationTimeSeconds/osTimeStepSeconds);
-        osTimeStepSeconds = theConeIntegrationTimeSeconds/integerMultiplier;
-        assert(rem(theConeIntegrationTimeSeconds, osTimeStepSeconds) == 0, 'cone intergrationTime must be an integer multiple of os.time step');
     end
 
+    % Ensure that theConeIntegrationTimeSeconds is an integer multiple of
+    % osTimeStepSeconds. If it is not, change the oiTimeStepSeconds
+    integerMultiplier = round(theConeIntegrationTimeSeconds/osTimeStepSeconds);
+    osTimeStepSecondsBefore = osTimeStepSeconds;
+    osTimeStepSeconds = theConeIntegrationTimeSeconds/integerMultiplier;
+
+    if (~skipAssertions)
+        if (osTimeStepSeconds ~= osTimeStepSecondsBefore)
+            fprintf('Adjusted osTimeStepSeconds from %2.3f usec to %2.3fusec\nThis is to ensure it is an integer multiple of the cone mosaic integration time: %2.3f msec', ...
+            osTimeStepSecondsBefore*1e6, osTimeStepSeconds*1e6, theConeIntegrationTimeSeconds*1e3 );
+        end
+    end
+
+    assert(rem(theConeIntegrationTimeSeconds, osTimeStepSeconds) == 0, 'cone intergrationTime must be an integer multiple of os.time step');
+  
 
     % Set up the time intepolation
     upSampleFactor = floor(theConeIntegrationTimeSeconds / osTimeStepSeconds);
     theOSphotocurrentResponseTimeBinsNum = nTimeBins * upSampleFactor - 1;
-
-    tIn  = linspace(0,1,nTimeBins);
-    tOut = linspace(0,1,theOSphotocurrentResponseTimeBinsNum);
 
     theOSphotoCurrentResponseTimeAxis = (0:(theOSphotocurrentResponseTimeBinsNum-1))*osTimeStepSeconds;
     photocurrentResponseTimeAxis = 0 : theReturnedPhotocurrentTimeResolutionSeconds : theOSphotoCurrentResponseTimeAxis(end);
@@ -66,28 +76,26 @@ function [photocurrentDifferentialResponse, photocurrentResponseTimeAxis, thePcu
     os.setModelState(theState);
 
     % Compute full photocurrent model to the background cone excitation rate (transient)
-    theOSphotoCurrentResponse = squeeze(os.osAdaptTemporal(backgroundConeExcitationRate));
+    [theOSphotoCurrentResponse, theState] = os.osAdaptTemporal(backgroundConeExcitationRate);
+    os.setModelState(theState);
 
     % Downsample to theReturnedPhotocurrentTimeResolutionSeconds
     thePcurrentBackgroundResponseTransient = qinterp1(...
-        theOSphotoCurrentResponseTimeAxis, theOSphotoCurrentResponse, photocurrentResponseTimeAxis,1);
-
+        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTimeAxis,1);
 
     % 2. STIMULUS
     % Upsample theConeExcitationRateResponse to the os.timeStep timebase
-    theConeExcitationRateResponse = qinterp1(tIn, theConeExcitationRateResponse, tOut, 0);
+   
+    theConeExcitationRateResponse = qinterp1(theConeExcitationRateTimeAxis, theConeExcitationRateResponse, theOSphotoCurrentResponseTimeAxis, 0);
     theConeExcitationRateResponse = reshape(theConeExcitationRateResponse, [1 1 numel(theConeExcitationRateResponse)]);
 
-    % Reset the state
-    os.setModelState(theState);
-
     % Compute full photocurrent model to the stimulus cone excitation rate
-    theOSphotoCurrentResponse = squeeze(os.osAdaptTemporal(theConeExcitationRateResponse));
+    [theOSphotoCurrentResponse, theState] = os.osAdaptTemporal(theConeExcitationRateResponse);
+    os.setModelState(theState);
     
     % Downsample to the theReturnedPhotocurrentTimeResolutionSeconds
     thePcurrentResponse = qinterp1(...
-        theOSphotoCurrentResponseTimeAxis, theOSphotoCurrentResponse, photocurrentResponseTimeAxis,1);
-
+        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTimeAxis,1);
 
     % 3. DIFFERENTIAL PHOTOCURRENT RESPONSE
     % Substract thePcurrentBackgroundResponseTransient  from thePcurrentResponse

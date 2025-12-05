@@ -267,6 +267,7 @@ function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
         % Read in the non-NaN cone-excitation data for each frequency
         % and compute the corresponding photocurrent response
         temporalFrequenciesExamined = stimParams.temporalFrequencyHz;
+
         for iTF = 1:numel(temporalFrequenciesExamined)
 
             % Retrieve the response data for this TF
@@ -291,13 +292,14 @@ function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
             end
 
             % Compute the photocurrent response
-            plotTitle = sprintf('tf: %2.1f Hz', stimParams.temporalFrequencyHz(iTF));
+            plotTitle = sprintf('tf: %2.3f Hz', stimParams.temporalFrequencyHz(iTF));
 
-            fprintf('Computing input cone mosaic TTF (photocurrent-based) for TF = %2.1f Hz\n', ...
+            fprintf('Computing input cone mosaic TTF (photocurrent-based) for TF = %2.3f Hz\n', ...
                 stimParams.temporalFrequencyHz(iTF));
 
-            stimulusPeriodDuration = 1/stimParams.temporalFrequencyHz(iTF);
+            stimulusPeriodDuration = 1/stimParams.temporalFrequencyHz(iTF); 
             nWarmUpPeriods = max([1 ceil(photocurrentModelWarmUpTimeSeconds/stimulusPeriodDuration)]);
+            
 
             % Compute photocurrents here
             [theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF, ...
@@ -344,7 +346,7 @@ function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
                 % Plot cone excitation + photocurrents
                 hFig = figure(1000); clf;
                 set(hFig, 'Position', [10 10 1000 1000]);
-                set(hFig, 'Name', sprintf('mosaic cone excitations and photocurrents for TF = %2.2f Hz', temporalFrequenciesExamined(iTF)));
+                set(hFig, 'Name', sprintf('mosaic cone excitations and photocurrents for TF = %2.3f Hz', temporalFrequenciesExamined(iTF)));
 
                 ax = subplot(2,1,1);
                 p1 = plot(ax, theTemporalSupportSecondsForThisTF*1e3, theInputConeMosaicExcitationResponsesForThisTF, 'r-');
@@ -356,7 +358,7 @@ function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
                 ylabel(ax, 'cone excitation response');
                 set(ax, 'XLim', XLims);
 
-                ax = subplot(2,1,2)
+                ax = subplot(2,1,2);
                 p2 = plot(ax, squeeze(temporalSupportSecondsPhotocurrentAllConditions(iTF, timeBinIndices))*1e3, ...
                               squeeze(theInputConeMosaicPhotocurrentTTFresponsesAllConditions(iTF, timeBinIndices, :)), 'b-');
                 title(ax, 'photocurrents')

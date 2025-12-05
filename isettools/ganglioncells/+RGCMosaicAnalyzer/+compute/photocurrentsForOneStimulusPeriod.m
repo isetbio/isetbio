@@ -2,13 +2,14 @@
 % RGCMosaicAnalyzer.compute.photocurrentsForOneStimulusPeriod
 %
 function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPhotocurrents, ...
-          thePeriodicConeMosaicExcitations, thePeriodicConeMosaicExcitationsTemporalSupport] = photocurrentsForOneStimulusPeriod(...
+          thePeriodicConeMosaicExcitations, thePeriodicConeMosaicExcitationsTemporalSupport] = ...
+          photocurrentsForOneStimulusPeriod(...
             eccentricityDegs, temporalSupportSeconds, theConeMosaicExcitationResponseSequence, ...
             nWarmUpPeriods, pCurrentTemporalResolutionSeconds, osTimeStep, coneTypes, ...
             debugInputConeMosaicPcurrentResponse, plotTitle, varargin)
 
     p = inputParser;
-    p.addParameter('onlyKeepResponseDuringLastStimulusPeriod', false, @islogical);
+    p.addParameter('onlyKeepResponseDuringLastStimulusPeriod', true, @islogical);
 
     % Execute the parser
     p.parse(varargin{:});
@@ -29,11 +30,14 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     
     % Preallocate memory
     theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,1);
+ 
+
     temporalSupportPhotocurrent = computeSingleConePhotocurrentResponse( ...
         eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
         nWarmUpPeriods, onlyKeepResponseDuringLastStimulusPeriod, ...
         coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, false);
-    
+
+
     theConePhotocurrents = zeros(numel(temporalSupportPhotocurrent), nCones);
     theConeBackgroundPhotocurrents = zeros(1, nCones);
     
@@ -74,18 +78,20 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     
             % Retrieve the cone excitation response
             theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,iConeIndex);
-    
+   
+
             % Compute photocurrent for this cone making the cone excitation response periodic by concatenating nWarmUpPeriods
-            [~, theConePhotoCurrentDifferentialResponse, ...
-                theConeBackgroundPhotoCurrent, ...
-                theConeExcitationsSingleConePeriodic, ...
-                photocurrentResponseTimeAxisPeriodic, ...
-                thePcurrentResponsePeriodic, ...
-                thePcurrentBackgroundResponseTransient] = computeSingleConePhotocurrentResponse(...
+            [temporalSupportPhotocurrent, ...
+             theConePhotoCurrentDifferentialResponse, ...
+             theConeBackgroundPhotoCurrent, ...
+             theConeExcitationsSingleConePeriodic, ...
+             photocurrentResponseTimeAxisPeriodic, ...
+             thePcurrentResponsePeriodic, ...
+             thePcurrentBackgroundResponseTransient] = computeSingleConePhotocurrentResponse(...
                     eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
                     nWarmUpPeriods, onlyKeepResponseDuringLastStimulusPeriod, ...
                     coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, true);
-    
+   
             % Retrieve the photocurrent response
             theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
             theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
@@ -112,29 +118,26 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
                     photocurrentResponseTimeAxisPeriodic, ...
                     thePcurrentResponsePeriodic, ...
                     thePcurrentBackgroundResponseTransient);
+               
                 disp('In debug mode. Hit enter to visualize another response, or Control C to exit.')
-                pause;
+                pause();
             end
         end % for iDebugConeIndex
+
     else  % if (!debugInputConeMosaicPcurrentResponse)
     
-        % Retrieve the cone excitation response
+        % Allocate memory
         theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,1);
-
-        % Compute photocurrent for this cone making the cone excitation response periodic by concatenating nWarmUpPeriods
         [~, ~, ~, theSingleConeExcitationPeriodicResponse] = computeSingleConePhotocurrentResponse(...
                     eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
                     nWarmUpPeriods, onlyKeepResponseDuringLastStimulusPeriod, ...
                     coneMosaicIntegrationTime, osTimeStep, ...
                     pCurrentTemporalResolutionSeconds, true);
-
-        nConesNum = size(theConeMosaicExcitationResponseSequence,2);
+        thePeriodicConeMosaicExcitations = zeros(nCones, numel(theSingleConeExcitationPeriodicResponse));
 
         fprintf('Parfor computation of photocurrents\n');
-        tic
-        thePeriodicConeMosaicExcitations = zeros(nConesNum, numel(theSingleConeExcitationPeriodicResponse));
 
-        parfor iConeIndex = 1:nConesNum
+        parfor iConeIndex = 1:nCones
     
             if (mod(iConeIndex,100) == 0)
                 % Give some feedback
@@ -143,19 +146,16 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     
             % Retrieve the cone excitation response
             theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,iConeIndex);
-    
+
             % Compute photocurrent for this cone making the cone excitation response periodic by concatenating nWarmUpPeriods
-            [~, theConePhotoCurrentDifferentialResponse, ...
-                theConeBackgroundPhotoCurrent, ...
+            [~, theConePhotocurrents(:, iConeIndex), ...
+                theConeBackgroundPhotocurrents(iConeIndex) , ...
                 thePeriodicConeMosaicExcitations(iConeIndex,:)] = computeSingleConePhotocurrentResponse(...
                     eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
                     nWarmUpPeriods, onlyKeepResponseDuringLastStimulusPeriod, ...
                     coneMosaicIntegrationTime, osTimeStep, ...
                     pCurrentTemporalResolutionSeconds, true);
-    
-            % Retrieve the photocurrent response
-            theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
-            theConeBackgroundPhotocurrents(iConeIndex) = theConeBackgroundPhotoCurrent;
+
         end % parfor iConeIndex
     
         fprintf('Photocurrents computed in %2.1f minutes\n', toc/60);
@@ -170,7 +170,8 @@ end
 
 
 function [temporalSupportPhotocurrent, ...
-    theConePhotoCurrentDifferentialResponse, backgroundPhotocurrent, ...
+    theConePhotoCurrentDifferentialResponse, ...
+    backgroundPhotocurrent, ...
     theConeExcitationsPeriodic, ...
     photocurrentPeriodicResponseTimeAxis, ...
     thePcurrentDifferentialPeriodicResponse, ...
@@ -186,6 +187,7 @@ theConeExcitationsPeriodic = reshape(theConeExcitations, [1 numel(theConeExcitat
 for k = 1:nWarmUpPeriods
     theConeExcitationsPeriodic = cat(2, theConeExcitationsPeriodic, theConeExcitationsPeriodic(1:numel(theConeExcitations)));
 end
+
 
 % Convert excitation counts to excitation rates
 theConeExcitationsRatePeriodic = theConeExcitationsPeriodic(:) / coneMosaicIntegrationTime;
@@ -212,11 +214,11 @@ if (onlyKeepResponseDuringLastStimulusPeriod)
 
     theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse(idx);
     temporalSupportPhotocurrent = photocurrentPeriodicResponseTimeAxis(idx);
-
 else
     theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse;
     temporalSupportPhotocurrent = photocurrentPeriodicResponseTimeAxis;
 end
+
 
 % Time support starts at 0 msec
 temporalSupportPhotocurrent = temporalSupportPhotocurrent - temporalSupportPhotocurrent(1);
