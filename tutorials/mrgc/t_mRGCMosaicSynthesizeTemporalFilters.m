@@ -23,7 +23,7 @@ function t_mRGCMosaicSynthesizeTemporalFilters(options)
     examinedTemporalFrequencies = [1.4 2 3 4 6 8 12 16 24 32];
     
 
-    % TTF with a support from 0.5 Hz to 100 Hz
+    % TTF with a support from 0.5 Hz to 200 Hz
     tfMinHz = 0.5;
     tfDeltaHz = 0.5;
     tfMaxHz = 200;
