@@ -71,11 +71,277 @@ function temporalTransferFunction(theMRGCMosaic, theOI, ...
     end % computeInputConeMosaicResponses
 
     if (computeMRGCMosaicResponses)
-        error('MRGCmosaic TTF computation not implemented yet')
-        % Here we will need
+        computeMRGCmosaicTTF(theMRGCMosaic, ...
+            theInputConeMosaicTTFResponsesFullFileName, ...
+            theMRGCMosaicTTFResponsesFullFileName, ...
+            visualizeResponse, ...
+            mRGCNonLinearityParams, ...
+            inspectInputConeMosaicResponses, ...
+            computePhotocurrentResponsesOnlyForInputsToSingleRGCwithIndex);
     end
 
 end
+
+function computeMRGCmosaicTTF(thePassedMRGCMosaic, ...
+            theInputConeMosaicTTFResponsesFullFileName, ...
+            theMRGCMosaicTTFResponsesFullFileName, ...
+            visualizeMosaicResponse, ...
+            mRGCNonLinearityParams, ...
+            inspectInputConeMosaicResponses, ...
+            computePhotocurrentResponsesOnlyForInputsToSingleRGCwithIndex)
+
+    if (~isempty(mRGCNonLinearityParams)) && (strcmp(mRGCNonLinearityParams.type, 'photocurrent'))
+        % Load cone excitation + photocurrent responses
+
+        computedTTFs = who('-file', theInputConeMosaicTTFResponsesFullFileName);
+        photocurrentBasedTTFsComputed = ismember('theInputConeMosaicPhotocurrentTTFresponses', computedTTFs);
+
+        if (photocurrentBasedTTFsComputed)
+            fprintf('Loading computed input cone mosaic PHOTOCURRENT TTF responses from %s.\n', theInputConeMosaicTTFResponsesFullFileName);
+
+            load(theInputConeMosaicTTFResponsesFullFileName, ...
+                'theMRGCMosaic', 'stimParams', 'TTFparamsStruct', ...
+                'computePhotocurrentResponsesOnlyForInputsToSingleRGCwithIndex', ...
+                'computePhotocurrentResponsesOnlyForSelectConeIndices', ...
+                'theInputConeMosaicPhotocurrentTemporalSupportSeconds', ...
+                'theInputConeMosaicPhotocurrentTTFresponses', ...
+                'theInputConeMosaicBackgroundPhotocurrents', ...
+                'theInputConeMosaicTTFresponses');
+
+
+            % Check that all photocurrent response dimensions agree with the cone excitation responses
+            assert(size(theInputConeMosaicTTFresponses,1) == size(theInputConeMosaicTTFresponses,1), ...
+                'Mismatch in # of temporal frequencies');
+
+            assert(size(theInputConeMosaicTTFresponses,2) == size(theInputConeMosaicTTFresponses,2), ...
+                'Mismatch in # of time bins');
+            assert(size(theInputConeMosaicTTFresponses,3) == size(theInputConeMosaicTTFresponses,3), ...
+                'Mismatch in # of cones');
+
+            fprintf('ALL OK UP TO HERE. Loaded Photocurrent responses')
+
+        else
+            fprintf('Loading computed input cone mosaic CONE EXCITATION TTF responses from %s.\n', theInputConeMosaicTTFResponsesFullFileName);
+
+            load(theInputConeMosaicTTFResponsesFullFileName, ...
+                'theMRGCMosaic', 'stimParams', 'TTFparamsStruct', ...
+                'theInputConeMosaicTTFresponses');
+
+            theInputConeMosaicPhotocurrentTemporalSupportSeconds = [];
+            theInputConeMosaicPhotocurrents = [];
+            theInputConeMosaicBackgroundPhotocurrents = [];
+        end
+
+    else
+        % Load only cone excitation responses
+        fprintf('Loading computed input cone mosaic CONE EXCITATION TTF responses from %s.\n', theInputConeMosaicTTFResponsesFullFileName);
+        load(theInputConeMosaicTTFResponsesFullFileName, ...
+            'theMRGCMosaic', 'stimParams', ...
+            'TTFparamsStruct', ...
+            'theInputConeMosaicTTFresponses');
+
+        theInputConeMosaicPhotocurrentTemporalSupportSeconds = [];
+        theInputConeMosaicPhotocurrents = [];
+        theInputConeMosaicBackgroundPhotocurrents = [];
+    end
+
+    % Assert that the input cone mosaic in the stored mRGC mosaic is the same as the input cone mosaic of the passed mRGC Mosaic
+    assert(thePassedMRGCMosaic.inputConeMosaic.conesNum == theMRGCMosaic.inputConeMosaic.conesNum, ...
+        'Number of cones in the loaded input cone mosaic TTF responses file is not identicial to the that of input cone mosaic of the passed mRGC mosaic');
+    assert(all(thePassedMRGCMosaic.inputConeMosaic.coneTypes == theMRGCMosaic.inputConeMosaic.coneTypes), ...
+        'Cone types in the loaded input cone mosaic TTF responses file are not identicial to those of the input cone mosaic of the passed mRGC mosaic');
+
+    % Input cone mosaics are identical so switch to the passed mRGC mosaic which may have different characteristics of the mRGCs but identical
+    % input cone mosaic
+    clear 'theMRGCMosaic'
+    theMRGCMosaic = thePassedMRGCMosaic;
+
+
+    temporalFrequenciesExamined = TTFparamsStruct.tfSupport;
+
+    % Compute mRGC mosaic responses
+    for iTF = 1:numel(temporalFrequenciesExamined)
+
+        if (photocurrentBasedTTFsComputed)
+            fprintf('Computing photocurrents-based mRGC mosaic response for TF = %2.2f Hz', temporalFrequenciesExamined(iTF));
+            % Retrieve the photocurrent response data for this TF
+            theTemporalSupportSecondsForThisTF = squeeze(theInputConeMosaicPhotocurrentTemporalSupportSeconds(iTF,:));
+            theInputConeMosaicPhotocurrentResponsesForThisTF = squeeze(theInputConeMosaicPhotocurrentTTFresponses(iTF,:,:));
+            nanIndices = find(isnan(theTemporalSupportSecondsForThisTF));
+            if (isempty(nanIndices))
+                theTimeBins = 1:numel(theTemporalSupportSecondsForThisTF);
+            else
+                theTimeBins = 1:(nanIndices-1);
+            end
+            theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF = theTemporalSupportSecondsForThisTF(theTimeBins);
+            theInputConeMosaicPhotocurrentResponsesForThisTF = theInputConeMosaicPhotocurrentResponsesForThisTF(theTimeBins,:);
+
+            % Compute the mRGC mosaic response for this TF
+            [theMRGCmosaicResponsesForThisTF, ~, ...
+            theMRGCmosaicResponseTemporalSupportSecondsForThisTF, ...
+            theLinearMRGCmosaicResponsesForThisTF] = theMRGCMosaic.compute(...
+                    reshape(theInputConeMosaicPhotocurrentResponsesForThisTF, [1 numel(theTimeBins) theMRGCMosaic.inputConeMosaic.conesNum]), ...
+                    theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF, ...
+                    'nonLinearitiesList', {});
+
+
+            if (iTF == 1)
+                % Allocate memory
+                theMRGCMosaicTTFresponsesAllConditions = nan(...
+                    numel(temporalFrequenciesExamined), ...
+                    numel(theMRGCmosaicResponseTemporalSupportSecondsForThisTF), ...
+                    theMRGCMosaic.rgcsNum, ...
+                    'single');
+
+                theMRGCMosaicTemporalSupportSecondsAllConditions = nan(...
+                    numel(temporalFrequenciesExamined), ...
+                    numel(theMRGCmosaicResponseTemporalSupportSecondsForThisTF), ...
+                    'single');
+            end % iTF == 1
+
+
+            theMRGCMosaicTTFresponsesAllConditions(iTF, 1:numel(theMRGCmosaicResponseTemporalSupportSecondsForThisTF), :) = single(theMRGCmosaicResponsesForThisTF);
+            theMRGCMosaicTemporalSupportSecondsAllConditions(iTF, 1:numel(theMRGCmosaicResponseTemporalSupportSecondsForThisTF)) = single(theMRGCmosaicResponseTemporalSupportSecondsForThisTF);
+
+        end % if (photocurrentBasedTTFsComputed)
+
+    end % iTF
+
+    % Save computed MRGC mosaic responses here
+    save(theMRGCMosaicTTFResponsesFullFileName, ...
+        'theMRGCMosaic', 'stimParams', 'TTFparamsStruct', ...
+        'computePhotocurrentResponsesOnlyForInputsToSingleRGCwithIndex', ...
+        'theMRGCMosaicTTFresponsesAllConditions', ...
+        'theMRGCMosaicTemporalSupportSecondsAllConditions', ...
+        '-v7.3');
+
+
+
+    % Compare mosaic responses
+    if (visualizeMosaicResponse)
+
+        if (photocurrentBasedTTFsComputed)
+
+            hFig = figure(22);
+            set(hFig, 'Position', [10 10 2000 700]);
+            axExcitations = subplot(1,2,1);
+            axPhotocurrents = subplot(1,2,2);
+
+            for iTF = 1:numel(temporalFrequenciesExamined)
+
+                % Retrieve the cone excitation response data for this TF
+
+                theTemporalSupportSecondsForThisTF = squeeze(stimParams.temporalSupportSeconds(iTF,:));
+                theInputConeMosaicExcitationResponsesForThisTF = squeeze(theInputConeMosaicTTFresponses(iTF,:,:));
+                nanIndices = find(isnan(theTemporalSupportSecondsForThisTF));
+                if (isempty(nanIndices))
+                    theTimeBins = 1:numel(theTemporalSupportSecondsForThisTF);
+                else
+                    theTimeBins = 1:(nanIndices-1);
+                end
+                theInputConeMosaicExcitationsTemporalSupportSecondsForThisTF = theTemporalSupportSecondsForThisTF(theTimeBins);
+                theInputConeMosaicExcitationResponsesForThisTF = theInputConeMosaicExcitationResponsesForThisTF(theTimeBins,:);
+
+                % Retrieve the photocurrent response data for this TF
+                theTemporalSupportSecondsForThisTF = squeeze(theInputConeMosaicPhotocurrentTemporalSupportSeconds(iTF,:));
+                theInputConeMosaicPhotocurrentResponsesForThisTF = squeeze(theInputConeMosaicPhotocurrentTTFresponses(iTF,:,:));
+                nanIndices = find(isnan(theTemporalSupportSecondsForThisTF));
+                if (isempty(nanIndices))
+                    theTimeBins = 1:numel(theTemporalSupportSecondsForThisTF);
+                else
+                    theTimeBins = 1:(nanIndices-1);
+                end
+                theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF = theTemporalSupportSecondsForThisTF(theTimeBins);
+                theInputConeMosaicPhotocurrentResponsesForThisTF = theInputConeMosaicPhotocurrentResponsesForThisTF(theTimeBins,:);
+
+
+                excitationsRange = [-1 1] * max(abs(theInputConeMosaicTTFresponses(:)));
+                photocurrentsRange = [-1 1] * max(abs(theInputConeMosaicPhotocurrentTTFresponses(:)));
+
+                for iTimeBin = 1:numel(theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF)
+
+                    [~,excitationsTimeBin] = min(abs(theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF(iTimeBin)-theInputConeMosaicExcitationsTemporalSupportSecondsForThisTF));
+
+                    theActivation = reshape(squeeze(theInputConeMosaicExcitationResponsesForThisTF(excitationsTimeBin, :)), [1 1 theMRGCMosaic.inputConeMosaic.conesNum]);
+                    theMRGCMosaic.inputConeMosaic.visualize(...
+                        'figureHandle', hFig, ...
+                        'axesHandle', axExcitations , ...
+                        'activation', theActivation, ...
+                        'activationRange', excitationsRange, ...
+                        'plotTitle', sprintf('TF: %2.2f Hz, time: %2.2f msec (cone modulations)', temporalFrequenciesExamined(iTF), theInputConeMosaicExcitationsTemporalSupportSecondsForThisTF(excitationsTimeBin)*1e3));
+
+
+                    theActivation = reshape(squeeze(theInputConeMosaicPhotocurrentResponsesForThisTF(iTimeBin, :)), [1 1 theMRGCMosaic.inputConeMosaic.conesNum]);
+                    theMRGCMosaic.inputConeMosaic.visualize(...
+                        'figureHandle', hFig, ...
+                        'axesHandle', axPhotocurrents, ...
+                        'activation', theActivation, ...
+                        'activationRange', photocurrentsRange, ...
+                        'plotTitle', sprintf('TF: %2.2f Hz, time: %2.2f msec (pAmps)', temporalFrequenciesExamined(iTF), theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF(iTimeBin)*1e3));
+                    drawnow;
+                end % for iTimeBin
+            end % iTF
+        end % if (photocurrentBasedTTFsComputed))
+    end
+
+    % Compare responses for single cells
+    if (inspectInputConeMosaicResponses)
+        if (photocurrentBasedTTFsComputed)
+
+            hFig = figure(40); clf;
+            set(hFig, 'Position', [10 10 500 1150], 'Color', [1 1 1]);
+
+            for iTF = 1:numel(temporalFrequenciesExamined)
+
+                % Retrieve the cone excitation response data for this TF
+
+                theTemporalSupportSecondsForThisTF = squeeze(stimParams.temporalSupportSeconds(iTF,:));
+                theInputConeMosaicExcitationResponsesForThisTF = squeeze(theInputConeMosaicTTFresponses(iTF,:,:));
+                nanIndices = find(isnan(theTemporalSupportSecondsForThisTF));
+                if (isempty(nanIndices))
+                    theTimeBins = 1:numel(theTemporalSupportSecondsForThisTF);
+                else
+                    theTimeBins = 1:(nanIndices-1);
+                end
+                theInputConeMosaicExcitationsTemporalSupportSecondsForThisTF = theTemporalSupportSecondsForThisTF(theTimeBins);
+                theInputConeMosaicExcitationResponsesForThisTF = theInputConeMosaicExcitationResponsesForThisTF(theTimeBins,:);
+
+                % Retrieve the photocurrent response data for this TF
+                theTemporalSupportSecondsForThisTF = squeeze(theInputConeMosaicPhotocurrentTemporalSupportSeconds(iTF,:));
+                theInputConeMosaicPhotocurrentResponsesForThisTF = squeeze(theInputConeMosaicPhotocurrentTTFresponses(iTF,:,:));
+                nanIndices = find(isnan(theTemporalSupportSecondsForThisTF));
+                if (isempty(nanIndices))
+                    theTimeBins = 1:numel(theTemporalSupportSecondsForThisTF);
+                else
+                    theTimeBins = 1:(nanIndices-1);
+                end
+                theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF = theTemporalSupportSecondsForThisTF(theTimeBins);
+                theInputConeMosaicPhotocurrentResponsesForThisTF = theInputConeMosaicPhotocurrentResponsesForThisTF(theTimeBins,:);
+
+                coneExcitationsTransformedIntoResponseModulations = true;
+                for idx = 1:numel(computePhotocurrentResponsesOnlyForSelectConeIndices)
+                    theConeIndex = computePhotocurrentResponsesOnlyForSelectConeIndices(idx);
+                    plotTitle = sprintf('TF: %2.2fHz, cone index: %d', temporalFrequenciesExamined(iTF), theConeIndex);
+
+                    RGCMosaicAnalyzer.visualize.coneExcitationsVsPhotocurrentResponse(hFig, plotTitle, ...
+                        theMRGCMosaic.inputConeMosaic.coneTypes(theConeIndex), ...
+                        theInputConeMosaicExcitationsTemporalSupportSecondsForThisTF , ...
+                        squeeze(theInputConeMosaicExcitationResponsesForThisTF(:,theConeIndex)), ...
+                        coneExcitationsTransformedIntoResponseModulations, ...
+                        theInputConeMosaicPhotocurrentTemporalSupportSecondsForThisTF , ...
+                        squeeze(theInputConeMosaicPhotocurrentResponsesForThisTF(:, theConeIndex)), ...
+                        theInputConeMosaicBackgroundPhotocurrents(iTF, theConeIndex), ...
+                        [], [], ...
+                        [], [], []);
+                end % idx
+
+            end % iTF
+
+        end % if (photocurrentBasedTTFsComputed))
+    end
+
+end
+
 
 
 function computeInputConeMosaicTTF(theMRGCMosaic, theOI, TTFparamsStruct, ...
