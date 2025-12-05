@@ -10,11 +10,11 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
 
     p = inputParser;
     p.addParameter('onlyKeepResponseDuringLastStimulusPeriod', true, @islogical);
-
+    p.addParameter('computePhotocurrentResponsesOnlyForSelectConeIndices', [], @isnumeric);
     % Execute the parser
     p.parse(varargin{:});
     onlyKeepResponseDuringLastStimulusPeriod = p.Results.onlyKeepResponseDuringLastStimulusPeriod;
-
+    computePhotocurrentResponsesOnlyForSelectConeIndices = p.Results.computePhotocurrentResponsesOnlyForSelectConeIndices;
 
     nTimeBins = size(theConeMosaicExcitationResponseSequence,1);
     nCones = size(theConeMosaicExcitationResponseSequence,2);
@@ -136,14 +136,25 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
         thePeriodicConeMosaicExcitations = zeros(nCones, numel(theSingleConeExcitationPeriodicResponse));
 
         fprintf('Parfor computation of photocurrents\n');
+        tic
+
+        if (isempty(computePhotocurrentResponsesOnlyForSelectConeIndices))
+            coneIndicesToComputePhotocurrentsFor = 1:nCones;
+        else
+            coneIndicesToComputePhotocurrentsFor = computePhotocurrentResponsesOnlyForSelectConeIndices;
+        end
 
         parfor iConeIndex = 1:nCones
-    
+
             if (mod(iConeIndex,100) == 0)
                 % Give some feedback
                 fprintf('Computing photocurrent for cone %d of %d\n', iConeIndex, size(theConeMosaicExcitationResponseSequence,2));
             end
     
+            if (~ismember(iConeIndex, coneIndicesToComputePhotocurrentsFor))
+                continue;
+            end
+
             % Retrieve the cone excitation response
             theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,iConeIndex);
 
@@ -158,7 +169,7 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
 
         end % parfor iConeIndex
     
-        fprintf('Photocurrents computed in %2.1f minutes\n', toc/60);
+        fprintf('\nPhotocurrent computation took %2.1f minutes\n\n', toc/60);
     end  % if (!debugInputConeMosaicPcurrentResponse)
 
     thePeriodicConeMosaicExcitationsTemporalSupport = (0:size(thePeriodicConeMosaicExcitations,2)-1) * coneMosaicIntegrationTime;
