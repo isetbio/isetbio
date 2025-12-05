@@ -135,7 +135,7 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
                     pCurrentTemporalResolutionSeconds, true);
         thePeriodicConeMosaicExcitations = zeros(nCones, numel(theSingleConeExcitationPeriodicResponse));
 
-        fprintf('Parfor computation of photocurrents\n');
+        fprintf('\n\nParfor computation of photocurrents\n');
         tic
 
         if (isempty(computePhotocurrentResponsesOnlyForSelectConeIndices))
