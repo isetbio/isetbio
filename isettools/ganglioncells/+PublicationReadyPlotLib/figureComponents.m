@@ -19,7 +19,11 @@ function f = figureComponents(panelFormat)
 
     f.legendFontSize = 20;
     f.legendBox = 'off';
-    
+    f.legendBackgroundAlpha = 0.5;
+    f.legendBackgroundColor = [0.9 0.9 0.9]
+    f.legendEdgeColor = [0.3 0.3 0.3];
+    f.legendLineWidth = 1.0;
+
     f.axisTickAngle = 0;
     f.axisOffsetFactor = -0.03;
     f.tickDir = 'both';
