@@ -46,7 +46,7 @@ function t_mRGCMosaicSynthesizeTemporalFilters(options)
     stimulusChromaticity = 'Achromatic';
 
     % Stimulus spatial support (degs)
-    stimulusMaxSupportDegs = 0.5;
+    stimulusMaxSupportDegs = 0.6;
 
     % Stimulus pixel size as a fraction of local cone aperture
     stimulusPixelSizeAsFractionOfConeAperture = 0.4;
@@ -55,8 +55,8 @@ function t_mRGCMosaicSynthesizeTemporalFilters(options)
     spotStimulusDiameterDegs = 0.05;
 
     % Inner and outer diameters of annulus stimulus (degs)
-    annulusStimulusInnerOuterDiametersDegs = [0.06 0.35];  % this gave positive surround responses
-    annulusStimulusInnerOuterDiametersDegs = [0.08 0.35];
+    annulusStimulusInnerOuterDiametersDegs = [0.06 0.55];  % this gave positive surround responses
+    annulusStimulusInnerOuterDiametersDegs = [0.09 0.55];
     
     
     % Specify a smaller # of wavefront samples (usually we employ 501). B
@@ -211,7 +211,7 @@ function t_mRGCMosaicSynthesizeTemporalFilters(options)
        'mRGCNonLinearityParamsStruct', mRGCNonLinearityParamsStruct, ...
        'computeInputConeMosaicResponses', ~true, ...
        'inspectInputConeMosaicResponses', ~true, ...
-       'visualizeMosaicResponses', ~true, ...
+       'visualizeMosaicResponses', true, ...
        'computePhotocurrentResponsesOnlyForInputsToSingleRGCwithIndex', [30], ...
        'computeMRGCMosaicResponses', true ...
     );
