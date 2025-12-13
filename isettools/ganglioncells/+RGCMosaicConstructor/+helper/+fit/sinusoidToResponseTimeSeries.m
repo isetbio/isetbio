@@ -3,18 +3,30 @@
 %
 
 function [theFittedResponse, fittedParams] = sinusoidToResponseTimeSeries(...
-    temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportHR)
+    temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportHR, varargin)
+
+    p = inputParser;
+    p.addParameter('allowOffset', false, @islogical);
+    % Execute the parser
+    p.parse(varargin{:});
+    allowOffset = p.Results.allowOffset;
+
+    if (allowOffset)
+        meanResponse = mean(theResponseTimeSeries(:));
+    else
+        meanResponse = 0;
+    end
+
+    theResponseTimeSeries = theResponseTimeSeries - meanResponse;
 
 	maxAmplitude = max(abs(theResponseTimeSeries));
-
     theResponse = double(theResponseTimeSeries/maxAmplitude);
     
-    deltaPhaseDegs = 2;
-    phaseDegs = 0:deltaPhaseDegs:179;
+    phaseDegs = 0:2:179;
     phaseRadians = phaseDegs/180*pi;
     
     deltaAmplitude = 0.01;
-    amplitudes = 0.8:deltaAmplitude:1.2;
+    amplitudes = 0.8:deltaAmplitude:1.5;
     
     fTime = 2.0 * pi * temporalFrequencyHz * temporalSupportSeconds;
     theResiduals = inf(numel(phaseDegs)*2, numel(amplitudes));
@@ -41,11 +53,11 @@ function [theFittedResponse, fittedParams] = sinusoidToResponseTimeSeries(...
     else
         thePhaseDegs = phaseDegs(iPhase);
     end
-    fittedParams = [amplitudes(iAmp)*maxAmplitude thePhaseDegs];
+    fittedParams = [amplitudes(iAmp)*maxAmplitude thePhaseDegs meanResponse];
     
     % Generate high-resolution fitted function
     fTime = 2.0 * pi * temporalFrequencyHz * temporalSupportHR;
-    theFittedResponse = fittedParams(1) * sin(fTime - fittedParams(2)/180*pi);
+    theFittedResponse = meanResponse + fittedParams(1) * sin(fTime - fittedParams(2)/180*pi);
     
     
     debug = ~true;
