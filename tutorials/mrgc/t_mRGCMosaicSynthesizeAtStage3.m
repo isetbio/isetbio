@@ -85,6 +85,18 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'visualizeCenterSurroundConePoolingMapsOfSynthesizedCells', true);
 
 
+    % Synthesize the mosaic at 25 degs (temporal retinal, equivalent to 6.75mm,
+    % where the Field et al (2010) cone inputs to mRGCs were measured)
+    % Note that 6.75 mm in the macaque retina, corresponds to 30 degrees in the macaque retina.
+    % Compute input cone mosaic STF responses (stage 3A)
+
+    % Only the even optimization positions
+    t_mRGCMosaicSynthesizeAtStage3(...
+        'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
+        'regenerateMosaicAtStage3A', true, ...
+        'positionSetToCompute', 'even', ...
+        'visualizeOptimizationGridOnTopOfMosaic', true);
+
 %}
 
 
