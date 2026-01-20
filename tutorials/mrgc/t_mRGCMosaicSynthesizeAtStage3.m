@@ -94,7 +94,7 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
         'regenerateMosaicAtStage3A', true, ...
-        'positionSetToCompute', 'even', ...
+        'positionSetToCompute', 'odd', ...
         'visualizeOptimizationGridOnTopOfMosaic', true);
 
     % Derive optimized surround pooling functions (even or odd positions) (stage 3B)
@@ -335,7 +335,7 @@ switch (positionSetToCompute)
     case 'full'
         optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
     case 'even'
-        optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
+        optimizationPositionIndicesToCompute = 1:2:size(optimizationPositionsAndSizesGrids,1);
     case 'odd'
         optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
     case '1/3'
@@ -355,6 +355,7 @@ switch (positionSetToCompute)
     otherwise
         error('Unknown positionSetToCompute: ''%s''.', positionSetToCompute);
 end % switch
+
 
 % Generate the surroundRetinalConePoolingModel params struct
 surroundRetinalConePoolingModelParamsStruct = ...
