@@ -128,7 +128,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 		theSTFtoFitMosaic = cell(1, theMRGCMosaic.rgcsNum);
 		theFittedSTFsMosaic = cell(1, theMRGCMosaic.rgcsNum);
 		
-        
+       
         if isempty(fixedOptimalOrientation)
             fprintf(2,'STFs will be analyzed at the orientation for which the STF at half max extends to the highest SF\n');
         elseif isnan(fixedOptimalOrientation)
@@ -138,7 +138,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
         else
             fprintf(2,'STFs will be analyzed at a fixed orientation: %2.1f degs\n', fixedOptimalOrientation);
         end
-        pause(1.0);
+        
 
         multiStartsNum = 128;
 
@@ -341,7 +341,6 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 
 
         thePercentages = [5 10 25 50 75 90 95];
-
 		if (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities) || (onlyVisualizeFittedDOGmodels)
 
             if (iscell(theCronerKaplanAnalysisFileName))
@@ -378,6 +377,7 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 					theCurrentMRGCMosaicSTFResponsesFullFileName = theMRGCMosaicSTFResponsesFullFileName;
 				end
 				fprintf('Loading analyzed C&K data from %s\n', theCurrentCronerKaplanAnalysisFileName);
+
 				dataOut = load(theCurrentCronerKaplanAnalysisFileName);
 
 				% Unpack the data for all cells in the mosaic
@@ -398,11 +398,11 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 	                	if (isempty(desiredFixedOptimalOrientation))
 			                fprintf(2,'STFs analyzed at the orientation for which the STF at half max extends to the highest SF ');
 			            else
-			            	error('>>>>> orientation mismatch in computed STFs')
+			            	error('>>>>> orientation mismatch in computed STFs: desired: %f on MAT-file: %f',desiredFixedOptimalOrientation, fixedOptimalOrientation )
 			            end
 	            elseif isnan(fixedOptimalOrientation)
 	                	 if (isempty(desiredFixedOptimalOrientation))
-	                	 	error('>>>>> orientation mismatch in computed STFs')
+	                	 	error('>>>>> orientation mismatch in computed STFs: desired: %f on MAT-file: %f',desiredFixedOptimalOrientation, fixedOptimalOrientation )
 	                	 elseif (isnan(desiredFixedOptimalOrientation))
 	                	 	fprintf(2,'STFs analyzed at a random orientations');
 	                	 else
@@ -413,8 +413,6 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 	            else
 	                	if (isempty(desiredFixedOptimalOrientation))
 	                		error('orientation mismatch in computed STFs')
-	                	elseif (desiredFixedOptimalOrientation)
-	                		error('>>>>> orientation mismatch in computed STFs')
 	                	else
 	                		if (fixedOptimalOrientation == desiredFixedOptimalOrientation)
 	                    		fprintf(2,'STFs analyzed at a fixed orientation: %2.1f degs', fixedOptimalOrientation);
@@ -684,12 +682,56 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
     % Comparison of Rc: synthetic vs macaque mRGCs 
     % (without the foveal data  of Godat et al 2022)
     pdfFileName = 'RcDegs.pdf'; 
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, strrep(pdfFileName, '.pdf', 'Narrow.pdf'));
+    % Generate the path if we need to
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', true);
+
+    exportVisualizationPDF = true;
+
+    % Narrow Ecc & Rc Degs Range
+    RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo, ...
+		radialTemporalEquivalentEccentricityDegsMosaic, RcDegsMosaic, 'o', 6, [0.0 0.4 1], 0.02, 0.0, ...
+		populationContourInsteadOfPointCloud, ...
+		eccentricityDegsCKdata, RcDegsCKdata, [], ...
+		's', 16, [0.8 0.8 0.8], 0.8, 1.0, [], ...
+		[1.0 8.0], [1 2 4 6 8], [0 0.05], 0:0.01:0.1,...
+		'log', 'linear', ...
+		'temporal equivalent eccentricity (degs)', 'Rc (degs)', ...
+		{sprintf('synthetic mRGCs, n=%d',numel(RcDegsMosaic)), 'macaque mRGCs (C&K''95)'}, ...
+		exportVisualizationPDF, thePDFFullFileName);
+
+    % Comparison of Rc: synthetic vs macaque mRGCs 
+    % (without the foveal data  of Godat et al 2022)
+    pdfFileName = 'RcDegs.pdf'; 
     theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
     % Generate the path if we need to
     thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
                     pdfExportRootDir, theVisualizationPDFfilename, ...
                     'generateMissingSubDirs', true);
 
+    figNo = figNo + 1;
+	RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo, ...
+		radialTemporalEquivalentEccentricityDegsMosaic, RcDegsMosaic, 'o', 6, [0.0 0.4 1], 0.02, 0.0, ...
+		populationContourInsteadOfPointCloud, ...
+		eccentricityDegsCKdata, RcDegsCKdata, [], ...
+		's', 16, [0.8 0.8 0.8], 0.8, 1.0, [], ...
+		defaultEccSupportRange, [0.01 0.03 0.1 0.3 1 3 10 30], [0 maxRcDegs], 0:0.05:0.25,...
+		'log', 'linear', ...
+		'temporal equivalent eccentricity (degs)', 'Rc (degs)', ...
+		{sprintf('synthetic mRGCs, n=%d',numel(RcDegsMosaic)), 'macaque mRGCs (C&K''95)'}, ...
+		exportVisualizationPDF, thePDFFullFileName);
+    % Comparison of Rc: synthetic vs macaque mRGCs 
+    % (without the foveal data  of Godat et al 2022)
+    pdfFileName = 'RcDegs.pdf'; 
+    theVisualizationPDFfilename = fullfile(pdfExportSubDir, pdfFileName);
+    % Generate the path if we need to
+    thePDFFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                    pdfExportRootDir, theVisualizationPDFfilename, ...
+                    'generateMissingSubDirs', true);
+
+    figNo = figNo + 1;
     exportVisualizationPDF = true;
 	RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo, ...
 		radialTemporalEquivalentEccentricityDegsMosaic, RcDegsMosaic, 'o', 6, [0.0 0.4 1], 0.02, 0.0, ...

@@ -69,6 +69,14 @@ function t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(options)
         'validationEccentricitiesDegsY', 0, ...
         'reAnalyzeSTFData', ~true);
 
+    % Reanalyze the STF data for a random orientation
+    t_mRGCMosaicBasicValidationAgainstCronerAndKaplan(...
+        'reAnalyzeSTFData', ~true, ...
+        'validationEccentricitiesDegsX', [2 3 4 5 6 7 8 9 10 11 12], ...
+        'validationEccentricitiesDegsY', [0], ...
+        'analyzedSTFsliceOrientation', 90, ...
+        'aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities', true);
+
 %}
 
 
@@ -101,7 +109,7 @@ arguments
 
     % ------- Validation options ------
     % Validation positions within the prebaked mosaic specified by options.rgcMosaicName 
-    options.validationEccentricitiesDegsX (1,:) double = [2  12];
+    options.validationEccentricitiesDegsX (1,:) double = [2 3 4 5 6 7 8 9 10 11 12];
     options.validationEccentricitiesDegsY (1,:) double = [0];
     options.validationSizeDegs (1,2) double = [1 1];
 
@@ -121,7 +129,7 @@ arguments
     % STF analysis params
     options.analyzedSTFsliceOrientation = [];   
     % Option 1: nan.  A random orientation for each cell
-    % Using this option may simulate the experimental conditions of Croner&Kaplsn as, 
+    % Using this option may simulate the experimental conditions of Croner&Kaplan as, 
     % according to NPC's correspondense with Lisa Croner (email-June 11, 2024), 
     % they did not optimize orientation in their 1995 paper
     %
