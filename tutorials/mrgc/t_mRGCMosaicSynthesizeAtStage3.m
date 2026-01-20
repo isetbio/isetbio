@@ -98,10 +98,30 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'visualizeOptimizationGridOnTopOfMosaic', true);
 
     % Derive optimized surround pooling functions (even or odd positions) (stage 3B)
+    % Leviathan #1
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
         'regenerateMosaicAtStage3B', true, ...
-        'positionSetToCompute', 'even');
+        'computeSelectOptimizationPositionIndices', [1]);
+
+    % Leviathan #2
+    t_mRGCMosaicSynthesizeAtStage3(...
+        'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
+        'regenerateMosaicAtStage3B', true, ...
+        'computeSelectOptimizationPositionIndices', [2]);
+
+    % Crete #1
+    t_mRGCMosaicSynthesizeAtStage3(...
+        'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
+        'regenerateMosaicAtStage3B', true, ...
+        'computeSelectOptimizationPositionIndices', [3 4 5]);
+
+    % Crete #2
+    t_mRGCMosaicSynthesizeAtStage3(...
+        'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
+        'regenerateMosaicAtStage3B', true, ...
+        'computeSelectOptimizationPositionIndices', [6 7 8 9]);
+
 
 %}
 
@@ -163,6 +183,10 @@ arguments
     % Which center cone numerosity to inspect surround cone pooling function
     % for. Empty results in all cone numerosities
     options.centerConeNumerosityToInspect (1,:) double = []
+
+    % Only compute select optimization position indices.
+    % If this is non-empty, the 'positionSetToCompute' is ignored
+    options.computeSelectOptimizationPositionIndices (1,:) double = [];
 
     % Which set of optimization position to compute in the run
     options.positionSetToCompute (1,:) char {mustBeMember(options.positionSetToCompute,{'full','even', 'odd', '1/3', '2/3', '3/3', '1/4', '2/4', '3/4', '4/4'})} = 'full';
@@ -261,6 +285,9 @@ centerConeDominanceToInspect = options.centerConeDominanceToInspect;
 % Center cone numerosity for which to inspect the derived surround pooling functions
 centerConeNumerosityToInspect = options.centerConeNumerosityToInspect;
 
+% Only compute select optimization position indices
+computeSelectOptimizationPositionIndices = options.computeSelectOptimizationPositionIndices;
+
 % Which positions subset (or full set) to compute in this run
 positionSetToCompute = options.positionSetToCompute;
 
@@ -330,31 +357,36 @@ if (options.onlyVisualizeOptimizationGrid)
     return;
 end
 
-% Compute surround optimization functions for all grid positions 
-switch (positionSetToCompute)
-    case 'full'
-        optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
-    case 'even'
-        optimizationPositionIndicesToCompute = 1:2:size(optimizationPositionsAndSizesGrids,1);
-    case 'odd'
-        optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
-    case '1/3'
-        optimizationPositionIndicesToCompute = 1:3:size(optimizationPositionsAndSizesGrids,1);
-    case '2/3'
-        optimizationPositionIndicesToCompute = 2:3:size(optimizationPositionsAndSizesGrids,1);
-    case '3/3'
-        optimizationPositionIndicesToCompute = 3:3:size(optimizationPositionsAndSizesGrids,1);
-    case '1/4'
-        optimizationPositionIndicesToCompute = 1:4:size(optimizationPositionsAndSizesGrids,1);
-    case '2/4'
-        optimizationPositionIndicesToCompute = 2:4:size(optimizationPositionsAndSizesGrids,1);
-    case '3/4'
-        optimizationPositionIndicesToCompute = 3:4:size(optimizationPositionsAndSizesGrids,1);
-    case '4/4'
-        optimizationPositionIndicesToCompute = 4:4:size(optimizationPositionsAndSizesGrids,1);
-    otherwise
-        error('Unknown positionSetToCompute: ''%s''.', positionSetToCompute);
-end % switch
+if (~isempty(computeSelectOptimizationPositionIndices))
+    optimizationPositionIndicesToCompute = computeSelectOptimizationPositionIndices;
+else
+    % Compute surround optimization functions for all grid positions 
+    switch (positionSetToCompute)
+        case 'full'
+            optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
+        case 'even'
+            optimizationPositionIndicesToCompute = 1:2:size(optimizationPositionsAndSizesGrids,1);
+        case 'odd'
+            optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
+        case '1/3'
+            optimizationPositionIndicesToCompute = 1:3:size(optimizationPositionsAndSizesGrids,1);
+        case '2/3'
+            optimizationPositionIndicesToCompute = 2:3:size(optimizationPositionsAndSizesGrids,1);
+        case '3/3'
+            optimizationPositionIndicesToCompute = 3:3:size(optimizationPositionsAndSizesGrids,1);
+        case '1/4'
+            optimizationPositionIndicesToCompute = 1:4:size(optimizationPositionsAndSizesGrids,1);
+        case '2/4'
+            optimizationPositionIndicesToCompute = 2:4:size(optimizationPositionsAndSizesGrids,1);
+        case '3/4'
+            optimizationPositionIndicesToCompute = 3:4:size(optimizationPositionsAndSizesGrids,1);
+        case '4/4'
+            optimizationPositionIndicesToCompute = 4:4:size(optimizationPositionsAndSizesGrids,1);
+        otherwise
+            error('Unknown positionSetToCompute: ''%s''.', positionSetToCompute);
+    end % switch
+end
+
 
 
 % Generate the surroundRetinalConePoolingModel params struct
