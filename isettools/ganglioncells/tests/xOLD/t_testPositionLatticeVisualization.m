@@ -113,8 +113,6 @@ if (~showDensityOnTopOfPositions)
         theRFpositionsDegs(visualizedRFindices,:));
 
 
-    pause;
-
 end
 
 if (~recomputePositions)
@@ -518,10 +516,10 @@ function  plotDensities(figNo, maxRadialEccDegs, fName, neuronType, ...
         switch (neuronType)
             case 'cones'
                 MarkerFaceColor = [255 120 150]/255;
-                MarkerEdgeColor = MarkerFaceColor*0.75;
+                MarkerEdgeColor = MarkerFaceColor;
             case 'midget ganglion cells'
-                MarkerFaceColor = [0 0.9 0.0];
-                MarkerEdgeColor = [0 0.6 0.0];
+                MarkerFaceColor = [0.5 0.9 0.5];
+                MarkerEdgeColor = MarkerFaceColor;
         end
 
         if (maxRadialEccDegs >= 25)
@@ -546,12 +544,37 @@ function  plotDensities(figNo, maxRadialEccDegs, fName, neuronType, ...
              MarkerEdgeAlpha = 0.5;
         end
 
+        [min(theoreticalTemporalRetinaEccDegs(:)) max(theoreticalTemporalRetinaEccDegs(:))]
+
+        [min(theoreticalNasalRetinaEccDegs(:)) max(theoreticalNasalRetinaEccDegs(:))]
+
+
+        xx = min(theoreticalTemporalRetinaEccDegs(:)):0.1:max(theoreticalTemporalRetinaEccDegs(:));
+        idxTemporal = 0*xx;
+        for i = 1:numel(xx)
+            [~,idxTemporal(i)] = min(abs(theoreticalTemporalRetinaEccDegs-xx(i)));
+        end
+
+        xx = min(theoreticalNasalRetinaEccDegs(:)):0.1:max(theoreticalNasalRetinaEccDegs(:));
+        idxNasal = 0*xx;
+        for i = 1:numel(xx)
+            [~,idxNasal(i)] = min(abs(theoreticalNasalRetinaEccDegs-xx(i)));
+        end
+
+
+
         hold(ax, 'on');
-        p1 = scatter(ax, xPos, achievedDensities, 6^2, ...
-            'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor, ...
-            'MarkerFaceAlpha', MarkerFaceAlpha, 'MarkerEdgeAlpha', MarkerEdgeAlpha);
-        p2 = plot(ax, theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, 'k-', 'LineWidth', 1.5);
-        plot(ax, theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina, 'k-', 'LineWidth', 1.5);
+        %p1 = scatter(ax, xPos, achievedDensities, 6^2, ...
+        %    'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor, ...
+        %    'MarkerFaceAlpha', MarkerFaceAlpha, 'MarkerEdgeAlpha', MarkerEdgeAlpha);
+
+        p1 = plot(ax, xPos, achievedDensities, '.', 'MarkerSize', 12, ...
+            'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor);
+
+        p2 = plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'k-', 'LineWidth', 1.5);
+        %plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'w--', 'LineWidth', 1.5);
+        plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'k-', 'LineWidth', 1.5);
+        %plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'w--', 'LineWidth', 1.5);
         XLims = maxRadialEccDegs*[-1 1]; 
         YLims = [0 17500];
 
