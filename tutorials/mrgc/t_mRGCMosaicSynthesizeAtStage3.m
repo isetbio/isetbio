@@ -221,6 +221,9 @@ arguments
     options.regenerateMosaicAtStage3C (1,1) logical = false;
 
 
+    % How many parallel pool workers to use
+    options.AppleSiliconParPoolSize (1,:) char {mustBeMember(options.AppleSiliconParPoolSize, {'extreme', 'half max'})} = 'half max';
+
     % ---- Visualization options ----
 
     % Stage 3A visualizations (input cone mosaic STF responses)
@@ -332,6 +335,9 @@ if (closePreviouslyOpenFigures)
     % Close any stray figs
     close all;
 end
+
+% Start the AppleSiliconeParPoolManager
+ASPPManager = AppleSiliconParPoolManager(options.AppleSiliconParPoolSize);
 
 
 % Generate the necessary mosaic params struct
