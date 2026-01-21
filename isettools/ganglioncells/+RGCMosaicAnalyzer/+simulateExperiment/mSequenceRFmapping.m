@@ -98,7 +98,7 @@ end
 function inputConeMosaicMsequenceRFmapping(theMRGCMosaic, theOI, RFmappingParamsStruct, ...
 	theInputConeMosaicResponsesFullFileName, visualizeInputConeMosaicResponses)
 
-	fprintf('Computing input cone mosaic M-sequence responses\n');
+	fprintf('Will save input cone mosaic M-sequence responses to\n\t%s\n', theInputConeMosaicResponsesFullFileName);
 
 	% Compute cone contrasts for desired chromaticity
     [coneContrasts, totalContrast] = ...
@@ -135,7 +135,8 @@ function inputConeMosaicMsequenceRFmapping(theMRGCMosaic, theOI, RFmappingParams
     viewingDistanceMeters = 4;
     thePresentationDisplay = visualStimulusGenerator.presentationDisplay(...
             theMRGCMosaic.inputConeMosaic.wave, RFmappingParamsStruct.resolutionDegs, ...
-            viewingDistanceMeters);
+            viewingDistanceMeters, ...
+            'displayType', 'CRT-Sony-HorwitzLab');
 
     if (stimParams.coneFundamentalsOptimizedForStimPosition)
         % Compute custom cone fundamentals

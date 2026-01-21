@@ -11,7 +11,7 @@
 close all; clear all;
     
 % Actions to perform
-computeInputConeMosaicResponses = ~true;
+computeInputConeMosaicResponses = true;
 computeMRGCMosaicResponses = ~true;
 computeRFmaps = ~true;
 
@@ -25,7 +25,7 @@ generateVisualRFandConePoolingMapComboPlots = ~true;
 generateNearestNeighborOverlapPlots = ~true;
 
 % Aggregation over multiple eccentricities
-aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = true;
+aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = ~true;
 
 % Aggregate over multiple chromaticities
 visualizeAggregatedChromaticityRFmaps = false;
