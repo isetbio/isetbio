@@ -15,7 +15,7 @@ MMsToDegsConversionFunction = @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x);
 % Which mRGC/cone mosaic lattice to use
 sourceLatticeSizeDegs = 64; 
 whichEye = 'right eye';
-neuronType = 'cones';  % choose between {'cones', 'midget ganglion cells'}
+neuronType = 'midget ganglion cells';  % choose between {'cones', 'midget ganglion cells'}
 
 % Configure algorithm params
 params = retinalattice.configure(sourceLatticeSizeDegs, neuronType, whichEye);
@@ -44,6 +44,7 @@ switch (neuronType)
 end
 
 recomputePositions = ~true;
+compute2DdensityMap = ~true;
 
 factorToMatchWatsonISETBioPeakConeDensity = 0.74;
 
@@ -65,7 +66,6 @@ if (recomputePositions)
 else
     load(sprintf('%s.mat', fName), 'theRFpositionsDegs', 'theRFpositionsMicrons', 'theRFspacingMicrons');
 end
-
 
 showDensityOnTopOfPositions = false;
 
@@ -114,6 +114,66 @@ if (~showDensityOnTopOfPositions)
 
 
 end
+
+
+
+if (compute2DdensityMap)
+
+    eccentricityDegs = [0 0]; 
+    sizeDegs = [64 64];
+
+    % sampling for the density map
+    densityMapSampleSpacingDegs = 1.0;
+
+    densityMap = computeMRGCRFmapDensityMap(theRFpositionsMicrons, theRFpositionsDegs, ...
+        eccentricityDegs, sizeDegs, densityMapSampleSpacingDegs);
+
+    mapLog = log10(densityMap.map);
+
+    % density isocontour levels
+    densityRange = prctile(mapLog(:), [1 100]);
+    zLevels = 0.5:0.125:4.0;
+
+    densityTicks = zLevels(5:8:end);
+    densityTickLabels = sprintf('1E%1.0f\n',densityTicks);
+
+    % LUT for contour plot
+    theLUT = brewermap(1024, '*spectral');
+    contourLineColor = [0 0 0];
+
+    ff = PublicationReadyPlotLib.figureComponents('1x1 giant rectangular-wide mosaic');
+	hFig = figure(9999); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    contourf(ax, densityMap.spatialSupportXdegs, densityMap.spatialSupportYdegs, mapLog, ...
+        zLevels, 'LineColor', contourLineColor);
+    axis(ax, 'xy'); axis(ax, 'image');
+    set(ax, 'XLim', 32*[-1 1], 'YLim', 32*[-1 1], 'XTick', -30:5:30, 'YTick', -30:5:30);
+    set(ax, 'Color', theLUT(1,:), 'CLim', densityRange, 'FontSize', 16);
+    xtickangle(ax, 0);
+
+    xlabel(ax, 'eccentricity, x (degs)', 'FontAngle', 'italic');
+    ylabel(ax, 'eccentricity, y (degs)', 'FontAngle', 'italic');
+    cb = colorbar(ax, 'South', ...
+        'Ticks', densityTicks, 'TickLabels', densityTickLabels);
+    if (strcmp(neuronType,'cones'))
+        cb.Title.String = 'cone density (cones/deg^2)';
+    else
+        cb.Title.String = 'mRGC RF density (RFs/deg^2)';
+    end
+
+    colormap(ax, theLUT);
+
+    % Finalize figure using the Publication-Ready format
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+   
+    drawnow;
+    NicePlot.exportFigToPDF('densityMap.pdf', hFig, 300);
+
+end
+
+
 
 if (~recomputePositions)
     eccDegs = sqrt(sum(theRFpositionsDegs.^2,2));
@@ -467,7 +527,7 @@ function plotMosaicPatch(figNo, neuronType, fName, centerDegs, ...
         deltaTick = 0.2;
     end
 
-    elementSize = 0.35 * 1000/sqrt(size(theRFpositionsDegs,1))
+    elementSize = 0.35 * 1000/sqrt(size(theRFpositionsDegs,1));
 
     XTicks = -40:deltaTick:40;
     XLims = centerDegs(1) + 0.5*widthDegs*[-1 1];
@@ -502,99 +562,125 @@ function plotMosaicPatch(figNo, neuronType, fName, centerDegs, ...
 end
 
 
-function  plotDensities(figNo, maxRadialEccDegs, fName, neuronType, ...
-            xPos, achievedDensities, ...
-            theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
-            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina)
+function plot2DdensityMap(figNo)
 
-      
-        ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
-	    hFig = figure(figNo); clf;
-        theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-        ax = theAxes{1,1};
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    hFig = figure(figNo); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
 
-        switch (neuronType)
-            case 'cones'
-                MarkerFaceColor = [255 120 150]/255;
-                MarkerEdgeColor = MarkerFaceColor;
-            case 'midget ganglion cells'
-                MarkerFaceColor = [0.5 0.9 0.5];
-                MarkerEdgeColor = MarkerFaceColor;
-        end
-
-        if (maxRadialEccDegs >= 25)
-            XTicks = -40:5:40;
-            MarkerFaceAlpha = 0.01;
-            MarkerEdgeAlpha = 0.2;
-        elseif (maxRadialEccDegs >= 20)
-            XTicks = -40:4:40;
-            MarkerFaceAlpha = 0.01;
-            MarkerEdgeAlpha = 0.2;
-        elseif (maxRadialEccDegs >= 10)
-            XTicks = -40:2:40;
-            MarkerFaceAlpha = 0.03;
-            MarkerEdgeAlpha = 0.3;
-        elseif (maxRadialEccDegs >= 5)
-            XTicks = -40:1:40;
-            MarkerFaceAlpha = 0.05;
-            MarkerEdgeAlpha = 0.5;
-        else
-             XTicks = -40:0.5:40;
-             MarkerFaceAlpha = 0.05;
-             MarkerEdgeAlpha = 0.5;
-        end
-
-        [min(theoreticalTemporalRetinaEccDegs(:)) max(theoreticalTemporalRetinaEccDegs(:))]
-
-        [min(theoreticalNasalRetinaEccDegs(:)) max(theoreticalNasalRetinaEccDegs(:))]
-
-
-        xx = min(theoreticalTemporalRetinaEccDegs(:)):0.1:max(theoreticalTemporalRetinaEccDegs(:));
-        idxTemporal = 0*xx;
-        for i = 1:numel(xx)
-            [~,idxTemporal(i)] = min(abs(theoreticalTemporalRetinaEccDegs-xx(i)));
-        end
-
-        xx = min(theoreticalNasalRetinaEccDegs(:)):0.1:max(theoreticalNasalRetinaEccDegs(:));
-        idxNasal = 0*xx;
-        for i = 1:numel(xx)
-            [~,idxNasal(i)] = min(abs(theoreticalNasalRetinaEccDegs-xx(i)));
-        end
-
-
-
-        hold(ax, 'on');
-        %p1 = scatter(ax, xPos, achievedDensities, 6^2, ...
-        %    'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor, ...
-        %    'MarkerFaceAlpha', MarkerFaceAlpha, 'MarkerEdgeAlpha', MarkerEdgeAlpha);
-
-        p1 = plot(ax, xPos, achievedDensities, '.', 'MarkerSize', 12, ...
-            'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor);
-
-        p2 = plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'k-', 'LineWidth', 1.5);
-        %plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'w--', 'LineWidth', 1.5);
-        plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'k-', 'LineWidth', 1.5);
-        %plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'w--', 'LineWidth', 1.5);
-        XLims = maxRadialEccDegs*[-1 1]; 
-        YLims = [0 17500];
-
-	    grid(ax, 'on');
-	    set(ax, 'XLim', XLims); 
-        set(ax, 'XTick', XTicks, 'YTick', [0 2.5e3 5e3 7.5e3 10e3 12.5e3 15e3 17.5e3 20e3] , 'YLim', YLims);
-        set(ax, 'YTickLabel', {'0', '', '5k', '', '10k', '', '15k', '', '20k'});
-        xlabel(ax, 'eccentricity, x (degs)');
-        legend(ax, [p1 p2], {'achieved', 'target'});
-        switch (neuronType)
-            case 'cones'
-                ylabel(ax, 'density (cones/deg^2)');
-            case 'midget ganglion cells'
-                ylabel(ax, 'density (mRGCs/deg^2)');
-        end
-
-        % Finalize figure using the Publication-Ready format
-        PublicationReadyPlotLib.applyFormat(ax,ff);
-        PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
-        drawnow;
-        NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
         
+    
+end
+
+
+function  plotDensities(figNo, maxRadialEccDegs, fName, neuronType, ...
+        xPos, achievedDensities, ...
+        theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
+        theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina)
+
+  
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    hFig = figure(figNo); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    switch (neuronType)
+        case 'cones'
+            MarkerFaceColor = [255 120 150]/255;
+            MarkerEdgeColor = MarkerFaceColor;
+        case 'midget ganglion cells'
+            MarkerFaceColor = [0.5 0.9 0.5];
+            MarkerEdgeColor = MarkerFaceColor;
+    end
+
+    if (maxRadialEccDegs >= 25)
+        XTicks = -40:5:40;
+        MarkerFaceAlpha = 0.01;
+        MarkerEdgeAlpha = 0.2;
+    elseif (maxRadialEccDegs >= 20)
+        XTicks = -40:4:40;
+        MarkerFaceAlpha = 0.01;
+        MarkerEdgeAlpha = 0.2;
+    elseif (maxRadialEccDegs >= 10)
+        XTicks = -40:2:40;
+        MarkerFaceAlpha = 0.03;
+        MarkerEdgeAlpha = 0.3;
+    elseif (maxRadialEccDegs >= 5)
+        XTicks = -40:1:40;
+        MarkerFaceAlpha = 0.05;
+        MarkerEdgeAlpha = 0.5;
+    else
+         XTicks = -40:0.5:40;
+         MarkerFaceAlpha = 0.05;
+         MarkerEdgeAlpha = 0.5;
+    end
+
+    xx = min(theoreticalTemporalRetinaEccDegs(:)):0.1:max(theoreticalTemporalRetinaEccDegs(:));
+    idxTemporal = 0*xx;
+    for i = 1:numel(xx)
+        [~,idxTemporal(i)] = min(abs(theoreticalTemporalRetinaEccDegs-xx(i)));
+    end
+
+    xx = min(theoreticalNasalRetinaEccDegs(:)):0.1:max(theoreticalNasalRetinaEccDegs(:));
+    idxNasal = 0*xx;
+    for i = 1:numel(xx)
+        [~,idxNasal(i)] = min(abs(theoreticalNasalRetinaEccDegs-xx(i)));
+    end
+
+
+
+    hold(ax, 'on');
+    %p1 = scatter(ax, xPos, achievedDensities, 6^2, ...
+    %    'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor, ...
+    %    'MarkerFaceAlpha', MarkerFaceAlpha, 'MarkerEdgeAlpha', MarkerEdgeAlpha);
+
+    p1 = plot(ax, xPos, achievedDensities, '.', 'MarkerSize', 12, ...
+        'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor);
+
+    p2 = plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'k-', 'LineWidth', 1.5);
+    %plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'w--', 'LineWidth', 1.5);
+    plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'k-', 'LineWidth', 1.5);
+    %plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'w--', 'LineWidth', 1.5);
+    XLims = maxRadialEccDegs*[-1 1]; 
+    YLims = [0 17500];
+
+    grid(ax, 'on');
+    set(ax, 'XLim', XLims); 
+    set(ax, 'XTick', XTicks, 'YTick', [0 2.5e3 5e3 7.5e3 10e3 12.5e3 15e3 17.5e3 20e3] , 'YLim', YLims);
+    set(ax, 'YTickLabel', {'0', '', '5k', '', '10k', '', '15k', '', '20k'});
+    xlabel(ax, 'eccentricity, x (degs)');
+    legend(ax, [p1 p2], {'achieved', 'target'});
+    switch (neuronType)
+        case 'cones'
+            ylabel(ax, 'density (cones/deg^2)');
+        case 'midget ganglion cells'
+            ylabel(ax, 'density (mRGCs/deg^2)');
+    end
+
+    % Finalize figure using the Publication-Ready format
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+    PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
+    drawnow;
+    NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
+    
+end
+
+
+
+
+function densityMap = computeMRGCRFmapDensityMap(mRGCRFposMicrons, mRGCRFposDegs, eccentricityDegs, sizeDegs, deltaDegs)
+
+    mRGCRFspacingsDegs = RGCmodels.Watson.convert.positionsToSpacings(mRGCRFposDegs);
+
+    xPosDegs = eccentricityDegs(1):deltaDegs:(eccentricityDegs(1)+0.5*sizeDegs(1));
+    xPosDegs = unique([-fliplr(xPosDegs) xPosDegs]);
+    yPosDegs = eccentricityDegs(2):deltaDegs:(eccentricityDegs(2)+0.5*sizeDegs(2));
+    yPosDegs = unique([-fliplr(yPosDegs) yPosDegs]);
+
+    sampledPositionsDegs{1} = xPosDegs;
+    sampledPositionsDegs{2} = yPosDegs ;    
+    densityMap.map = cMosaic.densityMap(mRGCRFposDegs, mRGCRFspacingsDegs, sampledPositionsDegs);
+    densityMap.spatialSupportXdegs = xPosDegs ;
+    densityMap.spatialSupportYdegs = yPosDegs ;
 end
