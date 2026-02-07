@@ -40,7 +40,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         xlabel('time (msec)');
         ylabel('pAmps');
         title(gca, sprintf('%s, TF = %2.2fHz', stimulusShape, temporalFrequenciesExamined(iTF)));
-        pause
         drawnow;
     end % iTF
 end
