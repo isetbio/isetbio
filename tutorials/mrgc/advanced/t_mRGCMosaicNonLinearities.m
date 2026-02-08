@@ -491,7 +491,6 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
         dToriginal = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(2)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1);
         dT = temporalSupportSeconds(2)-temporalSupportSeconds(1);
         tOneStimulusCycle = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(end)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1)
-        pause
         idx = find(temporalSupportSeconds >= temporalSupportSeconds(end)-(tOneStimulusCycle+0.5*dToriginal-dT));
 
         temporalSupportSeconds = temporalSupportSeconds(idx);
