@@ -12,10 +12,18 @@ function oi = oiTreeShrewCreate(varargin)
 %
 % Examples:
 %{
+    % ETTBSkip
+    % This is currently broken because we never updated after the big 2024 
+    % ISETBio/ISETCam consilidation.
+
     % Default TreeShrew model
     oi = oiTreeShrewCreate();
 %}
 %{
+    % ETTBSkip
+    % This is currently broken because we never updated after the big 2024 
+    % ISETBio/ISETCam consilidation.
+
     % Custom tree shew optics where we specify the sigma of the PSF
     oi = oiTreeShrewCreate(...
         'inFocusPSFsigmaMicrons', 40 ... % 40 microns
