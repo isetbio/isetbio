@@ -395,6 +395,7 @@ classdef cMosaic < handle
             p.addParameter('custommmstodegsconversionfunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('visualizemeshconvergence', false, @islogical);
             p.addParameter('exportmeshconvergencehistory', false, @islogical);
+            p.addParameter('eccentricitylookuptablesamplesnum', 32, @isscalar);
             p.addParameter('maxmeshiterations', 100, @(x)(isempty(x) || isscalar(x)));
             p.addParameter('micronsperdegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('rodintrusionadjustedconeaperture', false, @(x) ((islogical(x))||((isscalar(x))&&((x>0)&&(x<=1)))));
@@ -532,17 +533,14 @@ classdef cMosaic < handle
             if (isempty(p.Results.conedata))
                 if (p.Results.computemeshfromscratch)
                     
-                    % Custom mesh generation function 
-                    customMinRFspacing = p.Results.customminrfspacing;
-                    customRFspacingFunction = p.Results.customrfspacingfunction;
-            
                     % Re-generate lattice
                     obj.regenerateConePositions(...
                         p.Results.maxmeshiterations,  ...
                         p.Results.visualizemeshconvergence, ...
                         p.Results.exportmeshconvergencehistory, ...
-                        'customMinRFspacing', customMinRFspacing, ...
-                        'customRFspacingFunction', customRFspacingFunction);
+                        'eccentricityLookUpTableSamplesNum', p.Results.eccentricitylookuptablesamplesnum, ...
+                        'customMinRFspacing', p.Results.customminrfspacing, ...
+                        'customRFspacingFunction', p.Results.customrfspacingfunction);
                 else
                     % Import positions by cropping a large pre-computed patch
                     obj.initializeConePositions(obj.overlappingConeFractionForElimination);

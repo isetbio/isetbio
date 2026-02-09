@@ -47,11 +47,14 @@ drawnow;
 % Generating from scratch can be slow, especially
 % if the mosaic eccentricity is off-axis
 cm = cMosaic(...
-    'size degs', [0.5 0.5], ...            % SIZE: x=0.5 degs, y=0.5 degs
-    'position degs', [1.0 0], ...      % ECC:  x=1.0 degs, y= 0.0 degs
-    'compute mesh from scratch', true, ...   % generate mesh on-line, will take some time
-    'random seed', randi(9999999), ...     % set the random seed, so at to generate a different mosaic each time
-    'max mesh iterations', 80 ...           % stop iterative procedure after this many iterations
+    'size degs', [1 0.5], ...               % SIZE: x=1 degs, y=0.5 degs
+    'position degs', [2.0 0], ...           % ECC:  x=3.0 degs, y= 0.0 degs
+    'sourceLatticeSizeDegs', 6, ...         % To generate a 1 x 0.5 deg mosaic at ecc = (3.0,0.0), we set the source to be 4x4
+    'compute mesh from scratch', true, ...  % generate mesh on-line, will take some time
+    'random seed', randi(9999999), ...      % set the random seed, so at to generate a different mosaic each time
+    'max mesh iterations', 60, ...         % stop iterative procedure after this many iterations
+    'visualizeMeshConvergence', true, ...   % visualize the lattice convergence progress
+    'eccentricityLookUpTableSamplesNum', 16 ...  % entries in the ecc lookup table, the higher, the better the lattice quality
     );
 
 %% Visualize in a ieNewGraphWin
