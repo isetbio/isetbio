@@ -17,6 +17,7 @@ function t_mRGCMosaicSynthesizeTemporalFilters(options)
 % History:
 %    12/02/25  NPC  Wrote it.
 
+
 % Examples:
 %{
 
@@ -338,7 +339,7 @@ arguments
 
     % Spatial position params
     options.stimulusPixelSizeAsFractionOfConeAperture (1,1) double = 0.5;
-    options.stimulusMaxSupportDegs (1,1) double = [];
+    options.stimulusMaxSupportDegs (1,:) double = [];
     options.stimulusPositionDegs (1,:) double = [];
     options.stimulusSizeDegs (1,:) double = [];
     options.stimulusShape (1,:) char{mustBeMember(options.stimulusShape, {'spot' 'annulus'})} = 'spot';
