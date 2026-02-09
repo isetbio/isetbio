@@ -10,7 +10,7 @@ function t_customHumanConeMosaicsBasedOnAOmeasurements()
 %    07/25/25  NPC  ISETBIO Team, Copyright 2025   Wrote it.
 
     % Specify a source file where the Sabesan data live
-    theDataFileName = '/Users/nicolas/Desktop/RamSabesanData/AO001R_Nasal_v1.csv';
+    theDataFileName = fullfile(isetbioRootPath, 'isettools/data/cones','RamSabesanData/AO001R_Nasal_v1.csv');
 
     % Import data
     allMosaicsData = importAllSubjectData(theDataFileName);
