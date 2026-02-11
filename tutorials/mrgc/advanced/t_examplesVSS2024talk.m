@@ -7,7 +7,7 @@ function t_examplesVSS2024talk(options)
 % Examples:
 %{
 
-% UTTBSkip
+% ETTBSkip
 
 % Skip running these examples during autovalidation because they require material
 % not included in the ISETBio repository.

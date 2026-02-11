@@ -19,13 +19,13 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
 
 % Examples:
 %{
-
-%
-% NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
-% the directions discribed in:
-%    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
-% under section "Configuring ISETBio to access RGC resources and run RGC simulations"
-%
+    % ETTBSkip
+    %
+    % NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
+    % the directions discribed in:
+    %    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
+    % under section "Configuring ISETBio to access RGC resources and run RGC simulations"
+    %
 
     % Only visualize the surround optimization grid 
     t_mRGCMosaicSynthesizeAtStage3(...
@@ -37,22 +37,29 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'onlyVisualizeOpticsAtOptimizationGrid', true);
 
+    
     % Compute input cone mosaic STF responses (stage 3A)
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3A', true);
 
+    
     % Derive optimized surround pooling functions for L-cone dominated mRGCs (stage 3B)
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3B', true, ...
         'centerConeDominanceToOptimize', cMosaic.LCONE_ID);
 
+    
     % Derive optimized surround pooling functions for M-cone dominated mRGCs (stage 3B)
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3B', true, ...
         'centerConeDominanceToOptimize', cMosaic.MCONE_ID);
+
 
     % Inspect derived surround pooling functions for L-cone dominated mRGCs
     t_mRGCMosaicSynthesizeAtStage3(...
@@ -60,20 +67,26 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'inspectMosaicAtStage3B', true, ...
         'centerConeDominanceToInspect', cMosaic.LCONE_ID);
 
+   
     % Inspect derived surround pooling functions for M-cone dominated mRGCs
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'inspectMosaicAtStage3B', true, ...
         'centerConeDominanceToInspect', cMosaic.MCONE_ID);
 
+    
     % Inspect the surround pooling interpolation grid
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'inspectSurroundPoolingInterpolationGrid', true);
 
+    
     % Synthesize the compute-ready mosaic by interpolating the derived
     % surround cone poolings and deriving surround weights for all cells in
     % the synthesized mRGCMosaic
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3C', true);
@@ -91,6 +104,7 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
     % Compute input cone mosaic STF responses (stage 3A)
 
     % Only the even or odd optimization positions
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
         'regenerateMosaicAtStage3A', true, ...
@@ -98,29 +112,11 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
         'visualizeOptimizationGridOnTopOfMosaic', true);
 
     % Derive optimized surround pooling functions (even or odd positions) (stage 3B)
-    % Leviathan #1
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
         'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
         'regenerateMosaicAtStage3B', true, ...
         'computeSelectOptimizationPositionIndices', [1]);
-
-    % Leviathan #2
-    t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
-        'regenerateMosaicAtStage3B', true, ...
-        'computeSelectOptimizationPositionIndices', [2]);
-
-    % Crete #1
-    t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
-        'regenerateMosaicAtStage3B', true, ...
-        'computeSelectOptimizationPositionIndices', [3 4 5]);
-
-    % Crete #2
-    t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperTemporal25DegsMosaic', ...
-        'regenerateMosaicAtStage3B', true, ...
-        'computeSelectOptimizationPositionIndices', [6 7 8 9]);
 
 
 %}
@@ -439,7 +435,11 @@ end
 
 if (regenerateMosaicAtStage3A)
 	% Compute input cone mosaic STF responses
-	RGCMosaicConstructor.compute.poolingFunctionsForSurroundOptimizationGrid(...
+
+    
+    
+    
+    RGCMosaicConstructor.compute.poolingFunctionsForSurroundOptimizationGrid(...
  		pStruct.whichEye, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicSizeDegs, ...

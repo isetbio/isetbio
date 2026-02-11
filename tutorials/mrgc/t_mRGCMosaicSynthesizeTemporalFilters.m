@@ -21,6 +21,8 @@ function t_mRGCMosaicSynthesizeTemporalFilters(options)
 % Examples:
 %{
 
+    % ETTBSkip
+
     examinedTemporalFrequencies = [1.4 2 3 4 6 8 12 16 24 32];
     
 
