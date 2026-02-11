@@ -141,7 +141,7 @@ arguments
     options.validationConeFundamentalsOptimizedForStimPosition (1,1) logical = true;
 
     % STF analysis params
-    options.analyzedSTFsliceOrientation = [];   
+    options.analyzedSTFsliceOrientation = nan;   
     % Option 1: nan.  A random orientation for each cell
     % Using this option may simulate the experimental conditions of Croner&Kaplan as, 
     % according to NPC's correspondense with Lisa Croner (email-June 11, 2024), 
@@ -170,7 +170,7 @@ arguments
 
     % 4. Aggregate previously analyzed mRGC STF responses
     options.aggregatePreviouslyAnalyzedRunsFromMultipleTargetVisualSTFs (1,1) logical = false
-    options.aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities (1,1) logical = false
+    options.aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities (1,1) logical = true
 
 
 
