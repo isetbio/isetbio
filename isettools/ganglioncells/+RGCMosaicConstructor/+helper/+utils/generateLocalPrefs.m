@@ -1,7 +1,26 @@
 % RGCMosaicConstructor.helper.utils.generateLocalPrefs()
+% 
+% If your machine is not listed in the switch case below, call this function
+% with key-value pairs that specify the full paths to local
+% directories in your machine where you want the interemediate data and
+% figure PDFs to be saved, e.g.:
+% 
+%  RGCMosaicConstructor.helper.utils.generateLocalPrefs(...
+%     'intermediateDataDir', '/Users/yourName/Desktop/tmpISETBioData', ...
+%     'figurePDFsDir', '/Users/yourName/Desktop/tmpISETBioFigures');
+%
+% See https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
+% section titled ''Configuring ISETBio to access RGC resources and run RGC
+% simulations'' for more info.
+
+
 function generateLocalPrefs(varargin)
     ip = inputParser;
     ip.addParameter('useSLIMpaths', false, @islogical); % Only for OLD mosaics
+    ip.addParameter('intermediateDataDir', 'FullPathToLocalDirectoryWhereGeneratedIntermediateDataWillBeSaved'); 
+    ip.addParameter('figurePDFsDir', 'FullPathToLocalDirectoryWhereGeneratedFiguresWillBeSaved'); 
+    ip.addParameter('queryUserBeforeGeneratingMissingDir', false);
+
     % Execute the parser
     ip.parse(varargin{:});
     useSLIMpaths = ip.Results.useSLIMpaths;
@@ -46,6 +65,7 @@ function generateLocalPrefs(varargin)
             % I want the code to stop and ask me if it is OK to generate a missing directory
             queryUserBeforeGeneratingMissingDir = false;
 
+
         case 'Leviathan'
             % User on Crete (Nicolas' Linux box) 
             rgcResourcesRootDir  = localDropboxDir;
@@ -59,16 +79,11 @@ function generateLocalPrefs(varargin)
             % I want the code to stop and ask me if it is OK to generate a missing directory
             queryUserBeforeGeneratingMissingDir = false;
 
-        % Different computer names for different users here.
-        % Add the paths for your computer here
-        case 'YOUR_COMPUTER_NAME'
-            % rgcResourcesRootDir  = '...';
-            % intermediateDataDir = fullfile(rgcResourcesRootDir,'...');
-            % figurePDFsDir = fullfile(rgcResourcesRootDir, '...');
-            % queryUserBeforeGeneratingMissingDir = false;
-
         otherwise
-            error('No rgcResourcesRootDir specified for computer with name: ''%s''. Edit generateLocalPrefs.m to generate specific ', p.localHostName);
+            intermediateDataDir = ip.Results.intermediateDataDir;
+            figurePDFsDir = ip.Results.figurePDFsDir;
+            queryUserBeforeGeneratingMissingDir = ip.Results.queryUserBeforeGeneratingMissingDir;
+
     end
 
 
