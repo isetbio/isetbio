@@ -128,7 +128,13 @@ function visualizeData(theConeMosaics, theHumanOptics, visualizedFOVdegs, psfVis
         drawnow;
     end % iMosaic
 
-    NicePlot.exportFigToPDF('newformat.pdf', hFig, 300);
+    figureDir = fullfile(isetbioRootPath,'local',mfilename);
+    if (~exist(figureDir,'dir'))
+        mkdir(figureDir);
+    end
+    fprintf('Will save figures/videos into %s\n',figureDir);
+
+    NicePlot.exportFigToPDF(fullfile(figureDir,'newformat.pdf'), hFig, 300);
 end
 
 
