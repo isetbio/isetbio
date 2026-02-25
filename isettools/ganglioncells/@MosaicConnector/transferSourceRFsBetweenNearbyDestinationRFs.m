@@ -3,10 +3,12 @@ function theOptimizedDestinationRFindices = transferSourceRFsBetweenNearbyDestin
     p = inputParser;
     p.addParameter('generateProgressVideo', false, @islogical);
     p.addParameter('swapSourceRFsInsteadOffUnilateralTransfer', false, @islogical);
+    p.addParameter('figureDir', fullfile(isetbioRootPath,'local'), @ischar);
 
     p.parse(varargin{:});
-    generateProgressVideo = p.Results.generateProgressVideo;
     swapSourceRFsInsteadOffUnilateralTransfer = p.Results.swapSourceRFsInsteadOffUnilateralTransfer;
+    figureDir = p.Results.figureDir;
+    generateProgressVideo = p.Results.generateProgressVideo;
 
     if (swapSourceRFsInsteadOffUnilateralTransfer)
         maxConesNumInTargetedRGCs = obj.wiringParams.maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs;
@@ -27,12 +29,12 @@ function theOptimizedDestinationRFindices = transferSourceRFsBetweenNearbyDestin
         if (swapSourceRFsInsteadOffUnilateralTransfer)
             fprintf('Optimizing swapping of source RFs in %d-input destination RFs...\n', targetSourceRFsNum);
             minNumberOfConeInputsInDonorNearbyRGCs = [];
-            pdfFigureName = 'swapOptimization.pdf';
+            pdfFigureName = fullfile(figureDir, 'swapOptimization.pdf');
             phaseDescriptor = sprintf('swapping sourceRFs in %d input RFs',targetSourceRFsNum);
         else
             fprintf('Optimizing transfer of source RFs to %d-input destination RFs...\n', targetSourceRFsNum);
             minNumberOfConeInputsInDonorNearbyRGCs = 2 + max([targetSourceRFsNum maxConesNumInTargetedRGCs]);
-            pdfFigureName = 'transferOptimization.pdf';
+            pdfFigureName = fullfile(figureDir, 'transferOptimization.pdf');
             phaseDescriptor = sprintf('transfering sourceRFs to %d input RFs', targetSourceRFsNum);
         end
 
