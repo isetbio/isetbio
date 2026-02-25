@@ -690,6 +690,12 @@ function [RsToRcVarianceCK, intStoCsensVarianceCK, RsToRcVariance, intStoCsensVa
 
     exportVisualizationPDF = true;
 
+    %if (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities) 
+    %    theMatFile = 'Orientation_Random.mat';
+    %    save(theMatFile, 'radialTemporalEquivalentEccentricityDegsMosaic', 'RcDegsMosaic');
+    %    fprintf('Saved to %s\n', theMatFile);
+    %end
+
     % Narrow Ecc & Rc Degs Range
     RGCMosaicAnalyzer.visualize.doubleScatterPlot(figNo, ...
 		radialTemporalEquivalentEccentricityDegsMosaic, RcDegsMosaic, 'o', 6, [0.0 0.4 1], 0.02, 0.0, ...
