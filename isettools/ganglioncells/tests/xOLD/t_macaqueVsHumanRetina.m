@@ -61,21 +61,21 @@ function t_macaqueVsHumanRetina
     humanDensity = [flipud(dHuman.temporalMeridianData.coneDensityPerSquaredMM(:)); dHuman.nasalMeridianData.coneDensityPerSquaredMM(:)];
 
     % Plot cone densities as a function of  linear eccentricity
-    eccRangeMM = [-20 20]
+    eccRangeMM = [-20 20];
     coneDensityRange = [1e3 3*1e5];
     eccTicksDegs = -90:30:90;
     eccTicksMM = -20:5:20;
 
-    eccRangeMM = [-1 1]
-    coneDensityRange = [1e4 3*1e5];
-    eccTicksDegs = -90:1:90;
-    eccTicksMM = -20:0.2:20;
+   % eccRangeMM = [-1 1]
+   % coneDensityRange = [1e4 3*1e5];
+   % eccTicksDegs = -90:1:90;
+   % eccTicksMM = -20:0.2:20;
 
-    eccRangeDegs = eccRangeMM*1000/micronsPerDegreeInMacaqueRetina
+    eccRangeDegs = eccRangeMM*1000/micronsPerDegreeInMacaqueRetina;
 
     % Prepare figure and axes
     hFig = figure(1); clf;
-    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    ff = PublicationReadyPlotLib.figureComponents('1x1 double width figure');
     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
     ax = theAxes{1,1};
 
@@ -95,13 +95,20 @@ function t_macaqueVsHumanRetina
     xtickangle(ax, 0)
     % Finalize figure using the Publication-Ready format
     PublicationReadyPlotLib.applyFormat(ax,ff);
-    NicePlot.exportFigToPDF('ecc_mms.pdf',hFig,  300);
+
+    figureDir = fullfile(isetbioRootPath,'local',mfilename);
+    if (~exist(figureDir,'dir'))
+        mkdir(figureDir);
+    end
+    fprintf('Will save figures/videos into %s\n',figureDir);
+
+    NicePlot.exportFigToPDF(fullfile(figureDir,'ecc_mms.pdf'),hFig,  300);
 
     % Plot cone densities as a function of angular eccentricity
 
     % Prepare figure and axes
     hFig = figure(2); clf;
-    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    ff = PublicationReadyPlotLib.figureComponents('1x1 double width figure');
     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
     ax = theAxes{1,1};
 
@@ -120,6 +127,6 @@ function t_macaqueVsHumanRetina
     xtickangle(ax, 0)
     % Finalize figure using the Publication-Ready format
     PublicationReadyPlotLib.applyFormat(ax,ff);
-    NicePlot.exportFigToPDF('ecc_degs.pdf',hFig,  300);
+    NicePlot.exportFigToPDF(fullfile(figureDir,'ecc_degs.pdf'),hFig,  300);
 
 end

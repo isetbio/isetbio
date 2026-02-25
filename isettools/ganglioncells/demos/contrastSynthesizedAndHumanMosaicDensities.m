@@ -4,7 +4,7 @@
 %
 % Usage:
 %{
-    t_testPositionLatticeVisualization    
+    contrastSynthesizedAndHumanMosaicDensities    
 %}
 
 
@@ -67,6 +67,13 @@ else
     load(sprintf('%s.mat', fName), 'theRFpositionsDegs', 'theRFpositionsMicrons', 'theRFspacingMicrons');
 end
 
+
+figureDir = fullfile(isetbioRootPath,'local',mfilename);
+if (~exist(figureDir,'dir'))
+        mkdir(figureDir);
+end
+fprintf('Will save figures/videos into %s\n',figureDir);
+
 showDensityOnTopOfPositions = false;
 
 if (~showDensityOnTopOfPositions)
@@ -89,7 +96,7 @@ if (~showDensityOnTopOfPositions)
     visualizedRFindices = theROI.indicesOfPointsInside(theRFpositionsDegs);
     plotMosaicPatch(100, neuronType, sprintf('%s_Ecc_%2.0fdegs', fName, centerDegs(1)), ...
         centerDegs, widthDegs, heightDegs, ...
-        theRFpositionsDegs(visualizedRFindices,:));
+        theRFpositionsDegs(visualizedRFindices,:), figureDir);
 
 
     % Depict mosaic at 0 degs
@@ -110,7 +117,7 @@ if (~showDensityOnTopOfPositions)
     visualizedRFindices = theROI.indicesOfPointsInside(theRFpositionsDegs);
     plotMosaicPatch(101, neuronType, sprintf('%s_Ecc_%2.0fdegs', fName, centerDegs(1)), ...
         centerDegs, widthDegs, heightDegs, ...
-        theRFpositionsDegs(visualizedRFindices,:));
+        theRFpositionsDegs(visualizedRFindices,:), figureDir);
 
 
 end
@@ -169,7 +176,7 @@ if (compute2DdensityMap)
     PublicationReadyPlotLib.applyFormat(ax,ff);
    
     drawnow;
-    NicePlot.exportFigToPDF('densityMap.pdf', hFig, 300);
+    NicePlot.exportFigToPDF(fullfile(figureDir, 'densityMap.pdf'), hFig, 300);
 
 end
 
@@ -290,12 +297,12 @@ if (~recomputePositions)
         ylabel(ax, 'eccentricity,y (degs)', 'FontAngle', 'italic')
         drawnow;
        
-        NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
+        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s.pdf', fName)), hFig, 300);
     else
         plotDensities(iter*10+1, maxRadialEccDegs, fName, neuronType, ...
             xPos, densities*factorToMatchWatsonISETBioPeakConeDensity, ...
             theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
-            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina);
+            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina, figureDir);
     end
 end
 
@@ -336,17 +343,19 @@ if (~recomputePositions)
         xlabel(ax, 'eccentricity, x (degs)', 'FontAngle', 'italic')
         ylabel(ax, 'eccentricity,y (degs)', 'FontAngle', 'italic')
         drawnow;
-        NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
+        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s.pdf', fName)), hFig, 300);
 
     else
 
         plotDensities(iter*10+2, maxRadialEccDegs, fName, neuronType, ...
             xPos, densities*factorToMatchWatsonISETBioPeakConeDensity, ...
             theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
-            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina);
+            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina, figureDir);
     end
 end
 
+
+if (1==2)
 maxRadialEccDegs = 10;
 fName = sprintf('%ddegField_%s_iter_%d', 2*maxRadialEccDegs,neuronType, iter);
 
@@ -383,12 +392,12 @@ if (~recomputePositions)
         xlabel(ax, 'eccentricity, x (degs)', 'FontAngle', 'italic')
         ylabel(ax, 'eccentricity,y (degs)', 'FontAngle', 'italic')
         drawnow;
-        NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
+        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s.pdf', fName)), hFig, 300);
     else
         plotDensities(iter*10+3, maxRadialEccDegs, fName, neuronType, ...
             xPos, densities*factorToMatchWatsonISETBioPeakConeDensity, ...
             theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
-            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina);
+            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina, figureDir);
     end
 end
 
@@ -427,20 +436,24 @@ if (~recomputePositions)
         axis(ax,'square'); axis(ax, 'equal'); 
         xlabel(ax, 'eccentricity, x (degs)', 'FontAngle', 'italic')
         ylabel(ax, 'eccentricity,y (degs)', 'FontAngle', 'italic')
-        NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
+        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s.pdf', fName)), hFig, 300);
         drawnow;
     else
          plotDensities(iter*10+4, maxRadialEccDegs, fName, neuronType, ...
             xPos, densities*factorToMatchWatsonISETBioPeakConeDensity, ...
             theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
-            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina);
+            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina, figureDir);
     end
 
 end
 
+end
+
+
 maxRadialEccDegs = 2.5;
 fName = sprintf('%ddegField_%s_iter_%d', 2*maxRadialEccDegs,neuronType, iter);
 
+recomputePositions = ~true;
 if (recomputePositions)
     removeOverlappingPositions = ~true;
     [theRFpositionsMicrons, theRFspacingMicrons] = ...
@@ -474,12 +487,12 @@ if (~recomputePositions)
         xlabel(ax, 'eccentricity, x (degs)', 'FontAngle', 'italic')
         ylabel(ax, 'eccentricity,y (degs)', 'FontAngle', 'italic')
         drawnow;
-        NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
+        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s.pdf', fName)), hFig, 300);
     else
         plotDensities(iter*10+5, maxRadialEccDegs, fName, neuronType, ...
             xPos, densities*factorToMatchWatsonISETBioPeakConeDensity, ...
             theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
-            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina);
+            theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina, figureDir);
     end
 end
 
@@ -500,8 +513,9 @@ function [theRFpositionsMicrons, theRFspacingsMicrons] = cropPositions(theRFposi
     end
 end
 
+
 function plotMosaicPatch(figNo, neuronType, fName, centerDegs, ...
-    widthDegs, heightDegs, theRFpositionsDegs)
+    widthDegs, heightDegs, theRFpositionsDegs, figureDir)
 
     switch (neuronType)
         case 'cones'
@@ -556,28 +570,18 @@ function plotMosaicPatch(figNo, neuronType, fName, centerDegs, ...
     PublicationReadyPlotLib.applyFormat(ax,ff);
     %PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
     drawnow;
-    NicePlot.exportFigToPDF(sprintf('%sLattice.pdf', fName), hFig, 300);
+    NicePlot.exportFigToPDF(fullfile(figureDir, sprintf('%sLattice.pdf', fName)), hFig, 300);
         
 
 end
 
 
-function plot2DdensityMap(figNo)
-
-    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
-    hFig = figure(figNo); clf;
-    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-    ax = theAxes{1,1};
-
-        
-    
-end
 
 
 function  plotDensities(figNo, maxRadialEccDegs, fName, neuronType, ...
         xPos, achievedDensities, ...
         theoreticalNasalRetinaEccDegs, theoreticalDensityNasalRetina, ...
-        theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina)
+        theoreticalTemporalRetinaEccDegs, theoreticalDensityTemporalRetina, figureDir)
 
   
     ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
@@ -631,17 +635,17 @@ function  plotDensities(figNo, maxRadialEccDegs, fName, neuronType, ...
 
 
     hold(ax, 'on');
-    %p1 = scatter(ax, xPos, achievedDensities, 6^2, ...
-    %    'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor, ...
-    %    'MarkerFaceAlpha', MarkerFaceAlpha, 'MarkerEdgeAlpha', MarkerEdgeAlpha);
+    p1 = scatter(ax, xPos, achievedDensities, 6^2, ...
+        'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor, ...
+        'MarkerFaceAlpha', MarkerFaceAlpha, 'MarkerEdgeAlpha', MarkerEdgeAlpha);
 
-    p1 = plot(ax, xPos, achievedDensities, '.', 'MarkerSize', 12, ...
-        'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor);
+    %p1 = plot(ax, xPos, achievedDensities, '.', 'MarkerSize', 16, ...
+    %    'MarkerFaceColor', MarkerFaceColor, 'MarkerEdgeColor', MarkerEdgeColor);
 
-    p2 = plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'k-', 'LineWidth', 1.5);
-    %plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'w--', 'LineWidth', 1.5);
-    plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'k-', 'LineWidth', 1.5);
-    %plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'w--', 'LineWidth', 1.5);
+    p2 = plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'k-', 'LineWidth', 2);
+    plot(ax, theoreticalNasalRetinaEccDegs(idxNasal), theoreticalDensityNasalRetina(idxNasal), 'w--', 'LineWidth', 2);
+    plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'k-', 'LineWidth', 2);
+    plot(ax, theoreticalTemporalRetinaEccDegs(idxTemporal), theoreticalDensityTemporalRetina(idxTemporal), 'w--', 'LineWidth', 2);
     XLims = maxRadialEccDegs*[-1 1]; 
     YLims = [0 17500];
 
@@ -662,7 +666,7 @@ function  plotDensities(figNo, maxRadialEccDegs, fName, neuronType, ...
     PublicationReadyPlotLib.applyFormat(ax,ff);
     PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
     drawnow;
-    NicePlot.exportFigToPDF(sprintf('%s.pdf', fName), hFig, 300);
+    NicePlot.exportFigToPDF(fullfile(figureDir, sprintf('%s.pdf', fName)), hFig, 300);
     
 end
 
