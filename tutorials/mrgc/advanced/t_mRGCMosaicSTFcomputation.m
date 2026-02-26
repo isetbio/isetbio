@@ -136,6 +136,12 @@ arguments
     options.displayLuminanceHeadroomPercentage (1,1) double = 5/100;
     options.coneFundamentalsOptimizedForStimPosition (1,1) logical = false;
 
+    % Photocurrent (full biophysical model) params
+    options.photocurrentParams (1,1) = struct(...
+        'osBiophysicalModelWarmUpTimeSeconds',  1.0, ...
+        'osBiophysicalModelTemporalResolutionSeconds',  1e-5, ...
+        'temporalResolutionSeconds',  5/1000);
+
     % Nonlinearities
     options.mRGCNonLinearityParamsStruct = [];
 
@@ -149,11 +155,13 @@ arguments
     options.visualizeConeExcitationVsPhotocurrentSTFs (1,1) logical = false;
 
     % ---- Choices of actions to perform ----
-    % Whether to compute the input cone mosaic STF responses
     options.computeInputConeMosaicResponses (1,1) logical = false;
-    options.computeInputConeMosaicResponsesBasedOnConeExcitations (1,1) logical = true;
-    options.computeInputConeMosaicResponsesBasedOnPhotocurrents (1,1) logical = true;
 
+    % Whether to compute the cone excitations-based input cone mosaic STF responses
+    options.computeInputConeMosaicResponsesBasedOnConeExcitations (1,1) logical = true;
+
+    % Whether to compute the photocurrents-based input cone mosaic STF responses
+    options.computeInputConeMosaicResponsesBasedOnPhotocurrents (1,1) logical = true;
 
     % Whether to inspect the input cone mosaic STF responses
     options.inspectInputConeMosaicResponses (1,1) logical = false;
@@ -198,6 +206,8 @@ displayType = options.displayType;
 displayLuminanceHeadroomPercentage = options.displayLuminanceHeadroomPercentage;
 coneFundamentalsOptimizedForStimPosition = options.coneFundamentalsOptimizedForStimPosition;
 
+% Photocurrent params
+photocurrentParams = options.photocurrentParams;
 
 % Nonlinearities
 mRGCNonLinearityParamsStruct = options.mRGCNonLinearityParamsStruct;
@@ -268,11 +278,14 @@ theAnalyzedSTFsFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWith
 
 if (~isempty(mRGCNonLinearityParamsStruct))
     theInputConeMosaicSTFResponsesFullFileName = ...
-        strrep(theInputConeMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
+        strrep(theInputConeMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.label));
     theMRGCMosaicSTFResponsesFullFileName = ...
-        strrep(theMRGCMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
+        strrep(theMRGCMosaicSTFResponsesFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.label));
     theAnalyzedSTFsFullFileName = ...
-        strrep(theAnalyzedSTFsFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.type));
+        strrep(theAnalyzedSTFsFullFileName, '.mat', sprintf('%s.mat', mRGCNonLinearityParamsStruct.label));
+    nonLinearitiesList = mRGCNonLinearityParamsStruct.nonLinearitiesList;
+else
+    nonLinearitiesList = {};
 end
 
 
@@ -314,6 +327,7 @@ if (computeInputConeMosaicResponses || inspectInputConeMosaicResponses || comput
         inspectInputConeMosaicResponses = false;
     end
 
+    
     RGCMosaicAnalyzer.compute.mosaicSTFsForStimulusChromaticityAndOptics(...
         theMRGCmosaic, theOptics, ...
         STFmeanLuminanceCdM2, ...
@@ -328,7 +342,8 @@ if (computeInputConeMosaicResponses || inspectInputConeMosaicResponses || comput
         'displayType', displayType, ...
         'displayLuminanceHeadroomPercentage', displayLuminanceHeadroomPercentage, ...
         'customTemporalFrequencyAndContrast', customTemporalFrequencyAndContrast, ...
-        'mRGCNonLinearityParams', mRGCNonLinearityParamsStruct, ...
+        'nonLinearitiesList', nonLinearitiesList, ...
+        'photocurrentParams', photocurrentParams, ...
         'debugInputConeMosaicPcurrentResponse', debugInputConeMosaicPcurrentResponse, ...
         'spatialPhaseIncrementDegs', spatialPhaseIncrementDegs, ...
         'orientationDeltaDegs', STForientationDeltaDegs, ...

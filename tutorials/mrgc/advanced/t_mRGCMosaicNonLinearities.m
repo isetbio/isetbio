@@ -63,8 +63,8 @@ function t_mRGCMosaicNonLinearities(options)
             'n', 2.0, ...                           % exponent
             's', 1.4, ...                           % super-saturation exponent (super-saturating if s > 1)
             'bias', 0.0, ...                        % bias (in normalized range, based on the passed maxLinearResponse)
-            'c50', 0.05, ...                         % semi-saturation response (in normalized range, based on the passed maxLinearResponse)
-            'gain', 0.05, ...                        % post-non-linearity gain
+            'c50', 0.05, ...                        % semi-saturation response (in normalized range, based on the passed maxLinearResponse)
+            'gain', 0.05, ...                       % post-non-linearity gain
             'maxLinearResponse', 50.0) ...          % max absolute value that the linear photocurrent-based response can have (clipping after that)
         );
 
@@ -167,6 +167,12 @@ arguments
     options.orientationsDegs (1,1) double = 0;
     options.spatialFrequencyCPD (1,1) double = 3.0;
 
+    % Photocurrent (full biophysical model) params
+    options.photocurrentParams (1,1) = struct(...
+        'osBiophysicalModelWarmUpTimeSeconds',  1.0, ...
+        'osBiophysicalModelTemporalResolutionSeconds',  1e-5, ...
+        'temporalResolutionSeconds',  5/1000);
+
     % Nonlinearities
     options.coneExcitationsBasedNonLinearityParamsStruct = [];
     options.photocurrentsBasedNonLinearityParamsStruct = [];
@@ -217,6 +223,9 @@ temporalFrequencyHz = options.temporalFrequencyHz;
 spatialPhaseIncrementDegs = options.spatialPhaseIncrementDegs;
 orientationsDegs = options.orientationsDegs;
 spatialFrequencyCPD = options.spatialFrequencyCPD;
+
+% Photocurrent params
+photocurrentParams = options.photocurrentParams;
 
 % Nonlinearities
 coneExcitationsBasedNonLinearityParamsStruct = options.coneExcitationsBasedNonLinearityParamsStruct;
@@ -269,6 +278,7 @@ fprintf('Will save figures/videos into %s\n',figureDir);
     spatialPhaseIncrementDegs, temporalFrequencyHz, ...
     prebakedMRGCMosaicFilename, intermediateDataDir, subDir, figureDir, ...
     opticsForResponses, theOI, thePSFatTheMosaicEccentricity, ...
+    photocurrentParams, ...
     theMRGCmosaic, ...
     coneExcitationsBasedNonLinearityParamsStruct, ...
     photocurrentsBasedNonLinearityParamsStruct, ...
@@ -289,6 +299,7 @@ function [theInputConeMosaicResponsesFullFileName, theMRGCMosaicResponsesFullFil
     spatialPhaseIncrementDegs, temporalFrequencyHz, ...
     prebakedMRGCMosaicFilename, intermediateDataDir, subDir, figureDir, ...
     opticsForResponses, theOI, thePSFatTheMosaicEccentricity, ...
+    photocurrentParams, ...
     theMRGCmosaic, ...
     coneExcitationsBasedMRGCNonLinearityParamsStruct, ...
     photocurrentsBasedMRGCNonLinearityParamsStruct, ...
@@ -377,11 +388,6 @@ function [theInputConeMosaicResponsesFullFileName, theMRGCMosaicResponsesFullFil
     end
 
     if (computeInputConeMosaicResponses) && (computeInputConeMosaicResponsesBasedOnPhotocurrents)
-
-        photocurrentParams.osBiophysicalModelWarmUpTimeSeconds = 1.0;
-        photocurrentParams.osBiophysicalModelTemporalResolutionSeconds = 1e-5;
-        photocurrentParams.temporalResolutionSeconds =  5/1000;
-
         computeInputConeMosaicPhotocurrentResponse(theInputConeMosaicResponsesFullFileName, photocurrentParams);
     end
 
@@ -490,7 +496,7 @@ function computeAllMRGCMosaicResponses(theInputConeMosaicResponsesFullFileName, 
         % Extract single period responses
         dToriginal = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(2)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1);
         dT = temporalSupportSeconds(2)-temporalSupportSeconds(1);
-        tOneStimulusCycle = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(end)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1)
+        tOneStimulusCycle = theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(end)-theMRGCmosaicExcitationBasedResponsesSinglePeriod.temporalSupportSeconds(1);
         idx = find(temporalSupportSeconds >= temporalSupportSeconds(end)-(tOneStimulusCycle+0.5*dToriginal-dT));
 
         temporalSupportSeconds = temporalSupportSeconds(idx);
@@ -700,7 +706,7 @@ function computeInputConeMosaicPhotocurrentResponse(theInputConeMosaicResponsesF
     % Compute # of warm up periods
     stimulusPeriodDuration = 1/stimParams.temporalFrequencyHz;
 
-    nWarmUpPeriods = ceil(photocurrentParams.osBiophysicalModelWarmUpTimeSeconds/stimulusPeriodDuration);
+    nWarmUpPeriods = max([1 ceil(photocurrentParams.osBiophysicalModelWarmUpTimeSeconds/stimulusPeriodDuration)]);
 
     debugInputConeMosaicPcurrentResponse = false;
     plotTitle = 'debug';
