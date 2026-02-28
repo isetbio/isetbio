@@ -23,6 +23,24 @@ function lcaDiopters = treeShrewLCA(measuredWavelength, thisWavelength)
 % History:
 %   08/xx/22  ncp  Wrote it.
 
+% Examples:
+%{
+    measuredWavelength = 550;
+    w = 400:10:840;
+    for ii = 1:length(w)
+        lcaDioptersHumanThibos(ii) = wvfLCAFromWavelengthDifference(measuredWavelength, w(ii), 'thibosPaper');
+        lcaDioptersTreeShrew(ii) = treeShrewLCA(measuredWavelength, w(ii));
+    end
+
+    vcNewGraphWin; hold on
+    plot(w, lcaDioptersHumanThibos, 'r-', 'LineWidth', 4);
+    plot(w, lcaDioptersTreeShrew, '--g','LineWidth', 3);
+    legend({'human (Thibos)', 'ThreeShrew'})
+    xlabel('Wave (nm)');
+    ylabel('Diopters');
+
+%}
+
 
     threeShrewPowerFromRoordaExcelFile = [ ...
         400	236.600886; ...
