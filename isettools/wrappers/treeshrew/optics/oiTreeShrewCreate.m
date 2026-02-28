@@ -9,21 +9,15 @@ function oi = oiTreeShrewCreate(varargin)
 %
 % History:
 %    11/23/18  NPC  ISETBIO TEAM, 2018
+%    02/28/26  NPC  Updated for ISETBio/ISETcam
 %
 % Examples:
 %{
-    % ETTBSkip
-    % This is currently broken because we never updated after the big 2024 
-    % ISETBio/ISETCam consilidation.
 
     % Default TreeShrew model
     oi = oiTreeShrewCreate();
 %}
 %{
-    % ETTBSkip
-    % This is currently broken because we never updated after the big 2024 
-    % ISETBio/ISETCam consilidation.
-
     % Custom tree shew optics where we specify the sigma of the PSF
     oi = oiTreeShrewCreate(...
         'inFocusPSFsigmaMicrons', 40 ... % 40 microns

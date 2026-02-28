@@ -52,6 +52,7 @@ function optics = opticsTreeShrewCreate(varargin)
 %
 %   08/06/22  dhb, eem  Finish up updating Zernikes for Sadjak et al.
 %                       paper.
+%   02/28/26  NPC       Updated for ISETBio/ISETcam
 
 % Get the default tree-shrew optics params
 defaultParams = opticsTreeShrewDefaultParams();
@@ -102,7 +103,7 @@ switch lower(opticsType)
             maxSF, deltaSF, wavelengthSupport);
     case {'wvf'}
         optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, measuredWavelength, ...
-            micronsPerDegree, spatialSamples, psfSamplesPerMinute);
+            micronsPerDegree, spatialSamples, psfSamplesPerMinute, focalLengthMeters);
     otherwise
         error('Unknown optics type: ''%s''.', opticsType)
 end % switch lower(opticsType)
@@ -127,7 +128,7 @@ end
 
 function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, ...
     wavelengthSupport, measuredWavelength, micronsPerDegree, spatialSamples, ...
-    psfSamplesPerMinute)
+    psfSamplesPerMinute, focalLengthMeters)
 
     % Reference: "Noninvasive imaging of the tree shrew eye: Wavefront
     % analysis and retinal imaging with correlative histology", Sajdak et
@@ -152,8 +153,9 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, ...
         'calc wavelengths', wavelengthSupport, ...
         'zcoeffs', zCoeffs_TreeShrew, ...
         'name', sprintf('treeshrew-%d', pupilDiameterMM), ...
-        'umPerDegree', micronsPerDegree, ...
-        'lcamethod', @treeShrewLCA);
+        'lcamethod', @treeShrewLCA, ...
+        'flipPSFUpsideDown', false, ...
+        'rotatePSF90degs', false);
 
     % Check pupil diameter OK and then set
     if (pupilDiameterMM > measuredDiameterMM_TreeShrew)
@@ -163,13 +165,12 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, ...
     wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMM);
     wvfP = wvfSet(wvfP, 'ref psf sample interval', psfSamplesPerMinute);
     
+    wvfP = wvfSet(wvfP, 'focal length', focalLengthMeters);
+    wvfP = wvfSet(wvfP, 'umperdegree', micronsPerDegree);
 
     % Compute the PSF using the wavefront code.
-    %
-    % @Nicolas
-    % How does custom lca interact with the new compute function?
     wvfP = wvfCompute(wvfP);
-    
+
     % Create the corresponding optics object
     optics = oiGet(wvf2oi(wvfP), 'optics');
 
