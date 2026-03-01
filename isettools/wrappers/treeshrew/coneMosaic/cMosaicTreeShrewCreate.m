@@ -11,7 +11,7 @@ function theConeMosaic = cMosaicTreeShrewCreate(varargin)
 %    02/28/26  NPC  Rewrote it for isetbio/isetcam.
 
     p = inputParser;
-    p.addParameter('fovDegs', [2 1], @isnumeric);
+    p.addParameter('sizeDegs', [2 1], @isnumeric);
     p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
     % Parse input
     p.parse(varargin{:});
@@ -26,7 +26,7 @@ function theConeMosaic = cMosaicTreeShrewCreate(varargin)
     % Generate cone positions and cone types for a regular hex lattice
     [coneLocationsMicrons, coneApertureDiametersMicrons, ...
         coneTypes, micronsPerDegree] = ...
-        generateComponents(p.Results.fovDegs);
+        generateComponents(p.Results.sizeDegs);
 
     % Generate struct with custom cone data
     theConeDataStruct = struct(...
