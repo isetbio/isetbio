@@ -23,7 +23,9 @@ function theConeMosaic = cMosaicTreeShrewCreate(varargin)
     % Generate a treeshrew @Macula object for the three shrew
     theMacularPigment = macularPigmentTreeShrewCreate(thePhotopigment.wave);
 
-    [coneLocationsMicrons, coneApertureDiametersMicrons, coneTypes, micronsPerDegree] = ...
+    % Generate cone positions and cone types for a regular hex lattice
+    [coneLocationsMicrons, coneApertureDiametersMicrons, ...
+        coneTypes, micronsPerDegree] = ...
         generateComponents(p.Results.fovDegs);
 
     % Generate struct with custom cone data
@@ -75,7 +77,7 @@ function [coneLocationsMicrons, coneApertureDiametersMicrons, coneTypes, microns
 
     coneTypes = coneTypes(idx);
     coneLocationsMicrons = coneLocationsMicrons(idx,:); 
-    coneApertureDiametersMicrons = coneApertureDiametersMicrons(idx)
+    coneApertureDiametersMicrons = coneApertureDiametersMicrons(idx);
 end
 
 
