@@ -66,7 +66,7 @@ p.addParameter('focalLengthMM', defaultParams.focalLengthMM, @isnumeric);
 p.addParameter('pupilDiameterMM', defaultParams.pupilDiameterMM, @isnumeric);
 p.addParameter('wavelengthSupport', 400:10:700, @isnumeric);
 p.addParameter('measuredWavelength',550, @isnumeric);
-p.addParameter('spatialSamples', 801, @isnumeric);
+p.addParameter('spatialSamples', 1301, @isnumeric);
 p.addParameter('psfSamplesPerMinute', 0.05, @isnumeric);
 p.addParameter('maxSF', 20.0, @isnumeric);
 p.addParameter('deltaSF', 0.1, @isnumeric);
