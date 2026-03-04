@@ -82,7 +82,12 @@ function d = generateCustomDisplay(varargin)
     d = displaySet(d, 'ambient spd', p.Results.ambientSPDWattsPerSteradianM2NanoMeter);
     
     
-    lineColors = brewermap(10, 'spectral');
+   % lineColors = brewermap(10, 'spectral');
+
+    lineColors = [...
+        1 0.3 0.4;
+        0.2 0.8 0.4;
+        0.4 0.5 1.0];
 
     if (p.Results.plotCharacteristics)
 
@@ -98,13 +103,16 @@ function d = generateCustomDisplay(varargin)
             axSPD = p.Results.visualizationAxes{1};
         end
 
+        cla(axSPD);
+
         faceColor = lineColors(1,:);
         makeShadedPlot(w, spd(:,1)*1e3, faceColor, faceColor*0.5, axSPD);
 
+        
         hold(axSPD, 'on');
-        faceColor = lineColors(7,:);
+        faceColor = lineColors(2,:);
         makeShadedPlot(w, spd(:,2)*1e3, faceColor, faceColor*0.5, axSPD);
-        faceColor = lineColors(10,:);
+        faceColor = lineColors(3,:);
         makeShadedPlot(w, spd(:,3)*1e3, faceColor, faceColor*0.5, axSPD);
         stairs(axSPD,w, ambientSPD*1e3, 'k--', 'LineWidth', 1.5);
         maxSPD  = max(spd(:)*1e3);
@@ -132,6 +140,7 @@ function d = generateCustomDisplay(varargin)
         grid(axSPD,'on');
         box(axSPD, 'on');
         xtickangle(axSPD,0);
+        hold(axSPD, 'off');
 
         colors = [1 0 0; 0 1 0; 0 0 1];
         for k = 1:3
