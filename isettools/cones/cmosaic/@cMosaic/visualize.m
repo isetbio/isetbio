@@ -129,6 +129,7 @@ p.addParameter('withsuperimposedrgbopticalimagespatialsupportmicrons', [], @isnu
 
 p.addParameter('withsuperimposedpsf', [], @(x)(isempty(x) || isstruct(x)));
 p.addParameter('withsuperimposedpsfcontourlinecolor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+p.addParameter('withsuperimposedpsfcolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 
 p.addParameter('activation', []);
 p.addParameter('activationrange', [],@(x)((isempty(x))||(numel(x)==2)));
@@ -168,6 +169,7 @@ p.addParameter('figurebackgroundcolor', [1 1 1], @(x)( (ischar(x)&&((strcmp(x,'n
 p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x) || iscell(x)));
 p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
 p.addParameter('plottitlefontsize', 16, @isscalar);
+p.addParameter('plottitlefontweight', 'normal', @ischar);
 p.addParameter('textdisplay', '',@(x)(isempty(x) || ischar(x)));
 p.addParameter('textdisplaycolor', [], @isnumeric);
 
@@ -194,6 +196,7 @@ superimposedRGBopticalImage = p.Results.withsuperimposedrgbopticalimage;
 superimposedRGBopticalImageAlpha = p.Results.withsuperimposedrgbopticalimagealpha;
 superimposedPSF = p.Results.withsuperimposedpsf;
 superimposedPSFcontourLineColor = p.Results.withsuperimposedpsfcontourlinecolor;
+superimposedPSFcolorMap = p.Results.withsuperimposedpsfcolormap;
 activation = p.Results.activation;
 activationRange = p.Results.activationrange;
 currentEMposition = p.Results.currentemposition;
@@ -218,6 +221,7 @@ displayedEyeMovementData = p.Results.displayedeyemovementdata;
 fontSize  = p.Results.fontsize;
 colorbarFontSize  = p.Results.colorbarfontsize;
 cMap = p.Results.activationcolormap;
+
 verticalColorBar  = p.Results.verticalactivationcolorbar;
 colorbarTickLabelColor = p.Results.colorbarticklabelcolor;
 horizontalColorBar = p.Results.horizontalactivationcolorbar;
@@ -233,6 +237,7 @@ figureBackgroundColor = p.Results.figurebackgroundcolor;
 plotTitle  = p.Results.plottitle;
 plotTitleColor = p.Results.plottitlecolor;
 plotTitleFontSize = p.Results.plottitlefontsize;
+plotTitleFontWeight = p.Results.plottitlefontweight;
 
 textDisplay    = p.Results.textdisplay;
 textDisplayColor = p.Results.textdisplaycolor;
@@ -805,7 +810,7 @@ end
 
 % Superimpose an optical PSF
 if (~isempty(superimposedPSF))
-    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, cMap, superimposedPSFcontourLineColor);
+    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, superimposedPSFcolorMap, superimposedPSFcontourLineColor);
 end
 
 hold(axesHandle, 'off');
@@ -1020,7 +1025,9 @@ end
 
 % User can set plotTitle to false, empty or a character string.
 if (iscell(plotTitle) || ~isempty(plotTitle))
-    title(axesHandle, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+    title(axesHandle, plotTitle, 'Color', plotTitleColor, ...
+        'FontSize', plotTitleFontSize, ...
+        'FontWeight', plotTitleFontWeight);
 else
     if (numel(obj.coneDensities) == 4)
         title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
@@ -1028,13 +1035,17 @@ else
             100*obj.coneDensities(2), ...
             100*obj.coneDensities(3), ...
             100*obj.coneDensities(4), ...
-            conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+            conesNum), 'Color', plotTitleColor, ...
+            'FontSize', plotTitleFontSize, ...
+            'FontWeight', plotTitleFontWeight);
     else
         title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
             100*obj.coneDensities(1), ...
             100*obj.coneDensities(2), ...
             100*obj.coneDensities(3), ...
-            conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+            conesNum), 'Color', plotTitleColor, ...
+            'FontSize', plotTitleFontSize, ...
+            'FontWeight', plotTitleFontWeight);
     end
 end
 
