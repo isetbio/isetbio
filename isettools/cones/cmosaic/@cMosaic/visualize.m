@@ -351,10 +351,12 @@ end
 
 
 %% Set figure size
-if (isempty(figureHandle))
+if (isempty(figureHandle)) && (isempty(axesHandle))
     figureHandle = figure(); clf;
     set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
     axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
+elseif (isempty(figureHandle)) && (~isempty(axesHandle))
+    % do nothing, we will draw the the passed axesHandle
 else
     if (isempty(axesHandle))
         figure(figureHandle);
