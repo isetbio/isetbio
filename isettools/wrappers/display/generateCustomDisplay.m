@@ -149,17 +149,19 @@ function d = generateCustomDisplay(varargin)
             else
                 axRGBgunLUT = p.Results.visualizationAxes{k+1};
             end
-
-            theGamma = displayGet(d, 'gamma');
-            plot(axRGBgunLUT, (1:size(theGamma,1))/size(theGamma,1), theGamma(:,k), 'r-', 'Color', colors(k,:), 'LineWidth', 1.5);
-            set(axRGBgunLUT, 'XLim', [0 1], 'XTick', 0:0.2:1, 'YLim', [0 1], 'YTick', 0:0.2:1, 'FontSize', 14);
-            xlabel(axRGBgunLUT, 'settings value');
-            if (k == 1) || (~isempty(p.Results.visualizationAxes))
-                ylabel(axRGBgunLUT, 'primary value');
+            if (~isempty(axRGBgunLUT))
+                theGamma = displayGet(d, 'gamma');
+                plot(axRGBgunLUT, (1:size(theGamma,1))/size(theGamma,1), theGamma(:,k), 'r-', 'Color', colors(k,:), 'LineWidth', 1.5);
+                set(axRGBgunLUT, 'XLim', [0 1], 'XTick', 0:0.2:1, 'YLim', [0 1], 'YTick', 0:0.2:1, 'FontSize', 14);
+                xlabel(axRGBgunLUT, 'settings value');
+                if (k == 1) || (~isempty(p.Results.visualizationAxes))
+                    ylabel(axRGBgunLUT, 'primary value');
+                end
+                axis(axRGBgunLUT, 'square');
+                grid(axRGBgunLUT, 'on');
+                xtickangle(axRGBgunLUT, 0);
             end
-            axis(axRGBgunLUT, 'square');
-            grid(axRGBgunLUT, 'on');
-            xtickangle(axRGBgunLUT, 0);
+
         end
     end
     
