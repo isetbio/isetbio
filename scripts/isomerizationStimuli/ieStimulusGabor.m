@@ -1,6 +1,10 @@
 function iStim = ieStimulusGabor(varargin)
 % Creates a movie/dynamic of the cone absorptions of a drifting Gabor patch 
 % 
+% DHB: 2026-03-07. This is a function and should not really be in the scripts directory.
+% Adding UTTBSkip so it isn't run by the autovalidation.
+% UTTBSkip
+%
 %    ieStimulusGabor(varargin)
 %
 % The Gabor image is created with an equal photon spectral power

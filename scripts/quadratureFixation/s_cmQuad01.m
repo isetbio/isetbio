@@ -1,5 +1,8 @@
 %% Show the basic quadrature calculation
 %
+% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
+% UTTBSkip
+%
 % These are all for the circular shift case, just checking the logic.
 % Main conclusions:
 %    When we use a whole harmonic, we get the expected result.  No

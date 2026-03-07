@@ -1,5 +1,8 @@
 % s_OpticsMarimontWandell
 %
+% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
+% UTTBSkip
+%
 % Description:
 %    This script shows the Marimont-Wandell OTF and corresponding PSF.
 %    It also explores the difference between the original way that

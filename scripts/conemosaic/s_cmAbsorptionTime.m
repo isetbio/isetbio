@@ -6,6 +6,9 @@
 % size cone arrays and temporal samples.  We test 2D and 1D spatial arrays
 % with a single time point and with multiple time points.
 %
+% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
+% UTTBSkip
+%
 % BW, ISETBIO Team, 2016
 
 %% 

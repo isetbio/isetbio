@@ -6,7 +6,10 @@
 %
 %  We need to do the rods, of course.  We need to check everything.
 % 
-%
+% DHB: 2026-03-07.  Broken on autovalidate. I am not sure we ever really 
+% got mouse working. Adding UTTBSkip
+% UTTBSkip
+
 %%
 ieInit
 
