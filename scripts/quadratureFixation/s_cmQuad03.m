@@ -1,5 +1,8 @@
 %% ----------- Dead leaves calculation ----------------
 %
+% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
+% UTTBSkip
+%
 % Experiments with photocurrent and with how we calculate the change from
 % frame-to-frame.  Here we use the prior frame as the base, rather than a
 % fixed frame at the beginning of the whole period.

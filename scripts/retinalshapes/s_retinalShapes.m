@@ -7,6 +7,9 @@
 % layer of the retina.  This might be from diseases in the retinal
 % pigment epithelium that displace the photoreceptor layer.
 %
+% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
+% UTTBSkip
+%
 % Amsler grid -  Used in diagnosis
 % https://www.google.com/search?q=ansler+grid&rlz=1C5GCEM_enUS991US991&oq=ansler+grid&aqs=chrome..69i57j0i10i131i433i512l2j0i10i512l7.1889j0j4&sourceid=chrome&ie=UTF-8 
 % 

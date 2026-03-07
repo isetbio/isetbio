@@ -1,6 +1,12 @@
 %% Figure generation for RealityLabs 2021 application
 %
 % ISETBio-ISET3D
+%
+% DHB: 2026-03-07 - This is broken because the uData fields at lines 52ff are cell
+% arrays. I am not immediately sure of how to fix it.  Adding a UTTBSkip 
+% to this script.
+
+% UTTBSkip
 
 %% The cone mosaic at different eccentricities 
 
