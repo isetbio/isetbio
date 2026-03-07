@@ -887,12 +887,6 @@ else
     end
 end
 
-% Finalize plot
-xtickangle(axesHandle, 0);
-set(axesHandle, 'Color', backgroundColor);
-axis(axesHandle, 'xy');
-axis(axesHandle, 'equal');
-set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontangle);
 
 if (~isempty(densityColorMap)) && (densityContourOverlay)
     colormap(axesHandle, densityColorMap);
@@ -1058,6 +1052,14 @@ if (~isempty(textDisplay))
     text(axesHandle, xRange(1)+dx, yRange(1)+dy, textDisplay, ...
         'FontSize', 16, 'Color', textDisplayColor, 'BackgroundColor', backgroundColor);
 end
+
+% Finalize plot
+xtickangle(axesHandle, 0);
+set(axesHandle, 'Color', backgroundColor);
+axis(axesHandle, 'xy');
+axis(axesHandle, 'equal');
+set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontangle);
+
 
 drawnow;
 end

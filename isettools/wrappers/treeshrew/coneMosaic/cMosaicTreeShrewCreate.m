@@ -13,6 +13,7 @@ function theConeMosaic = cMosaicTreeShrewCreate(varargin)
     p = inputParser;
     p.addParameter('sizeDegs', [2 1], @isnumeric);
     p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
+    p.addParameter('relativeSconeDensity', [], @(x)((isempty(x))||(isscalar(x)&&(x<=1)&&(x>=0))));
     % Parse input
     p.parse(varargin{:});
 
@@ -26,7 +27,7 @@ function theConeMosaic = cMosaicTreeShrewCreate(varargin)
     % Generate cone positions and cone types for a regular hex lattice
     [coneLocationsMicrons, coneApertureDiametersMicrons, ...
         coneTypes, micronsPerDegree] = ...
-        generateComponents(p.Results.sizeDegs);
+        generateComponents(p.Results.sizeDegs,  p.Results.relativeSconeDensity);
 
     % Generate struct with custom cone data
     theConeDataStruct = struct(...
@@ -35,6 +36,8 @@ function theConeMosaic = cMosaicTreeShrewCreate(varargin)
         'types', coneTypes,...
         'lightGatheringApertureDiameters', coneApertureDiametersMicrons ...                      
         );
+
+    
 
     % Generate a @cMosaic object 
     theConeMosaic = cMosaic(...
@@ -48,11 +51,17 @@ end
 
 
 function [coneLocationsMicrons, coneApertureDiametersMicrons, coneTypes, micronsPerDegree] = ...
-    generateComponents(mosaicFovDegs)
+    generateComponents(mosaicFovDegs, relativeSconeDensity)
 
     mosaicSizeDegs = max(mosaicFovDegs(:));
 
     defaultParams = coneMosaicTreeShrewDefaultParams();
+
+    if (~isempty(relativeSconeDensity))
+        coneDensities = [1-relativeSconeDensity 0 relativeSconeDensity];
+    else
+        coneDensities = defaultParams.coneDensities;
+    end
 
     theOI = oiTreeShrewCreate('pupilDiameterMM', 2.0);
     micronsPerDegree = theOI.optics.micronsPerDegree;
@@ -68,7 +77,7 @@ function [coneLocationsMicrons, coneApertureDiametersMicrons, coneTypes, microns
     coneRFspacingsDegs = ones(1, conesNum) * defaultParams.centralRetinaConeSpacingMicrons/micronsPerDegree;
     coneApertureDiametersMicrons = ones(1, conesNum)*defaultParams.innerSegmentDiameterMicrons;
 
-    coneTypes = assignConeTypes(defaultParams.coneDensities, coneRFpositionsDegs, coneRFspacingsDegs);
+    coneTypes = assignConeTypes(coneDensities, coneRFpositionsDegs, coneRFspacingsDegs);
 
 
     idx = find(...
@@ -90,6 +99,13 @@ function conePositionsMicrons = generateLatticeOfConePositions(mosaicRadiusMicro
     cols = rows;
     
     conePositionsMicrons = generateRegularHexGrid(rows, cols, lambdaMicrons);
+
+    idx = find(...
+        (abs(conePositionsMicrons(:,1)) <= mosaicRadiusMicrons) & ...
+        (abs(conePositionsMicrons(:,2)) <= mosaicRadiusMicrons) ...
+        );
+
+    conePositionsMicrons = conePositionsMicrons(idx,:);
 end
 
 
@@ -125,11 +141,8 @@ end
 
 function coneTypes = assignConeTypes(coneDensities, coneRFpositionsDegs, coneRFspacingsDegs)
 
-
     coneDensities = coneDensities / sum(coneDensities);
-    
-    conesNum = size(coneRFpositionsDegs,1);
-    
+    conesNum = size(coneRFpositionsDegs,1);   
     desiredSconesNum = round(coneDensities(cMosaic.SCONE_ID)*conesNum);
 
     allConeIndices = 1:conesNum;
@@ -223,7 +236,10 @@ function LMconeIndices = determineLMconeIndices(conePositions, coneSpacings, des
     
     % Go through all cones assigning as S-cones those that are no closer
     % than coneSpacingsMicrons(coneIndex)*relativeSconeSpacing from each other
-    coneIndex = 1;
+
+    % Start with the cone at the very center
+    [~,coneIndex] = min(ecc(:));
+    coneIndex = 20;
     LMconeIndices = [];
     SconeIndices = [];
     remainingConeIndices = 1:conesNum;
