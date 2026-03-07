@@ -27,6 +27,11 @@ function iStim = ieStimulusMovieCMosaic(movieInput,varargin)
 %  Returns the same 
 %   iStim = ieStimulusMovie(iStim.params);
 %   iStim.cMosaic.window;
+%
+% DHB: 2026-03-07.  This is a function and probably should not be under
+% scripts. But in any case, adding UTTBSkip so it isn't run by the
+% autovalidation code.
+% UTTBSkip
 
 % 10/2016 JRG (c) isetbio team
 %
