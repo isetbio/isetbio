@@ -32,6 +32,8 @@ function oi = oiTreeShrewCreate(varargin)
     oi = oiSet(oi, 'diffuser method', 'skip');
     oi = oiSet(oi, 'consistency', 1);
     
+    oi = oiSet(oi,'compute method','opticsotf');
+
     % TreeShrew lens absorption.  For ISETCam integration, need to 
     % remove transmittance field first, which we do by brute force.
     if checkfields(oi.optics, 'transmittance')
