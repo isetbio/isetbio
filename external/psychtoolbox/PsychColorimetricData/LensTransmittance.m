@@ -9,8 +9,8 @@ function [lensTransmit,lensDensity] = LensTransmittance(S,species,source,ageInYe
 % Allowable sources:
 %   StockmanSharpe (Default) - Stockman, Sharpe, & Fach (1999).
 %   CIE                      - Formula from CIE 170-1:2006.
-%   WyszeckiStiles           - W&S, Table 1(2.4.6), p. 109.  First data set in table.
-%   None                     - Unity transmittance.
+%   WyszeckiStiles    - W&S, Table 1(2.4.6), p. 109.  First data set in table.
+%   None                    - Unity transmittance.
 %
 % The answer is returned in a row vector.  This function
 % depends on data contained in directory

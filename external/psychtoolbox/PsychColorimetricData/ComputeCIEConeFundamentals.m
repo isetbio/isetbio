@@ -100,6 +100,12 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 %                                     in line 216 of ComputeRawConeFundamentals if params.DORODS is true.
 %    adjIndDiffParams.absorbance - Photopigment absorbance as given in line 188 of ComputeRawConeFundamentals
 %    adjIndDiffParams.absorptance - Photopigment absorptance as given in line 230 of ComputeRawConeFundamentals
+%    adjIndDiffParams.photopigmentQuantalEfficiency - Photopigment quantal efficiency as passed to ComptuteRawConeFundamentals.
+%                                     We have this here in staticParams,
+%                                     but useful to have in adjIndDiffParams as
+%                                     well, sometimes.
+%   adjIndDiffParams.ISdiameter - Inner segment diameter estimate (in microns), taken from
+%                                    FillInPhotoreceptors return structure.
 %
 % For both adjIndDiffParams.mac and adjIndDiffParams.lens, the wavelength
 % spacing is the same as in the S input variable of this function.
@@ -290,6 +296,7 @@ end
 % See comment in ComputeRawConeFundamentals about the fact that
 % we ought to unify this routine and what FillInPhotoreceptors does.
 [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations,adjIndDiffParams] = ComputeRawConeFundamentals(params,staticParams);
+adjIndDiffParams.ISdiameter = photoreceptors.ISdiameter.value;
 
 %% A little reality check.
 %

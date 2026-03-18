@@ -87,6 +87,7 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % 2/26/16  dhb, ms  Add in Asano et al. (2016) individual observer adjustments
 % 3/30/17  ms   Added output argument returning adjusted ind differences
 % 6/4/18   ms   Included absorbance spectrum into adjusted ind diff output arg
+% 7/25/25  dhb  Return photopigment quantal efficiency in adjIndDiffParams structure.
 
 % Handle bad value
 index = find(params.axialDensity <= 0.0001);
@@ -147,7 +148,7 @@ end
 % as to lead to transmittances greater than 1, and throw error if so.
 if (OLDLENSWAY)
     fprintf('Using old way of adjusting lens density.  Consider switching to newer implementation via the params.indDiffParams field\n');
-    lens = 10.^-(-log10(staticParams.lensTransmittance)+params.extraLens);
+    lensTr = 10.^-(-log10(staticParams.lensTransmittance)+params.extraLens);
 else
     lens = 10.^-(-log10(staticParams.lensTransmittance) * (1 + params.extraLens));
 end
@@ -254,6 +255,7 @@ else
 end
 
 %% Normalize to max of one for each receptor, and also compute isomerization quantal efficiency.
+adjIndDiffParams.photopigmentQuantalEfficiency = staticParams.quantalEfficiency;
 for i = 1:size(T_quantalAbsorptions,1)
     T_quantalIsomerizations = T_quantalAbsorptions*staticParams.quantalEfficiency(i);
     T_quantalAbsorptionsNormalized(i,:) = T_quantalAbsorptions(i,:)/max(T_quantalAbsorptions(i,:));
