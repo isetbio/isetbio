@@ -1,4 +1,4 @@
-function [photocurrentDifferentialResponse, photocurrentResponseTimeAxis, thePcurrentBackgroundResponseTransient] = ...
+function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport, thePcurrentBackgroundResponseTransient] = ...
     photocurrentFromConeExcitationRateUsingBiophysicalOSmodel(...
         theConeRadialEccentricityDegs, ...
         theConeExcitationRateResponse, ...
@@ -56,10 +56,9 @@ function [photocurrentDifferentialResponse, photocurrentResponseTimeAxis, thePcu
 
     % Set up the time intepolation
     upSampleFactor = floor(theConeIntegrationTimeSeconds / osTimeStepSeconds);
-    theOSphotocurrentResponseTimeBinsNum = nTimeBins * upSampleFactor - 1;
-
+    theOSphotocurrentResponseTimeBinsNum = (nTimeBins-1) * upSampleFactor;
     theOSphotoCurrentResponseTimeAxis = (0:(theOSphotocurrentResponseTimeBinsNum-1))*osTimeStepSeconds;
-    photocurrentResponseTimeAxis = 0 : theReturnedPhotocurrentTimeResolutionSeconds : theOSphotoCurrentResponseTimeAxis(end);
+
 
     % The background stimulus (flat)
     backgroundConeExcitationRate = ones(1, 1, theOSphotocurrentResponseTimeBinsNum) * theConeBackgroundExcitationRate;
@@ -79,13 +78,9 @@ function [photocurrentDifferentialResponse, photocurrentResponseTimeAxis, thePcu
     [theOSphotoCurrentResponse, theState] = os.osAdaptTemporal(backgroundConeExcitationRate);
     os.setModelState(theState);
 
-    % Downsample to theReturnedPhotocurrentTimeResolutionSeconds
-    thePcurrentBackgroundResponseTransient = qinterp1(...
-        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTimeAxis,1);
-
+    
     % 2. STIMULUS
     % Upsample theConeExcitationRateResponse to the os.timeStep timebase
-   
     theConeExcitationRateResponse = qinterp1(theConeExcitationRateTimeAxis, theConeExcitationRateResponse, theOSphotoCurrentResponseTimeAxis, 0);
     theConeExcitationRateResponse = reshape(theConeExcitationRateResponse, [1 1 numel(theConeExcitationRateResponse)]);
 
@@ -93,9 +88,16 @@ function [photocurrentDifferentialResponse, photocurrentResponseTimeAxis, thePcu
     [theOSphotoCurrentResponse, theState] = os.osAdaptTemporal(theConeExcitationRateResponse);
     os.setModelState(theState);
     
-    % Downsample to the theReturnedPhotocurrentTimeResolutionSeconds
+
+    % Compute the returned photocurrent temporal support 
+    photocurrentResponseTemporalSupport = 0 : theReturnedPhotocurrentTimeResolutionSeconds : theOSphotoCurrentResponseTimeAxis(end);
+
+    % Downsample to theReturnedPhotocurrentTimeResolutionSeconds
+    thePcurrentBackgroundResponseTransient = qinterp1(...
+        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTemporalSupport, 1);
+
     thePcurrentResponse = qinterp1(...
-        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTimeAxis,1);
+        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTemporalSupport, 1);
 
     % 3. DIFFERENTIAL PHOTOCURRENT RESPONSE
     % Substract thePcurrentBackgroundResponseTransient  from thePcurrentResponse
