@@ -57,11 +57,11 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
     set(hFig, 'Position', [10 10 1150 500], 'Color', [1 1 1])
 
     if (all(stimParams.coneContrasts == [1 0 0]))
-        stimulusChroma = 'L-isolating'
+        stimulusChroma = 'L-isolating';
     elseif (all(stimParams.coneContrasts == [0 1 0]))
-        stimulusChroma = 'M-isolating'
+        stimulusChroma = 'M-isolating';
     elseif (all(stimParams.coneContrasts == [1 1 1]))
-        stimulusChroma = 'achromatic'
+        stimulusChroma = 'achromatic';
     else
         error('Unknown stimulus chromaticity: %2.1f %2.1f %2.1f', ...
                 stimParams.coneContrasts(1), stimParams.coneContrasts(2), stimParams.coneContrasts(3));
@@ -154,11 +154,16 @@ function [theConeExcitationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
         targetedRadialEccentricityRange, ...
         targetedCenterPurityRange);
 
-    fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum)
-    examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))]
-    examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))]
-    examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))]
+    fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum);
+    examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))];
+    examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))];
+    examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))];
     examinedSurroundConePurityRange   = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
+    fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum);
+    fprintf('\n centerConePurityRange: %2.2f - %2.2f\n', examinedCenterConePurityRange(1), examinedCenterConePurityRange(2));
+    fprintf('\n centerConePurityRange: %2.0f - %2.0f\n', examinedCenterConeNumerosityRange(1), examinedCenterConeNumerosityRange(2));
+    fprintf('\n centerConeDominanceRange: %2.2f - %2.2f\n', examinedCenterConeDominanceRange(1), examinedCenterConeDominanceRange(2));
+    fprintf('\n surroundConePurityRange: %2.2f - %2.2f\n', examinedSurroundConePurityRange(1), examinedSurroundConePurityRange(2));
     fprintf('\n\n');
 
     % Sort cells according to their center cone numerosity
@@ -201,9 +206,13 @@ function [theConeExcitationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                     stimParams.temporalFrequencyHz, ...
                     false);
 
+                [min(theExcitationResponses(:)) max(theExcitationResponses(:))]
                  % Allow zero mean of the pCurrent responses before fitting the sinusoid
                 thePCurrentResponses = squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex));
-                theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2);
+                [min(thePCurrentResponses(:)) max(thePCurrentResponses(:))]
+
+                theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2)
+                pause
                 thePCurrentResponses = bsxfun(@minus, thePCurrentResponses, theMeanPhotoCurrentResponsesAcrossEachTimeCourse);
 
                 [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
@@ -213,6 +222,8 @@ function [theConeExcitationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                     stimParams.temporalFrequencyHz, ...
                     visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses);
 
+               
+                pause
                 excitationsSTF = squeeze(theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
                 photocurrentsSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
 
@@ -307,8 +318,8 @@ function [theConeExcitationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
             set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
 
             for iOri = 1:orientationsNum
-                excitationsSTF = squeeze(theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
-                photocurrentsSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
+                excitationsSTF = squeeze(theExcitationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :))
+                photocurrentsSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :))
 
                 ax = subplot(1,orientationsNum,iOri);
                 [p1,peakSFindex1] = max(excitationsSTF);
@@ -319,7 +330,7 @@ function [theConeExcitationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                     peakSFindex = peakSFindex2;
                 end
 
-                factorToMatchLowSFs = excitationsSTF(peakSFindex)/photocurrentsSTF(peakSFindex);
+                factorToMatchLowSFs = excitationsSTF(peakSFindex)/photocurrentsSTF(peakSFindex)
                 plot(ax, stimParams.spatialFrequencyCPD, excitationsSTF, 'ko-', 'LineWidth', 1.5, 'MarkerSize', 12);
                 hold(ax, 'on');
                 plot(ax, stimParams.spatialFrequencyCPD, photocurrentsSTF*factorToMatchLowSFs, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 12);

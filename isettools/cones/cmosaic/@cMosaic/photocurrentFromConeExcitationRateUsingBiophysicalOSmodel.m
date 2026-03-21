@@ -75,7 +75,7 @@ function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport,
     os.setModelState(theState);
 
     % Compute full photocurrent model to the background cone excitation rate (transient)
-    [theOSphotoCurrentResponse, theState] = os.osAdaptTemporal(backgroundConeExcitationRate);
+    [theOSphotoCurrentResponseTransient, theState] = os.osAdaptTemporal(backgroundConeExcitationRate);
     os.setModelState(theState);
 
     
@@ -94,7 +94,7 @@ function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport,
 
     % Downsample to theReturnedPhotocurrentTimeResolutionSeconds
     thePcurrentBackgroundResponseTransient = qinterp1(...
-        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTemporalSupport, 1);
+        theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponseTransient), photocurrentResponseTemporalSupport, 1);
 
     thePcurrentResponse = qinterp1(...
         theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTemporalSupport, 1);

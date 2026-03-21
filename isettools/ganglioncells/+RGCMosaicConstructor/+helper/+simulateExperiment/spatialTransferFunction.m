@@ -10,7 +10,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
     p.addParameter('computeInputConeMosaicResponses', false, @islogical);
     p.addParameter('computeInputConeMosaicResponsesBasedOnConeExcitations', true, @islogical);
     p.addParameter('computeInputConeMosaicResponsesBasedOnPhotocurrents', true, @islogical);
-    p.addParameter('inspectInputConeMosaicResponses', false, @islogical);
+    p.addParameter('onlyInspectInputConeMosaicResponses', false, @islogical);
     p.addParameter('computeMRGCMosaicResponses', false, @islogical);
     p.addParameter('debugInputConeMosaicPcurrentResponse', false, @islogical);
     p.addParameter('visualizeResponse', false, @islogical);
@@ -26,7 +26,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
     computeInputConeMosaicResponses = p.Results.computeInputConeMosaicResponses;
     computeInputConeMosaicResponsesBasedOnConeExcitations = p.Results.computeInputConeMosaicResponsesBasedOnConeExcitations;
     computeInputConeMosaicResponsesBasedOnPhotocurrents = p.Results.computeInputConeMosaicResponsesBasedOnPhotocurrents;
-    inspectInputConeMosaicResponses = p.Results.inspectInputConeMosaicResponses;
+    onlyInspectInputConeMosaicResponses = p.Results.onlyInspectInputConeMosaicResponses;
     computeMRGCMosaicResponses = p.Results.computeMRGCMosaicResponses;
     nonLinearitiesList = p.Results.nonLinearitiesList;
     photocurrentParams = p.Results.photocurrentParams;
@@ -87,7 +87,7 @@ function spatialTransferFunction(theMRGCMosaic, theOI, ...
             theMRGCMosaicSTFResponsesFullFileName, ...
             visualizeResponse, ...
             nonLinearitiesList, ...
-            inspectInputConeMosaicResponses);
+            onlyInspectInputConeMosaicResponses);
     end
 end
 
