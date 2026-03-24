@@ -18,10 +18,10 @@ function coneExcitationsVsPhotocurrentsSTF(...
 
 
     p = inputParser;
-    p.addParameter('exportPDF', false, @islogical);
+    p.addParameter('exportPDFdirectory', '', @(x)(isempty(x)||ischar(x)));
     % Execute the parser
     p.parse(varargin{:});
-    exportPDF = p.Results.exportPDF;
+    exportPDFdirectory = p.Results.exportPDFdirectory;
 
     x = [];
     y = [];
@@ -62,7 +62,7 @@ function coneExcitationsVsPhotocurrentsSTF(...
     set(hFig, 'Position', [10 10 2250 850], 'Color', [1 1 1]);
 
 
-    % Plot the cone modulation response time-series
+    % Cone modulation based mRGC response time-series
     ax = subplot(2,5,[1 6]);
     theYLims = maxConeModulationResponses * [-1 1];
     hold (ax, 'on');
@@ -87,11 +87,11 @@ function coneExcitationsVsPhotocurrentsSTF(...
     set(ax, 'FontSize', 16, 'Ylim', theYLims, 'XLim', [0 theConeModulationsBasedResponseTemporalSupportSeconds(end)]);
     xlabel('time (seconds)');
     ylabel('mRGC response');
-    title(ax, sprintf('cone modulations\n(zero phase)'));
+    title(ax, sprintf('cone modulations-based mRGC responses\n(zero phase)'));
 
 
 
-    % Plot the photocurrent response time-series
+    % Photocurrent based mRGC response time-series
     ax = subplot(2,5,[2 7]);
     theYLims = maxPhotocurrentResponses * [-1 1];
     hold (ax, 'on');
@@ -122,44 +122,48 @@ function coneExcitationsVsPhotocurrentsSTF(...
     set(ax, 'FontSize', 16, 'Ylim', theYLims, 'XLim', [0 theConeModulationsBasedResponseTemporalSupportSeconds(end)]);
     xlabel('time (seconds)');
     ylabel('mRGC response');
-    title(ax, sprintf('photocurrents\n(phase aligned with cone modulations)'));
+    title(ax, sprintf('photocurrents-based mRGC responses\n(phase aligned with cone modulations)'));
 
 
-    % Plot the cone-based STFs for the examined orientations
+    % Cone-based STFs for the examined orientations
     ax = subplot(2,5,4);
     hold(ax,'on')
     theLegends = cell(1,numel(stimParams.orientationDegs));
 
     oriColors = brewermap(numel(stimParams.orientationDegs), 'RdBu');
+
     for iORI = 1:numel(stimParams.orientationDegs)
         plot(stimParams.spatialFrequencyCPD, squeeze(theConeModulationsBasedSTFamplitudeSpectra(iORI,:)), ...
-            '-', 'Color', squeeze(oriColors(iORI,:)), 'LineWidth', 1.5);
+            'o-', 'Color', squeeze(oriColors(iORI,:)), 'LineWidth', 1.5, ...
+            'MarkerSize', 12, 'MarkerFaceColor', squeeze(oriColors(iORI,:)), 'MarkerEdgeColor', 0.5*squeeze(oriColors(iORI,:)));
         theLegends{iORI} = sprintf('%d degs', stimParams.orientationDegs(iORI));
     end
     set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30]);
     grid(ax, 'on');
-    legend(ax, theLegends, 'Location', 'NorthEast');
+    legend(ax, theLegends, 'Location', 'SouthWest');
     set(ax, 'FontSize', 16)
     xlabel('spatial frequency (c/deg)');
     ylabel('STF');
-    title(ax, 'cone modulations');
+    title(ax, 'cone modulations - based STFs');
 
 
-    % Plot the photocurrents-based STFs for the examined orientations
+    % Photocurrents-based STFs for the examined orientations
     ax = subplot(2,5,5);
     hold(ax,'on')
     for iORI = 1:numel(stimParams.orientationDegs)
         plot(stimParams.spatialFrequencyCPD, squeeze(thePhotocurrentsBasedSTFamplitudeSpectra(iORI,:)), ...
-            '-', 'Color', squeeze(oriColors(iORI,:)), 'LineWidth', 1.5);
+            'o-', 'Color', squeeze(oriColors(iORI,:)), 'LineWidth', 1.5, ...
+            'MarkerSize', 12, 'MarkerFaceColor', squeeze(oriColors(iORI,:)), 'MarkerEdgeColor', 0.5*squeeze(oriColors(iORI,:)));
     end
     set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30]);
     grid(ax, 'on');
-    legend(ax, theLegends, 'Location', 'NorthEast');
+    legend(ax, theLegends, 'Location', 'SouthWest');
     set(ax, 'FontSize', 16)
     xlabel('spatial frequency (c/deg)');
-    title(ax, 'photocurrents');
+    title(ax, 'photocurrents - based STFs');
 
 
+    % 2D STF for cone modulations
     ax = subplot(2,5,9);
     imagesc(ax, xx,yy,coneModulationsSTF2D);
     set(ax, 'XTick', [sfTicks(1) 0 sfTicks(end)], 'XTickLabel', {sfTickLabels{1}, '0', sfTickLabels{end}}, ...
@@ -167,10 +171,11 @@ function coneExcitationsVsPhotocurrentsSTF(...
     axis(ax, 'image');
     set(ax, 'CLim', [0 max(coneModulationsSTFMatrix(:))]);
     set(ax, 'FontSize', 16)
-    title(ax, 'coneModulations');
+    title(ax, 'cone modulations-based 2D STF');
     xlabel('spatial frequency (c/deg)');
     ylabel('spatial frequency (c/deg)');
 
+    % 2D STF for photocurrents
     ax = subplot(2,5,10);
     imagesc(ax, xx,yy,photocurrentsSTF2D);
     set(ax, 'XTick', [sfTicks(1) 0 sfTicks(end)], 'XTickLabel', {sfTickLabels{1}, '0', sfTickLabels{end}}, ...
@@ -178,11 +183,11 @@ function coneExcitationsVsPhotocurrentsSTF(...
     axis(ax, 'image');
     set(ax, 'CLim', [0 max(photocurrentsSTFMatrix(:))]); 
     set(ax, 'FontSize', 16)
-    title(ax, 'photocurrents')
+    title(ax, 'photocurrents-based 2D STF')
     xlabel('spatial frequency (c/deg)');
     
 
-
+    % Plotocurrent - based mRGC response time series (zero phase)
     ax = subplot(2,5,3);
     theYLims = max(abs(thePhotocurrentsBasedResponses(:))) * [-1 1];
 
@@ -226,7 +231,7 @@ function coneExcitationsVsPhotocurrentsSTF(...
     set(ax, 'FontSize', 16, 'Ylim', theYLims, 'XLim', [0 theConeModulationsBasedResponseTemporalSupportSeconds(end)]);
     xlabel('time (seconds)');
     ylabel('mRGC response');
-    title(ax, sprintf('photocurrents\n(zero phase)'));
+    title(ax, sprintf('photocurrents-based mRGC responses\n(zero phase)'));
 
 
     ax = subplot(2,5,8);
@@ -238,7 +243,15 @@ function coneExcitationsVsPhotocurrentsSTF(...
     plot(ax, allConeModulationsResponses(:), allPhotocurrentResponses(:), 'k.');
     grid(ax, 'on')
     axis(ax, 'square')
-    set(ax, 'FontSize', 16, 'Ylim', theYLims, 'XLim', theXLims);
+    if (maxPhotocurrentResponses <= 20)
+        yTicks = -20:5:20;
+    elseif (maxPhotocurrentResponses <= 40)
+        yTicks = -40:10:40;
+    else
+        yTicks = -100:20:100;
+    end
+
+    set(ax, 'FontSize', 16, 'Ylim', theYLims, 'XLim', theXLims, 'XTick', -1:0.2:1, 'YTick', yTicks);
     xlabel('cone modulations based');
     ylabel('photocurrents based');
     title(ax, 'photocurrent non-linearity');
@@ -246,11 +259,16 @@ function coneExcitationsVsPhotocurrentsSTF(...
 
     drawnow;
 
-    if (exportPDF)
+    if (~isempty(exportPDFdirectory))
         theFilename = sprintf('RGC_%d_nominalC_%2.0f%%_%2.0fCDM2_%2.1fHz.pdf', ...
             theRGCindex, stimParams.contrast*100, stimParams.backgroundLuminanceCdM2, stimParams.temporalFrequencyHz);
 
-        NicePlot.exportFigToPDF(theFilename, hFig, 300);
+        % Generate figure dir if it does not exist
+        theScriptName = strrep(exportPDFdirectory, ISETBioPaperAndGrantCodeRootDirectory, '');
+        theScriptName = strrep(theScriptName, '/','');
+        theFiguresDir = ISETBioPaperAndGrantCodeFigureDirForScript(theScriptName);
+
+        NicePlot.exportFigToPDF(fullfile(theFiguresDir,theFilename), hFig, 300);
     end
 
 
