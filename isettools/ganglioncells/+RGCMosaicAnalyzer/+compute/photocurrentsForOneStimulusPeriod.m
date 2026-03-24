@@ -215,12 +215,13 @@ backgroundConeExcitationRate = mean(theConeExcitationsRatePeriodic);
 
 backgroundPhotocurrent = thePcurrentBackgroundResponseTransient(end);
 
+
 if (onlyKeepResponseDuringLastStimulusPeriod)
     % Only keep pCurrent response during the last stimulus period
     dToriginal = temporalSupportSeconds(2)-temporalSupportSeconds(1);
     dT = photocurrentPeriodicResponseTimeAxis(2)-photocurrentPeriodicResponseTimeAxis(1);
-    tOneStimulusCycle = temporalSupportSeconds(end)-temporalSupportSeconds(1);
-    idx = find(photocurrentPeriodicResponseTimeAxis >= photocurrentPeriodicResponseTimeAxis(end)-(tOneStimulusCycle+0.5*dToriginal-dT));
+    tOneStimulusCycle = temporalSupportSeconds(end)-temporalSupportSeconds(1)+dT;
+    idx = find(photocurrentPeriodicResponseTimeAxis >= photocurrentPeriodicResponseTimeAxis(end)-(tOneStimulusCycle+0.5*dToriginal+dT));
 
     theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse(idx);
     temporalSupportPhotocurrent = photocurrentPeriodicResponseTimeAxis(idx);
@@ -233,4 +234,5 @@ end
 % Time support starts at 0 msec
 temporalSupportPhotocurrent = temporalSupportPhotocurrent - temporalSupportPhotocurrent(1);
 temporalSupportPhotocurrent = temporalSupportPhotocurrent';
+
 end

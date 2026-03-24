@@ -100,7 +100,7 @@ function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport,
         theOSphotoCurrentResponseTimeAxis, squeeze(theOSphotoCurrentResponse), photocurrentResponseTemporalSupport, 1);
 
     % 3. DIFFERENTIAL PHOTOCURRENT RESPONSE
-    % Substract thePcurrentBackgroundResponseTransient  from thePcurrentResponse
+    % Substract thePcurrentBackgroundResponseTransient from thePcurrentResponse
     % to compute the differential pCurrent response
     photocurrentDifferentialResponse = thePcurrentResponse - thePcurrentBackgroundResponseTransient;
 end
