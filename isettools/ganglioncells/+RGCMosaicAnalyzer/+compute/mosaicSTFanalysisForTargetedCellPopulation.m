@@ -33,7 +33,8 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
             'theMRGCMosaicResponseTemporalSupportSeconds');
     end
 
-    
+    allowNonZeroMeanResponse = ~true;
+
     [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
      theConeModulationsBasedTargetSTFamplitudeSpectra , ...
      thePhotocurrentsBasedTargetSTFamplitudeSpectra, ...
@@ -46,6 +47,7 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
         theMRGCMosaicResponseTemporalSupportSeconds, ...
         theNoiseFreeSpatioTemporalMRGCMosaicPcurrentBasedResponses2DSTF, ...
         theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds, ...
+        allowNonZeroMeanResponse, ...
         targetedCenterPurityRange, ...
         targetedCenterConeNumerosityRange, ...
         targetedSurroundPurityRange, ...
@@ -144,6 +146,7 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
     theMRGCMosaicConeModulationsResponseTemporalSupportSeconds, ...
     theMRGCMosaicPhotocurrentBasedResponses, ...
     theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
+    allowNonZeroMeanResponse, ...
     targetedCenterPurityRange, ...
     targetedCenterConeNumerosityRange, ...
     targetedSurroundPurityRange, ...
@@ -205,26 +208,25 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                 theConeModulationResponses = squeeze(theMRGCMosaicConeModulationsBasedResponses(iOri, :, :, theRGCindex));
 
                 [theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
-                 theConeModulationsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+                 theConeModulationsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFspectra(...
                     theMRGCMosaicConeModulationsResponseTemporalSupportSeconds, ...
                     theConeModulationResponses, ...
                     stimParams.temporalFrequencyHz, ...
-                    false);
+                    allowNonZeroMeanResponse, ...
+                    visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses);
 
-                [min(theConeModulationResponses(:)) max(theConeModulationResponses(:))]
-                 % Allow zero mean of the pCurrent responses before fitting the sinusoid
-                thePCurrentResponses = squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex));
-                [min(thePCurrentResponses(:)) max(thePCurrentResponses(:))]
-
-                theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2)
                 pause
+                % Remove mean of the pCurrent responses before fitting the sinusoid
+                thePCurrentResponses = squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex));
+                theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2);
                 thePCurrentResponses = bsxfun(@minus, thePCurrentResponses, theMeanPhotoCurrentResponsesAcrossEachTimeCourse);
 
                 [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
-                 thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+                 thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFspectra(...
                     theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
                     thePCurrentResponses, ...
                     stimParams.temporalFrequencyHz, ...
+                    allowNonZeroMeanResponse, ...
                     visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses);
 
                
@@ -250,10 +252,11 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                 theConeModulationResponses = squeeze(theMRGCMosaicConeModulationsBasedResponses(iOri, :, :, theRGCindex));
 
                 [theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
-                 theConeModulationsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+                 theConeModulationsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFspectra(...
                     theMRGCMosaicConeModulationsResponseTemporalSupportSeconds, ...
                     theConeModulationResponses, ...
                     stimParams.temporalFrequencyHz, ...
+                    allowNonZeroMeanResponse, ...
                     false);
 
                 % Allow zero mean of the pCurrent responses before fitting the sinusoid
@@ -262,10 +265,11 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                 thePCurrentResponses = bsxfun(@minus, thePCurrentResponses, theMeanPhotoCurrentResponsesAcrossEachTimeCourse);
 
                 [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
-                 thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFamplitude(...
+                 thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFspectra(...
                     theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
                     thePCurrentResponses, ...
                     stimParams.temporalFrequencyHz, ...
+                    allowNonZeroMeanResponse, ...
                     visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses);
 
                 coneModulationsSTF = squeeze(theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
@@ -304,6 +308,8 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
 
         for iRGC = 1:numel(targetRGCindices)
 
+            theRGCindex = targetRGCindices(iRGC);
+
             if (all(stimParams.coneContrasts == [1 0 0]) && ...
                (theCenterConeDominances(iRGC) ~= cMosaic.LCONE_ID))
 
@@ -318,179 +324,28 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                 continue;
             end
 
-
-            
-            x = [];
-            y = [];
-            coneModulationsSTFMatrix = [];
-            photocurrentsSTFMatrix = [];
-
-            for iSF = 1:numel(stimParams.spatialFrequencyCPD)
-                for iORI = 1:numel(stimParams.orientationDegs)
-                    x(numel(x)+1) = iSF * cosd(stimParams.orientationDegs(iORI));
-                    y(numel(y)+1) = iSF * sind(stimParams.orientationDegs(iORI));
-                    coneModulationsSTFMatrix(numel(coneModulationsSTFMatrix)+1) = theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC,iORI,iSF);
-                    photocurrentsSTFMatrix(numel(photocurrentsSTFMatrix)+1) = thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iORI, iSF);
-                    x(numel(x)+1) = -x(numel(x));
-                    y(numel(y)+1) = -y(numel(y));
-                    coneModulationsSTFMatrix(numel(coneModulationsSTFMatrix)+1) = theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC,iORI,iSF);
-                    photocurrentsSTFMatrix(numel(photocurrentsSTFMatrix)+1) = thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iORI, iSF);
-                end
-            end
-
-            FconeModulations = scatteredInterpolant(x(:), y(:), coneModulationsSTFMatrix(:),'natural');
-            Fphotocurrents = scatteredInterpolant(x(:), y(:), photocurrentsSTFMatrix(:),'natural');
-
-            xx = -numel(stimParams.spatialFrequencyCPD):1:numel(stimParams.spatialFrequencyCPD);
-            sfTicks = zeros(1, numel(xx));
-            sfTickLabels = cell(1, numel(xx));
-            for ix = 1:numel(xx)
-                sfTicks(ix) = xx(ix);
-                if (xx(ix) == 0)
-                    sfTickLabels{ix} = sprintf('0');
-                elseif (xx(ix)>=1)
-                    sfTickLabels{ix} = sprintf('%2.0f', stimParams.spatialFrequencyCPD(xx(ix)));
-                else
-                    sfTickLabels{ix} = sprintf('%2.0f', -stimParams.spatialFrequencyCPD(abs(xx(ix))));
-                end
-
-            end
-
-            yy = xx;
-            [X,Y] = meshgrid(xx,yy);
-
-            coneModulationsSTF2D = FconeModulations(X(:),Y(:));
-            coneModulationsSTF2D = reshape(coneModulationsSTF2D, numel(xx), numel(yy));
-
-            photocurrentsSTF2D = Fphotocurrents(X(:),Y(:));
-            photocurrentsSTF2D = reshape(photocurrentsSTF2D, numel(xx), numel(yy));
-
-            STFmax = max([max(coneModulationsSTFMatrix(:)) max(photocurrentsSTFMatrix(:))]);
-
-            hFig = figure(1); clf;
-            set(hFig, 'Position', [10 10 1750 800], 'Color', [1 1 1]);
-
-
     
-            ax = subplot(2,4,3);
-            hold(ax,'on')
-            theLegends = cell(1,numel(stimParams.orientationDegs));
-            pHandles = [];
-            oriColors = brewermap(numel(stimParams.orientationDegs), 'RdBu');
-            for iORI = 1:numel(stimParams.orientationDegs)
-                plot(stimParams.spatialFrequencyCPD, squeeze(theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC,iORI,:)), ...
-                    '-', 'Color', squeeze(oriColors(iORI,:)), 'LineWidth', 1.5);
-                theLegends{iORI} = sprintf('%d degs', stimParams.orientationDegs(iORI));
-            end
-            legend(ax, theLegends, 'Location', 'NorthEast');
-            set(ax, 'FontSize', 16)
-            xlabel('spatial frequency (c/deg)');
-            ylabel('STF');
-            title(ax, 'cone modulations');
+            % Visualize cone modulations based and photocurrents based STFs
+            % and responses
+            RGCMosaicAnalyzer.visualize.coneExcitationsVsPhotocurrentsSTF(...
+                squeeze(theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC,:,:)), ...
+                squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC,:,:)), ...
+                squeeze(theConeModulationsBasedTargetSTFphaseSpectra(iRGC,:,:)), ...
+                squeeze(thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC,:,:)), ...
+                squeeze(theMRGCMosaicConeModulationsBasedResponses(:, :, :, theRGCindex)), ...
+                squeeze(theMRGCMosaicPhotocurrentBasedResponses(:, :, :, theRGCindex)), ...
+                theMRGCMosaicConeModulationsResponseTemporalSupportSeconds, ...
+                theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
+                stimParams, theRGCindex, ...
+                max(abs(theMRGCMosaicConeModulationsBasedResponses(:))), ...
+                max(abs(theMRGCMosaicPhotocurrentBasedResponses(:))), ...
+                'exportPDF', false);
 
-            ax = subplot(2,4,4);
-            hold(ax,'on')
-            for iORI = 1:numel(stimParams.orientationDegs)
-                plot(stimParams.spatialFrequencyCPD, squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC,iORI,:)), ...
-                        '-', 'Color', squeeze(oriColors(iORI,:)), 'LineWidth', 1.5);
-            end
-            legend(ax, theLegends, 'Location', 'NorthEast');
-            set(ax, 'FontSize', 16)
-            xlabel('spatial frequency (c/deg)');
-            ylabel('STF');
-            title(ax, 'photocurrents');
 
-            [theMRGCMosaicConeModulationsResponseTemporalSupportSeconds(1) theMRGCMosaicConeModulationsResponseTemporalSupportSeconds(end)]
-            [theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds(1) theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds(end)]
-            size(theMRGCMosaicConeModulationsBasedResponses)
-            size(theMRGCMosaicPhotocurrentBasedResponses)
-            pause
+            if (1==2)
             
-
-            % The cone modulation response time-series
-            ax = subplot(2,4,[1 5]);
-            theYLims = max(abs(theMRGCMosaicConeModulationsBasedResponses(:))) * [-1 1];
-            hold (ax, 'on');
-            for iORI = 1:numel(stimParams.orientationDegs)
-                if (iORI == 1)
-                    sfColors = brewermap(5+numel(stimParams.spatialFrequencyCPD), 'reds');
-                else
-                    sfColors = brewermap(5+numel(stimParams.spatialFrequencyCPD), 'blues');
-                end
-                for iSF = 1:numel(stimParams.spatialFrequencyCPD)
-                    theConeModulationsBasedResponse = squeeze(theMRGCMosaicConeModulationsBasedResponses(iORI, iSF, :, iRGC));
-
-                    theConeModulationsBasedResponse = phaseAlignResponse(theConeModulationsBasedResponse,...
-                        theConeModulationsBasedTargetSTFphaseSpectra(iRGC, iORI, iSF), ...
-                        theMRGCMosaicConeModulationsResponseTemporalSupportSeconds, ...
-                        stimParams, 1);
-                    plot(ax, theMRGCMosaicConeModulationsResponseTemporalSupportSeconds, theConeModulationsBasedResponse, ...
-                        '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
-                end
-            end
-            grid(ax, 'on')
-            set(ax, 'FontSize', 16, 'Ylim', theYLims, 'XLim', [0 theMRGCMosaicConeModulationsResponseTemporalSupportSeconds(end)]);
-            xlabel('time (seconds)');
-            ylabel('mRGC response');
-            title(ax, 'cone modulations');
-
-            ax = subplot(2,4,[2 6]);
-            theYLims = max(abs(theMRGCMosaicPhotocurrentBasedResponses(:))) * [-1 1];
-            hold (ax, 'on');
-            for iORI = 1:numel(stimParams.orientationDegs)
-                if (iORI == 1)
-                    sfColors = brewermap(5+numel(stimParams.spatialFrequencyCPD), 'reds');
-                else
-                    sfColors = brewermap(5+numel(stimParams.spatialFrequencyCPD), 'blues');
-                end
-                for iSF = 1:numel(stimParams.spatialFrequencyCPD)
-                    thePhotocurrentBasedResponse = squeeze(theMRGCMosaicPhotocurrentBasedResponses(iORI, iSF, :, iRGC));
-                    thePhotocurrentBasedResponse = phaseAlignResponse(thePhotocurrentBasedResponse,...
-                        thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iORI, iSF), ...
-                        theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
-                        stimParams, 0);
-                    plot(ax, theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, thePhotocurrentBasedResponse, ...
-                        '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
-                end
-            end
-            grid(ax, 'on')
-            set(ax, 'FontSize', 16, 'Ylim', theYLims, 'XLim', [0 theMRGCMosaicConeModulationsResponseTemporalSupportSeconds(end)]);
-            xlabel('time (seconds)');
-            ylabel('mRGC response');
-            title(ax, 'photocurrents');      
-
-            ax = subplot(2,4,7);
-            imagesc(ax, xx,yy,coneModulationsSTF2D);
-            set(ax, 'XTick', [sfTicks(1) 0 sfTicks(end)], 'XTickLabel', {sfTickLabels{1}, '0', sfTickLabels{end}}, ...
-                    'YTick', sfTicks, 'YTickLabel', sfTickLabels);
-            axis(ax, 'image');
-            set(ax, 'CLim', [0 STFmax]);
-            set(ax, 'FontSize', 16)
-            title(ax, 'coneModulations');
-            xlabel('spatial frequency (c/deg)');
-            ylabel('spatial frequency (c/deg)');
-
-            ax = subplot(2,4,8);
-            imagesc(ax, xx,yy,photocurrentsSTF2D);
-            set(ax, 'XTick', [sfTicks(1) 0 sfTicks(end)], 'XTickLabel', {sfTickLabels{1}, '0', sfTickLabels{end}}, ...
-                    'YTick', sfTicks', 'YTickLabel', sfTickLabels);
-            axis(ax, 'image');
-            set(ax, 'CLim', [0 STFmax]);
-            set(ax, 'FontSize', 16)
-            title(ax, 'photocurrents')
-            xlabel('spatial frequency (c/deg)');
-            ylabel('spatial frequency (c/deg)');
-
-
-            theFilename = sprintf('RGC_%d_nominalC_%2.0f%%_%2.0fCDM2_%2.1fHz.pdf', ...
-                iRGC, stimParams.contrast*100, stimParams.backgroundLuminanceCdM2, stimParams.temporalFrequencyHz);
-            
-            NicePlot.exportFigToPDF(theFilename, hFig, 300);
-
-
-
             hFig = figure(2); clf;
-            set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
+            set(hFig, 'Position', [1150 10 1100 1100], 'Color', [1 1 1]);
 
 
             for iOri = 1:orientationsNum
@@ -516,7 +371,7 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                 if (theCenterConeDominances(iRGC) == cMosaic.LCONE_ID)
                     title(ax,sprintf('%d-(L-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
                         theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri), ...
-                        theConeconeModulationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri)));
+                        theConeModulationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri)));
 
                 elseif (theCenterConeDominances(iRGC) == cMosaic.MCONE_ID)
                     title(ax,sprintf('%d-(M-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
@@ -531,51 +386,45 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
 
                 grid(ax, 'on')
             end % for iOri
+
             drawnow;
             disp('Hit enter to continue')
             pause
+            end
+
+
         end % for iRGC
     end % if (visualizeConeExcitationVsPhotocurrentSTFs)
 end
 
 
-function theResponse = phaseAlignResponse(theResponse, theResponsePhaseDegs, theTemporalSupportSeconds, stimParams, extraSamples)
 
-    sizeResponse = size(theResponse);
-    thePeriodSeconds = 1/stimParams.temporalFrequencyHz;
-    theStepPhaseDegs = 360*theTemporalSupportSeconds/thePeriodSeconds;
-    [~,theShiftAmount] = min(abs(theStepPhaseDegs-theResponsePhaseDegs));
-    if (extraSamples > 0)
-        theResponse = theResponse(1:end-extraSamples);
-    end
-    theResponse  = circshift(theResponse , -theShiftAmount);
 
-    if (extraSamples > 0)
-        theResponse = [theResponse(:);  theResponse(1:extraSamples)];
-    end
 
-    theResponse = reshape(theResponse, sizeResponse);
-end
-
-function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum] = computeSTFamplitude(...
+function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum, allFittedSFresponseTimeSeries] = computeSTFspectra(...
     temporalSupportSeconds, allSFresponseTimeSeries, temporalFrequencyHz, ...
-    visualizeSinusoidalFits)
+    allowNonZeroMeanResponse, visualizeSinusoidalFits)
+
 
     theSFsNum = size(allSFresponseTimeSeries,1);
-    theSTFamplitude = zeros(1, theSFsNum);
-    theSTFphaseDegs = zeros(1, theSFsNum);
+    theSTFamplitudeSpectrum = zeros(1, theSFsNum);
+    theSTFphaseDegsSpectrum = zeros(1, theSFsNum);
 
     if (visualizeSinusoidalFits)
         hFig = figure(100); clf;
         set(hFig, 'Position', [10 10 1800 1150])
     end
 
+    allFittedSFresponseTimeSeries = 0*allSFresponseTimeSeries;
     for iSF = 1:theSFsNum
         theResponseTimeSeries = allSFresponseTimeSeries(iSF,:);
         [theFittedSinusoid, fittedParams] = ...
             RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries(...
-            temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportSeconds);
+            temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, ...
+            temporalSupportSeconds, ...
+            'allowOffset', allowNonZeroMeanResponse);
 
+        allFittedSFresponseTimeSeries(iSF,:) = theFittedSinusoid;
         theSTFamplitudeSpectrum(iSF) = fittedParams(1);
         theSTFphaseDegsSpectrum(iSF) = fittedParams(2);
 
