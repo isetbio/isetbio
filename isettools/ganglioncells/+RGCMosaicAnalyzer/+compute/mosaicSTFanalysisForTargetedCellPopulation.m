@@ -15,9 +15,11 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
 
     p = inputParser;
     p.addParameter('exportPDFdirectory', '', @(x)(isempty(x)||ischar(x)));
+    p.addParameter('exportVideoDirectory', '', @(x)(isempty(x)||ischar(x)));
     % Execute the parser
     p.parse(varargin{:});
     exportPDFdirectory = p.Results.exportPDFdirectory;
+    exportVideoDirectory = p.Results.exportVideoDirectory;
 
     theData = who('-file', theMRGCMosaicSTFResponsesFullFileName);
     photocurrentBasedSTFsComputed = ismember('theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds', theData);
@@ -61,7 +63,8 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
         theAnalyzedSTFsFileName, ...
         visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, ...
         visualizeConeExcitationVsPhotocurrentSTFs, ...
-        exportPDFdirectory);
+        exportPDFdirectory, ...
+        exportVideoDirectory);
 
 
     hFig = figure(1000); clf;
@@ -161,7 +164,8 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
     analyzedSTFsFileName, ...
     visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, ...
     visualizeConeExcitationVsPhotocurrentSTFs, ...
-    exportPDFdirectory)
+    exportPDFdirectory, ...
+    exportVideoDirectory)
 
     % Find the RGCs with the desired target properties
     [targetRGCindices, theSurroundConePurities, theCenterConeDominances, ...
@@ -314,6 +318,23 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
 
     if (visualizeConeExcitationVsPhotocurrentSTFs)
 
+        if (~isempty(exportVideoDirectory))
+            % Generate figure dir if it does not exist
+            theScriptName = strrep(exportPDFdirectory, ISETBioPaperAndGrantCodeRootDirectory, '');
+            theScriptName = strrep(theScriptName, '/','');
+            theFiguresDir = ISETBioPaperAndGrantCodeFigureDirForScript(theScriptName);
+
+            theVideoFilename = sprintf('mRGCmosaic_nominalC_%2.0f%%_%2.0fCDM2_%2.1fHz', ...
+                stimParams.contrast*100, stimParams.backgroundLuminanceCdM2, stimParams.temporalFrequencyHz);
+
+            videoOBJ = VideoWriter(fullfile(theFiguresDir,theVideoFilename), 'MPEG-4');
+            videoOBJ.FrameRate = 10;
+            videoOBJ.Quality = 100;
+            videoOBJ.open();
+        else
+            videoOBJ = [];
+        end
+
         for iRGC = 1:numel(targetRGCindices)
 
             theRGCindex = targetRGCindices(iRGC);
@@ -344,64 +365,18 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                 squeeze(theMRGCMosaicPhotocurrentBasedResponses(:, :, :, theRGCindex)), ...
                 theMRGCMosaicConeModulationsResponseTemporalSupportSeconds, ...
                 theMRGCMosaicPhotocurrentResponseTemporalSupportSeconds, ...
-                stimParams, theRGCindex, ...
-                max(abs(theMRGCMosaicConeModulationsBasedResponses(:))), ...
-                max(abs(theMRGCMosaicPhotocurrentBasedResponses(:))), ...
-                'exportPDFdirectory', exportPDFdirectory);
-
-
-            if (1==2)
-            
-            hFig = figure(2); clf;
-            set(hFig, 'Position', [1150 10 1100 1100], 'Color', [1 1 1]);
-
-
-            for iOri = 1:orientationsNum
-                coneModulationsSTF = squeeze(theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
-                photocurrentsSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
-
-                ax = subplot(1,orientationsNum+1,iOri);
-                [p1,peakSFindex1] = max(coneModulationsSTF);
-                [p2,peakSFindex2] = max(photocurrentsSTF);
-                if (p1 > p2)
-                    peakSFindex = peakSFindex1;
-                else
-                    peakSFindex = peakSFindex2;
-                end
-
-                factorToMatchLowSFs = coneModulationsSTF(peakSFindex)/photocurrentsSTF(peakSFindex);
-                plot(ax, stimParams.spatialFrequencyCPD, coneModulationsSTF, 'ko-', 'LineWidth', 1.5, 'MarkerSize', 12);
-                hold(ax, 'on');
-                plot(ax, stimParams.spatialFrequencyCPD, photocurrentsSTF*factorToMatchLowSFs, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 12);
-                set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], 'FontSize', 20, 'YLim', [0 1.0], 'YTick', 0:0.1:2);
-                legend(ax, {'cone coneModulations based', 'photocurrent based'});
-
-                if (theCenterConeDominances(iRGC) == cMosaic.LCONE_ID)
-                    title(ax,sprintf('%d-(L-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
-                        theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri), ...
-                        theConeModulationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri)));
-
-                elseif (theCenterConeDominances(iRGC) == cMosaic.MCONE_ID)
-                    title(ax,sprintf('%d-(M-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
-                        theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri), ...
-                        theConeModulationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri)));
-
-                elseif (theCenterConeDominances(iRGC) == cMosaic.SCONE_ID)
-                    title(ax,sprintf('%d-(S-dominated) cone RF center\nstim. orientation = %d (degs)\n BPI(cone exc.):%2.2f, BPI(pCurrents):%2.2f', ...
-                        theCenterConeNumerosities(iRGC), stimParams.orientationDegs(iOri), ...
-                        theConeModulationsBasedBPIs(iRGC, iOri), thePhotocurrentsBasedBPIs(iRGC, iOri)));
-                end
-
-                grid(ax, 'on')
-            end % for iOri
-
-            drawnow;
-            disp('Hit enter to continue')
-            pause
-            end
-
+                stimParams, theRGCindex, theMRGCMosaic, ...
+                prctile(abs(theMRGCMosaicConeModulationsBasedResponses(:)), 97), ...
+                prctile(abs(theMRGCMosaicPhotocurrentBasedResponses(:)),97), ...
+                'exportPDFdirectory', exportPDFdirectory, ...
+                'videoOBJ', videoOBJ);
 
         end % for iRGC
+
+        if (~isempty(videoOBJ))
+            videoOBJ.close();
+        end
+
     end % if (visualizeConeExcitationVsPhotocurrentSTFs)
 end
 

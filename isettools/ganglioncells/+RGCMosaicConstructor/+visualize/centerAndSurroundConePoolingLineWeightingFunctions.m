@@ -9,6 +9,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isnumeric(x))));
     p.addParameter('compositeInsteadOfComponent', false, @islogical);
     p.addParameter('flipXYaxes', false, @islogical);
+    p.addParameter('yLimsRange', [-0.4 1.0]);
     p.addParameter('noGrid', false, @islogical);
 
     p.parse(varargin{:});
@@ -17,6 +18,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     compositeInsteadOfComponent = p.Results.compositeInsteadOfComponent;
     flipXYaxes = p.Results.flipXYaxes;
+    yLimsRange = p.Results.yLimsRange;
     noGrid = p.Results.noGrid;
     
 	switch (whichMeridian)
@@ -52,7 +54,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     maxY = max(centerLineWeightingFunctions.yProfile.amplitude(:));
     maxProfile = max([maxX maxY]);
     YTicks = maxProfile*(-0.25:0.25:1.0);
-    YLims = maxProfile*[-0.4 1.0];
+    YLims = maxProfile*yLimsRange;
 
     ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure no left axis label');
 
@@ -182,11 +184,6 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
 
 
     if (isempty(axesToRenderIn))
-        % Export figure
-        % OLD Way
-        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName);
-
         thePDFfileName = fullfile(pdfExportSubDir, pdfFileName);
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
