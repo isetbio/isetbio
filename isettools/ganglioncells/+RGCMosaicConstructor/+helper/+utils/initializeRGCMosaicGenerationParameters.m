@@ -11,21 +11,21 @@ function pStruct = initializeRGCMosaicGenerationParameters(coneMosaicSpecies, ..
         'VSS2024TalkTemporal3DegsMosaic' ...
         'VSS2024TalkTemporal7DegsMosaic' ...
         'VSS2024TalkTemporal9DegsMosaic' ...
-        'PLOSpaperFovealMosaic' ...
-        'PLOSpaperTemporal2DegsMosaic'  ...
-        'PLOSpaperTemporal4DegsMosaic' ...
-        'PLOSpaperTemporal7DegsMosaic' ...
-        'PLOSpaperTemporal10DegsMosaic' ...
-        'PLOSpaperTemporal14DegsMosaic' ...
-        'PLOSpaperTemporal19DegsMosaic' ...
-        'PLOSpaperTemporal25DegsMosaic' ...
-        'PLOSpaperTemporal32DegsMosaic' ...
-        'PLOSpaperNasal2DegsTinyMosaic' ...
-        'PLOSpaperNasal7DegsMosaic' ...
-        'PLOSpaperNasal10DegsMosaic' ...
-        'PLOSpaperNasal14DegsMosaic' ...
-        'PLOSpaperNasal19DegsMosaic' ...
-        'PLOSpaperNasal25DegsMosaic' ...
+        'JCNpaperFovealMosaic' ...
+        'JCNpaperTemporal2DegsMosaic'  ...
+        'JCNpaperTemporal4DegsMosaic' ...
+        'JCNpaperTemporal7DegsMosaic' ...
+        'JCNpaperTemporal10DegsMosaic' ...
+        'JCNpaperTemporal14DegsMosaic' ...
+        'JCNpaperTemporal19DegsMosaic' ...
+        'JCNpaperTemporal25DegsMosaic' ...
+        'JCNpaperTemporal32DegsMosaic' ...
+        'JCNpaperNasal2DegsTinyMosaic' ...
+        'JCNpaperNasal7DegsMosaic' ...
+        'JCNpaperNasal10DegsMosaic' ...
+        'JCNpaperNasal14DegsMosaic' ...
+        'JCNpaperNasal19DegsMosaic' ...
+        'JCNpaperNasal25DegsMosaic' ...
     };
 
     if (...
@@ -69,39 +69,39 @@ function pStruct = initializeRGCMosaicGenerationParameters(coneMosaicSpecies, ..
 	    pStruct.whichSubjectID = opticsSubjectName;
     elseif (ischar(opticsSubjectName))
 	    switch (opticsSubjectName)
-		    case {'PLOSpaperDefaultSubject', 'PLOSpaperStrehlRatio_0.59'}
+		    case {'JCNpaperDefaultSubject', 'JCNpaperStrehlRatio_0.59'}
 			    % This is ranked #3 in terms of resolution at the fovea (45 c/deg), Strehl Ratio around 0.59
 			    pStruct.whichSubjectID = 2;
     
-		    case 'PLOSpaperStrehlRatio_0.87'
+		    case 'JCNpaperStrehlRatio_0.87'
 			    % This is ranked #1 in terms of resolution at the fovea (61 c/deg), Strehl Ratio around 0.87
 			    pStruct.whichSubjectID = 6;
     
-		    case 'PLOSpaperStrehlRatio_0.72'
+		    case 'JCNpaperStrehlRatio_0.72'
 			    % This is ranked #6 in terms of resolution at the fovea (31 c/deg), Strehl Ratio around 0.72
 			    pStruct.whichSubjectID = 4;
 	    
-		    case 'PLOSpaperStrehlRatio_0.60'
+		    case 'JCNpaperStrehlRatio_0.60'
 			    % This is ranked #4 in terms of resolution at the fovea (36 c/deg),  Strehl Ratio around 0.60
 			    pStruct.whichSubjectID = 10;
     
-		    case {'VSS2024TalkSecondSubject', 'PLOSpaperStrehlRatio_0.27'}
+		    case {'VSS2024TalkSecondSubject', 'JCNpaperStrehlRatio_0.27'}
 			    % This is ranked #5 in terms of resolution at the fovea (31 c/deg), Strehl Ratio around 0.27
 			    pStruct.whichSubjectID = 8;
     
-		    case 'PLOSpaperStrehlRatio_0.23'
+		    case 'JCNpaperStrehlRatio_0.23'
 			    % This is ranked #9 in terms of resolution at the fovea (18 c/deg), Strehl Ratio around 0.23
 			    pStruct.whichSubjectID = 1;
     
-            case {'VSS2024TalkFirstSubject', 'PLOSpaperSecondSubject', 'PLOSpaperStrehlRatio_0.21'}
+            case {'VSS2024TalkFirstSubject', 'JCNpaperSecondSubject', 'JCNpaperStrehlRatio_0.21'}
 			    % This is ranked #7 in terms of resolution at the fovea (23 c/deg),  Strehl Ratio around 0.21
 			    pStruct.whichSubjectID = 3;
     
-		    case 'PLOSpaperStrehlRatio_0.19'
+		    case 'JCNpaperStrehlRatio_0.19'
 			    % This is ranked #8 in terms of resolution at the fovea (19 c/deg), Strehl Ratio around 0.19
 			    pStruct.whichSubjectID = 5;
     
-		    case 'PLOSpaperStrehlRatio_0.09'
+		    case 'JCNpaperStrehlRatio_0.09'
 			    % This is ranked #10 in terms of resolution at the fovea (9 c/deg), Strehl Ratio around 0.09
 			    pStruct.whichSubjectID = 7;
     
@@ -188,7 +188,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
     
-	    case 'PLOSpaperFovealMosaic'
+	    case 'JCNpaperFovealMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [0 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = [2 2];    % [1 1] (28182 cells)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'high res'; 
@@ -200,7 +200,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
-	    case 'PLOSpaperTemporal2DegsMosaic' 
+	    case 'JCNpaperTemporal2DegsMosaic' 
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-2 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 2*[1 1]; % [-1 -3] (10366 cells)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'high res'; 
@@ -212,7 +212,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
-	    case 'PLOSpaperTemporal4DegsMosaic'
+	    case 'JCNpaperTemporal4DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-4 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 3*[1 1]; % [-2.5 -5.5] (9303 cells)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'high res'; 
@@ -225,7 +225,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
     
-	    case 'PLOSpaperTemporal7DegsMosaic'
+	    case 'JCNpaperTemporal7DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-7 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 4*[1 1]; %-5 -9 (6979 cells)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
@@ -237,7 +237,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
-	    case 'PLOSpaperTemporal10DegsMosaic'
+	    case 'JCNpaperTemporal10DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-10 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 4*[1 1]; % -8 -12 (3772 cells) (linear part of super Gaussian exponent)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
@@ -249,7 +249,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
-	    case 'PLOSpaperTemporal14DegsMosaic'
+	    case 'JCNpaperTemporal14DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-14 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 5*[1 1]; %-11.5 -16.5 (2695 cells)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
@@ -262,7 +262,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
     
-	    case 'PLOSpaperTemporal19DegsMosaic'
+	    case 'JCNpaperTemporal19DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-19 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 6*[1 1];
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
@@ -274,7 +274,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.optimizationStrategy = 'MidH1paramsNarrowVisualSTFparamTolerance';
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
     
-	    case 'PLOSpaperTemporal25DegsMosaic'
+	    case 'JCNpaperTemporal25DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-25 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 7*[1 1]; %-21.5 -28.5 (1358 cells)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 
@@ -286,7 +286,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
     
-        case 'PLOSpaperTemporal32DegsMosaic'
+        case 'JCNpaperTemporal32DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [-32 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 9*[1 1]; %-27.5 -36.5 (1358 cells)
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 
@@ -299,7 +299,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
     
     
-        case 'PLOSpaperNasal2DegsTinyMosaic'
+        case 'JCNpaperNasal2DegsTinyMosaic'
             rgcMosaicSurroundOptimization.mosaicEccDegs = [2 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 0.5*[1 1]; 
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
@@ -312,7 +312,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
     
-        case 'PLOSpaperNasal7DegsMosaic'
+        case 'JCNpaperNasal7DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [7 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 11*[1 1]; 
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
@@ -325,7 +325,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
     
-        case 'PLOSpaperNasal10DegsMosaic'
+        case 'JCNpaperNasal10DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [10 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 11*[1 1];
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
@@ -337,7 +337,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
-        case 'PLOSpaperNasal14DegsMosaic'
+        case 'JCNpaperNasal14DegsMosaic'
             % This includes the OD, so we have to generate a large enough region
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [14 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 13*[1 1]; 
@@ -351,7 +351,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
     
     
-        case 'PLOSpaperNasal19DegsMosaic'
+        case 'JCNpaperNasal19DegsMosaic'
             % This includes the OD, so we have to generate a large enough region
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [19 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 17*[1 1];
@@ -365,7 +365,7 @@ function rgcMosaicSurroundOptimization = generateRGCmosaicSurroundOptimizationSt
 		    rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
     
     
-        case 'PLOSpaperNasal25DegsMosaic'
+        case 'JCNpaperNasal25DegsMosaic'
 		    rgcMosaicSurroundOptimization.mosaicEccDegs = [25 0]; 
 		    rgcMosaicSurroundOptimization.mosaicSizeDegs = 7*[1 1]; 
 		    rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 

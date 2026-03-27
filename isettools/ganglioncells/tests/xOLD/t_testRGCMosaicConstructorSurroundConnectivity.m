@@ -19,19 +19,19 @@ close all; clear all;
 % Valid eccentricity strings are:
 % rgcMosaicName: choose between {...
 %   'VSS2024TalkTemporal3DegsMosaic' ...
-%	'PLOSpaperFovealMosaic' ...
-%	'PLOSpaperTemporal2DegsMosaic' ...
-%	'PLOSpaperTemporal4DegsMosaic' ...
-%	'PLOSpaperTemporal7DegsMosaic' ...
-%	'PLOSpaperTemporal10DegsMosaic' ...
-%	'PLOSpaperTemporal14DegsMosaic' ...
-%	'PLOSpaperTemporal19DegsMosaic' ...
-%	'PLOSpaperTemporal25DegsMosaic' ...
-%	'PLOSpaperTemporal32DegsMosaic' ...
+%	'JCNpaperFovealMosaic' ...
+%	'JCNpaperTemporal2DegsMosaic' ...
+%	'JCNpaperTemporal4DegsMosaic' ...
+%	'JCNpaperTemporal7DegsMosaic' ...
+%	'JCNpaperTemporal10DegsMosaic' ...
+%	'JCNpaperTemporal14DegsMosaic' ...
+%	'JCNpaperTemporal19DegsMosaic' ...
+%	'JCNpaperTemporal25DegsMosaic' ...
+%	'JCNpaperTemporal32DegsMosaic' ...
 %   }
 
 % Valid targetVisualSTFdescriptorToOptimizeFor strings are:
-% 'default';   			  	% mean CK mean RsRcRatio, mean CK intSCratio (what was used in PLOSpaper)
+% 'default';   			  	% mean CK mean RsRcRatio, mean CK intSCratio (what was used in JCNpaper)
 % 'x1.5 RsRcRatio';       	% 1.5 x mean CK mean RsRcRatio, mean CK intSCratio
 % 'x1.3 RsRcRatio';       	% 1.3 x mean CK mean RsRcRatio, mean CK intSCratio
 % 'x0.75 RsRcRatio';       	% 0.75 x mean CK mean RsRcRatio, mean CK intSCratio
@@ -45,7 +45,7 @@ targetVisualSTFdescriptorToOptimizeFor = 'default';
 %targetVisualSTFdescriptorToOptimizeFor = 'x1.3 RsRcRatio';
 
 % Valid optics subjects name are:
-% 'PLOSpaperDefaultSubject'
+% 'JCNpaperDefaultSubject'
 % 'VSS2024TalkFirstSubject'
 %v'VSS2024TalkSecondSubject'
 
@@ -54,38 +54,38 @@ if (1==1)
 	coneMosaicSpecies = 'human';
 
 	% Eccentricity
-	rgcMosaicName = 'PLOSpaperFovealMosaic';
+	rgcMosaicName = 'JCNpaperFovealMosaic';
 
 	% Run with mRGCMosaic.amplificationInCenterOnlySensitivityCausedByInactiveSurrounds set to 0.7 (from 0.85)
-	rgcMosaicName = 'PLOSpaperTemporal32DegsMosaicLowerOverlap';
-	rgcMosaicName = 'PLOSpaperTemporal25DegsMosaicLowerOverlap';
-	rgcMosaicName = 'PLOSpaperTemporal19DegsMosaicLowerOverlap';
-    rgcMosaicName = 'PLOSpaperTemporal14DegsMosaicLowerOverlap';
-    rgcMosaicName = 'PLOSpaperTemporal10DegsMosaicLowerOverlap';
-    rgcMosaicName = 'PLOSpaperTemporal7DegsMosaicLowerOverlap';
-    rgcMosaicName = 'PLOSpaperTemporal4DegsMosaicLowerOverlap';
-    rgcMosaicName = 'PLOSpaperTemporal2DegsMosaicLowerOverlap';
-    rgcMosaicName = 'PLOSpaperFovealMosaicLowerOverlap';
+	rgcMosaicName = 'JCNpaperTemporal32DegsMosaicLowerOverlap';
+	rgcMosaicName = 'JCNpaperTemporal25DegsMosaicLowerOverlap';
+	rgcMosaicName = 'JCNpaperTemporal19DegsMosaicLowerOverlap';
+    rgcMosaicName = 'JCNpaperTemporal14DegsMosaicLowerOverlap';
+    rgcMosaicName = 'JCNpaperTemporal10DegsMosaicLowerOverlap';
+    rgcMosaicName = 'JCNpaperTemporal7DegsMosaicLowerOverlap';
+    rgcMosaicName = 'JCNpaperTemporal4DegsMosaicLowerOverlap';
+    rgcMosaicName = 'JCNpaperTemporal2DegsMosaicLowerOverlap';
+    rgcMosaicName = 'JCNpaperFovealMosaicLowerOverlap';
 
     % Run with
     % mRGCMosaic.amplificationInCenterOnlySensitivityCausedByInactiveSurrounds 0.6 
     % (best agreement in RF center overlap with Gauthier)
-    %rgcMosaicName = 'PLOSpaperTemporal32DegsMosaic';   % Fully Done. Also done with second  subject optics
-    %rgcMosaicName = 'PLOSpaperTemporal25DegsMosaic';  % Fully Done. Also done with second  subject optics
-    %rgcMosaicName = 'PLOSpaperTemporal19DegsMosaic';  % Fully done. Also done with second  subject optics
-    %rgcMosaicName = 'PLOSpaperTemporal14DegsMosaic';  % Fully done. Also done with second  subject optics
-    %rgcMosaicName = 'PLOSpaperTemporal10DegsMosaic';  % Fully done. Also done with second  subject optics
-    %rgcMosaicName = 'PLOSpaperTemporal7DegsMosaic';   % Fully done. Also done with second  subject optics
-    %rgcMosaicName = 'PLOSpaperTemporal4DegsMosaic';   % Fully done . Also done with second  subject optics
-    rgcMosaicName = 'PLOSpaperTemporal2DegsMosaic';   % Fully done. DOing second on Crete now
-    %rgcMosaicName = 'PLOSpaperFovealMosaic';          % Fully done. Also done with second  subject optics
+    %rgcMosaicName = 'JCNpaperTemporal32DegsMosaic';   % Fully Done. Also done with second  subject optics
+    %rgcMosaicName = 'JCNpaperTemporal25DegsMosaic';  % Fully Done. Also done with second  subject optics
+    %rgcMosaicName = 'JCNpaperTemporal19DegsMosaic';  % Fully done. Also done with second  subject optics
+    %rgcMosaicName = 'JCNpaperTemporal14DegsMosaic';  % Fully done. Also done with second  subject optics
+    %rgcMosaicName = 'JCNpaperTemporal10DegsMosaic';  % Fully done. Also done with second  subject optics
+    %rgcMosaicName = 'JCNpaperTemporal7DegsMosaic';   % Fully done. Also done with second  subject optics
+    %rgcMosaicName = 'JCNpaperTemporal4DegsMosaic';   % Fully done . Also done with second  subject optics
+    rgcMosaicName = 'JCNpaperTemporal2DegsMosaic';   % Fully done. DOing second on Crete now
+    %rgcMosaicName = 'JCNpaperFovealMosaic';          % Fully done. Also done with second  subject optics
 
 	% Optics
-	opticsSubjectName = 'PLOSpaperDefaultSubject';  % This is subject #2 (ranked #3)
+	opticsSubjectName = 'JCNpaperDefaultSubject';  % This is subject #2 (ranked #3)
     opticsSubjectName = 'VSS2024TalkFirstSubject';  % This is subject #3 (ranked #7)
 
-	%opticsSubjectName = 'PLOSpaperStrehlRatio_0.21';  % Still very high RcDegs at fovea
-	%opticsSubjectName = 'PLOSpaperStrehlRatio_0.19';  % Lets try this one
+	%opticsSubjectName = 'JCNpaperStrehlRatio_0.21';  % Still very high RcDegs at fovea
+	%opticsSubjectName = 'JCNpaperStrehlRatio_0.19';  % Lets try this one
 else
 	% Macaque mosaic
 	coneMosaicSpecies = 'macaque';

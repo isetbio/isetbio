@@ -33,51 +33,51 @@ localSpacingFromCurrentCentroids = true;
 % Valid eccentricity strings are:
 % rgcMosaicName: choose between {...
 %   'VSS2024TalkTemporal3DegsMosaic' ...
-%   'PLOSpaperFovealMosaic' ...
-%   'PLOSpaperTemporal2DegsMosaic' ...
-%   'PLOSpaperTemporal4DegsMosaic' ...
-%   'PLOSpaperTemporal7DegsMosaic' ...
-%   'PLOSpaperTemporal10DegsMosaic' ...
-%   'PLOSpaperTemporal14DegsMosaic' ...
-%   'PLOSpaperTemporal19DegsMosaic' ...
-%   'PLOSpaperTemporal25DegsMosaic' ...
-%   'PLOSpaperTemporal32DegsMosaic' ...
+%   'JCNpaperFovealMosaic' ...
+%   'JCNpaperTemporal2DegsMosaic' ...
+%   'JCNpaperTemporal4DegsMosaic' ...
+%   'JCNpaperTemporal7DegsMosaic' ...
+%   'JCNpaperTemporal10DegsMosaic' ...
+%   'JCNpaperTemporal14DegsMosaic' ...
+%   'JCNpaperTemporal19DegsMosaic' ...
+%   'JCNpaperTemporal25DegsMosaic' ...
+%   'JCNpaperTemporal32DegsMosaic' ...
 %   }
 
 % Initialize RGCMosaic generation params
 % Human mosaic 
-rgcMosaicName = 'PLOSpaperTemporal10DegsMosaic';
-rgcMosaicName = 'PLOSpaperTemporal14DegsMosaic';
-rgcMosaicName = 'PLOSpaperTemporal19DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal10DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal14DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal19DegsMosaic';
 
 % Run with mRGCMosaic.amplificationInCenterOnlySensitivityCausedByInactiveSurrounds set to 0.7 (from 0.85)
-%rgcMosaicName = 'PLOSpaperTemporal32DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal25DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal19DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal14DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal10DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal7DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal4DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal4DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperTemporal2DegsMosaicLowerOverlap';
-%rgcMosaicName = 'PLOSpaperFovealMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal32DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal25DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal19DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal14DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal10DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal7DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal4DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal4DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperTemporal2DegsMosaicLowerOverlap';
+%rgcMosaicName = 'JCNpaperFovealMosaicLowerOverlap';
 
 
 % Run with
 % mRGCMosaic.amplificationInCenterOnlySensitivityCausedByInactiveSurrounds 0.6 
 % (best agreement in RF center overlap with Gauthier)
 
-%rgcMosaicName = 'PLOSpaperTemporal32DegsMosaic';
-rgcMosaicName = 'PLOSpaperTemporal25DegsMosaic';
-rgcMosaicName = 'PLOSpaperTemporal19DegsMosaic';
-rgcMosaicName = 'PLOSpaperTemporal14DegsMosaic';
-rgcMosaicName = 'PLOSpaperTemporal10DegsMosaic';
-%rgcMosaicName = 'PLOSpaperTemporal7DegsMosaic';
-%rgcMosaicName = 'PLOSpaperTemporal4DegsMosaic';
-%rgcMosaicName = 'PLOSpaperTemporal2DegsMosaic';
-%rgcMosaicName = 'PLOSpaperFovealMosaic';
+%rgcMosaicName = 'JCNpaperTemporal32DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal25DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal19DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal14DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal10DegsMosaic';
+%rgcMosaicName = 'JCNpaperTemporal7DegsMosaic';
+%rgcMosaicName = 'JCNpaperTemporal4DegsMosaic';
+%rgcMosaicName = 'JCNpaperTemporal2DegsMosaic';
+%rgcMosaicName = 'JCNpaperFovealMosaic';
 
-opticsSubjectName = 'PLOSpaperDefaultSubject';
+opticsSubjectName = 'JCNpaperDefaultSubject';
 coneMosaicSpecies = 'human';
 targetVisualSTFdescriptorToOptimizeFor = '';  % Irrelevant for center connectivity
 pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
@@ -154,9 +154,9 @@ visualizedPatchWithinMosaic = [];
 visualizedMaxEcc = pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs(1)+2.2;
 visualizedMaxEcc = pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs(1)+2.5;
 
-visualizedMaxEcc = -16.5; % Fig panel C with 'PLOSpaperTemporal19DegsMosaic'
-visualizedMaxEcc = -12;  % Fig panel B with 'PLOSpaperTemporal19DegsMosaic'
-visualizedMaxEcc = -8.5;  % Fig panel A with 'PLOSpaperTemporal10DegsMosaic'
+visualizedMaxEcc = -16.5; % Fig panel C with 'JCNpaperTemporal19DegsMosaic'
+visualizedMaxEcc = -12;  % Fig panel B with 'JCNpaperTemporal19DegsMosaic'
+visualizedMaxEcc = -8.5;  % Fig panel A with 'JCNpaperTemporal10DegsMosaic'
 visualizedPatchWithinMosaic =  [visualizedMaxEcc-3.0-0.1  visualizedMaxEcc-0.1  -0.3 0.3];
 %visualizedPatchWithinMosaic =  [visualizedMaxEcc-3.0-1.4  visualizedMaxEcc-1.4  -0.3 0.3];
 %visualizedPatchWithinMosaic =  [visualizedMaxEcc-3.0+0.1  visualizedMaxEcc+0.1  -0.3 0.3];
