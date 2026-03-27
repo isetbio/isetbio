@@ -53,7 +53,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     maxX = max(centerLineWeightingFunctions.xProfile.amplitude(:));
     maxY = max(centerLineWeightingFunctions.yProfile.amplitude(:));
     maxProfile = max([maxX maxY]);
-    YTicks = maxProfile*(-0.25:0.25:1.0);
+    YTicks = maxProfile*(-1.0:0.25:1.0);
     YLims = maxProfile*yLimsRange;
 
     ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure no left axis label');
@@ -144,14 +144,16 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
             end
     end
 
-    if (spatialSupportTickSeparationArcMin/60 > 1-100*eps)
-       xTickLabels = sprintf('%2.0f\n', xTicksDegs);
-    elseif (spatialSupportTickSeparationArcMin/60>= 0.1-100*eps)
-       xTickLabels = sprintf('%2.1f\n', xTicksDegs);
-    elseif (spatialSupportTickSeparationArcMin/60 > 0.01-100*eps)
-       xTickLabels = sprintf('%2.2f\n', xTicksDegs);
+    minTickIncrement = min(abs(diff(xTicksDegs(:))));
+   
+    if (minTickIncrement > 1-100*eps)
+       xTickLabels = sprintf('%1.0f\n', xTicksDegs);
+    elseif (minTickIncrement>= 0.1-100*eps)
+       xTickLabels = sprintf('%1.1f\n', xTicksDegs);
+    elseif (minTickIncrement > 0.01-100*eps)
+       xTickLabels = sprintf('%1.2f\n', xTicksDegs);
     else
-       xTickLabels = sprintf('%2.3f\n', xTicksDegs);
+       xTickLabels = sprintf('%1.3f\n', xTicksDegs);
     end
 
     if (flipXYaxes)
