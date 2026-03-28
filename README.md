@@ -12,6 +12,10 @@ A set of tutorial videos introducing aspects of ISETBio and ISETCam is available
 
 * May 29, 2024 - See changes to ISETCam in the ReadMe for that repository. The validation routines for ISETBio have been moved into a new [ISETValidations](https://github.com/ISET/isetvalidate) repository.
 
+### Developer Recommendations
+
+* **System Tools**: Similar to ISETCam, developers and AI agents navigating ISETBio will benefit significantly from having `rg` (ripgrep) and advanced `find` (like `find_by_name`) utilities on their system path for fast terminal-based codebase queries.
+
 ### Ancient history
 
 The ISETBIO code includes a portion of Image Systems Engineering Toolbox (ISET) that is sold by [Imageval Consulting, LLC](http://www.imageval.com).  That code is designed to help industrial partners design novel image sensors. The ISETBIO portion of the ISET code is freely distributed for use in modeling image formation in biological systems. 

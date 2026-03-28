@@ -359,8 +359,8 @@ end
 
 %% Set figure size
 if (isempty(figureHandle)) && (isempty(axesHandle))
-    figureHandle = figure(); clf;
-    set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
+    % Use ieFigure() to prevent a crash in MATLAB R2025b
+    figureHandle = ieFigure(); clf;
     axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
 elseif (isempty(figureHandle)) && (~isempty(axesHandle))
     % do nothing, we will draw the the passed axesHandle
