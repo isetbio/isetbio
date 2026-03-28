@@ -128,6 +128,7 @@ p.addParameter('withsuperimposedrgbopticalimagealpha', 0.7, @isnumeric);
 p.addParameter('withsuperimposedrgbopticalimagespatialsupportmicrons', [], @isnumeric);
 
 p.addParameter('withsuperimposedpsf', [], @(x)(isempty(x) || isstruct(x)));
+p.addParameter('withsuperimposedpsfcontourlinewidth', 1.0, @isscalar);
 p.addParameter('withsuperimposedpsfcontourlinecolor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 p.addParameter('withsuperimposedpsfcolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 
@@ -195,6 +196,7 @@ superimposedRGBopticalImageSpatialSupportMicrons = p.Results.withsuperimposedrgb
 superimposedRGBopticalImage = p.Results.withsuperimposedrgbopticalimage;
 superimposedRGBopticalImageAlpha = p.Results.withsuperimposedrgbopticalimagealpha;
 superimposedPSF = p.Results.withsuperimposedpsf;
+superimposedPSFcontourLineWidth = p.Results.withsuperimposedpsfcontourlinewidth;
 superimposedPSFcontourLineColor = p.Results.withsuperimposedpsfcontourlinecolor;
 superimposedPSFcolorMap = p.Results.withsuperimposedpsfcolormap;
 activation = p.Results.activation;
@@ -810,7 +812,8 @@ end
 
 % Superimpose an optical PSF
 if (~isempty(superimposedPSF))
-    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, superimposedPSFcolorMap, superimposedPSFcontourLineColor);
+    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, ...
+        superimposedPSFcolorMap, superimposedPSFcontourLineColor, superimposedPSFcontourLineWidth);
 end
 
 hold(axesHandle, 'off');
@@ -1065,7 +1068,7 @@ drawnow;
 end
 
 %% Method to superimpose an optical PSF on top of the mosaic
-function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData, theColorMap, contourLineColor)
+function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData, theColorMap, contourLineColor, contourLineWidth)
 
 
 if (strcmp(visualizationDomain, 'microns'))
@@ -1095,7 +1098,7 @@ cMosaic.semiTransparentContourPlot(axesHandle, ...
     xSupport, ySupport, ...
     thePSFData.data/max(thePSFData.data(:)), ...
     0.05:0.15:0.95, theColorMap, alpha, contourLineColor, ...
-    'lineWidth', 1.0);
+    'lineWidth', contourLineWidth);
 end
 
 
