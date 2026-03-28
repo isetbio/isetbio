@@ -1,4 +1,4 @@
-function isetbioLocalHookTemplate 
+function isetbioLocalHook
 % Method to set ISETBIO-specific preferences. 
 %
 % Syntax:

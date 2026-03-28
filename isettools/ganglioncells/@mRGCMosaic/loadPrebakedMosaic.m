@@ -5,13 +5,15 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
     p = inputParser;
     p.addParameter('computeTheMosaicOptics', true, @islogical);
     p.addParameter('opticsToEmploy', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('wavefrontSpatialSamples', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('cropParams', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('onlyReturnMosaicFilename', false, @islogical);
     p.parse(varargin{:});
-
-    opticsToEmploy = p.Results.opticsToEmploy;
+    
     cropParams = p.Results.cropParams;
+    opticsToEmploy = p.Results.opticsToEmploy;
     computeTheMosaicOptics = p.Results.computeTheMosaicOptics;
+    wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     onlyReturnMosaicFilename = p.Results.onlyReturnMosaicFilename;
     
     % Generate pStruct with synthesized mosaic params
@@ -118,7 +120,8 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
             theMRGCMosaic, ...
             opticsParams.type, ...
             opticsParams.refractiveErrorDiopters, ...
-            opticsParams.visualizePSFonTopOfConeMosaic);
+            opticsParams.visualizePSFonTopOfConeMosaic, ...
+            'wavefrontSpatialSamples', wavefrontSpatialSamples);
     else
         theOI = [];
         thePSF = [];

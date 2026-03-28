@@ -18,10 +18,10 @@ coneMosaicSpecies = 'human';
 targetVisualSTFdescriptorToOptimizeFor = 'default';
 
 % Target eccentricity
-rgcMosaicName = 'PLOSpaperTemporal32DegsMosaicLowerOverlap';
+rgcMosaicName = 'JCNpaperTemporal32DegsMosaicLowerOverlap';
 
 % Optics subject
-opticsSubjectName = 'PLOSpaperDefaultSubject';
+opticsSubjectName = 'JCNpaperDefaultSubject';
 
 % Generate params struct
 pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...

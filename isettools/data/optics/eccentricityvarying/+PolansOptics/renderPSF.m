@@ -1,7 +1,7 @@
 function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMap, contourLineColor, varargin)
     % Parse input
     p = inputParser;
-    p.addParameter('superimposedConeMosaic', [], @(x)(isempty(x)||isa(x, 'coneMosaicHex')));
+    p.addParameter('superimposedConeMosaic', [], @(x)(isempty(x)||isa(x, 'cMosaic')));
     p.addParameter('withConeData', [],  @(x)(isempty(x)||isstruct(x)));
     p.addParameter('fontSize', 14, @isnumeric);
     p.addParameter('plotTitle', '', @ischar);
@@ -37,9 +37,8 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
 
     elseif (~isempty(theConeMosaic))
         % Retrieve cone positions (microns), cone spacings, and cone types
-        cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
-        conePositionsArcMin = cmStruct.coneLocs * 60;
-        coneAperturesArcMin = cmStruct.coneApertures * 60;
+        conePositionsArcMin = theConeMosaic.coneRFpositionsDegs * 60;
+        coneAperturesArcMin = theConeMosaic.coneApertureDiametersDegs* 60;
         renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMin, [.2 0.2 0.2]);
         smallTitle = false;
     end

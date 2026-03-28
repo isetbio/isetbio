@@ -19,7 +19,11 @@ function f = figureComponents(panelFormat)
 
     f.legendFontSize = 20;
     f.legendBox = 'off';
-    
+    f.legendBackgroundAlpha = 0.5;
+    f.legendBackgroundColor = [0.9 0.9 0.9];
+    f.legendEdgeColor = [0.3 0.3 0.3];
+    f.legendLineWidth = 1.0;
+
     f.axisTickAngle = 0;
     f.axisOffsetFactor = -0.03;
     f.tickDir = 'both';
@@ -99,8 +103,8 @@ function f = figureComponents(panelFormat)
                     'colsNum', 1, ...
                     'heightMargin',  0.00, ...
                     'widthMargin',    0.00, ...
-                    'leftMargin',     0.15, ...
-                    'rightMargin',    0.03, ...
+                    'leftMargin',     0.1, ...
+                    'rightMargin',    0.1, ...
                     'bottomMargin',   0.19, ...
                     'topMargin',      0.06);
 
@@ -134,7 +138,7 @@ function f = figureComponents(panelFormat)
                     'leftMargin',     0.15, ...
                     'rightMargin',    0.03, ...
                     'bottomMargin',   0.11, ...
-                    'topMargin',      0.01);
+                    'topMargin',      0.02);
 
         case '1x1 standard very tall figure'
 
@@ -181,6 +185,38 @@ function f = figureComponents(panelFormat)
                     'rightMargin',    0.01, ...
                     'bottomMargin',   0.07, ...
                     'topMargin',      0.03);
+
+        case '1x1 giant square mosaic with side plots'
+
+            f.reductionFactor = 0.24;
+            f.figureSize = [1250 1200];
+            f.tickDir = 'in';
+
+            f.subplotPosVectors(1,1) = NicePlot.getSubPlotPosVectors(...
+                    'rowsNum', 1, ...
+                    'colsNum', 1, ...
+                    'heightMargin',  0.05, ...
+                    'widthMargin',    0.00, ...
+                    'leftMargin',     0.08, ...
+                    'rightMargin',    0.01, ...
+                    'bottomMargin',   0.07, ...
+                    'topMargin',      0.03);
+
+            f.subplotPosVectors(1,1).v(1) = f.subplotPosVectors(1,1).v(1);
+            f.subplotPosVectors(1,1).v(2) = f.subplotPosVectors(1,1).v(2);
+            f.subplotPosVectors(1,1).v(3:4) = f.subplotPosVectors(1,1).v(3:4) * 0.85;
+
+            % Horizontal plot on the top
+            f.subplotPosVectors(1,2).v(1) = f.subplotPosVectors(1,1).v(1);
+            f.subplotPosVectors(1,2).v(2) = f.subplotPosVectors(1,1).v(2) + f.subplotPosVectors(1,1).v(4) + 0.04;
+            f.subplotPosVectors(1,2).v(3) = f.subplotPosVectors(1,1).v(3);
+            f.subplotPosVectors(1,2).v(4) = 0.1;
+
+            % Vertical plot on the right
+            f.subplotPosVectors(1,3).v(1) = f.subplotPosVectors(1,1).v(1) + f.subplotPosVectors(1,1).v(3) + 0.04;
+            f.subplotPosVectors(1,3).v(2) = f.subplotPosVectors(1,1).v(2);
+            f.subplotPosVectors(1,3).v(3) = 0.1;
+            f.subplotPosVectors(1,3).v(4) = f.subplotPosVectors(1,1).v(4);
 
         case '1x1 giant rectangular-wide mosaic'
            

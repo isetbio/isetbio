@@ -11,7 +11,7 @@
 close all; clear all;
     
 % Actions to perform
-computeInputConeMosaicResponses = ~true;
+computeInputConeMosaicResponses = true;
 computeMRGCMosaicResponses = ~true;
 computeRFmaps = ~true;
 
@@ -25,7 +25,7 @@ generateVisualRFandConePoolingMapComboPlots = ~true;
 generateNearestNeighborOverlapPlots = ~true;
 
 % Aggregation over multiple eccentricities
-aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = true;
+aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities = ~true;
 
 % Aggregate over multiple chromaticities
 visualizeAggregatedChromaticityRFmaps = false;
@@ -131,16 +131,16 @@ coneMosaicSpecies = 'human';
 % Run with
 % mRGCMosaic.amplificationInCenterOnlySensitivityCausedByInactiveSurrounds 0.6 
 % (best agreement in RF center overlap with Gauthier)
-rgcMosaicName = 'PLOSpaperTemporal32DegsMosaic';
-rgcMosaicName = 'PLOSpaperTemporal25DegsMosaic';
-%rgcMosaicName = 'PLOSpaperTemporal19DegsMosaic';
-%rgcMosaicName = 'PLOSpaperTemporal7DegsMosaic';
-%rgcMosaicName = 'PLOSpaperTemporal4DegsMosaic';
-%rgcMosaicName = 'PLOSpaperTemporal2DegsMosaic';
-%rgcMosaicName = 'PLOSpaperFovealMosaic';
+rgcMosaicName = 'JCNpaperTemporal32DegsMosaic';
+rgcMosaicName = 'JCNpaperTemporal25DegsMosaic';
+%rgcMosaicName = 'JCNpaperTemporal19DegsMosaic';
+%rgcMosaicName = 'JCNpaperTemporal7DegsMosaic';
+%rgcMosaicName = 'JCNpaperTemporal4DegsMosaic';
+%rgcMosaicName = 'JCNpaperTemporal2DegsMosaic';
+%rgcMosaicName = 'JCNpaperFovealMosaic';
 
 % Optics subject
-opticsSubjectName = 'PLOSpaperDefaultSubject';
+opticsSubjectName = 'JCNpaperDefaultSubject';
 
 % Generate params struct
 pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...

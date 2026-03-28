@@ -128,7 +128,9 @@ p.addParameter('withsuperimposedrgbopticalimagealpha', 0.7, @isnumeric);
 p.addParameter('withsuperimposedrgbopticalimagespatialsupportmicrons', [], @isnumeric);
 
 p.addParameter('withsuperimposedpsf', [], @(x)(isempty(x) || isstruct(x)));
+p.addParameter('withsuperimposedpsfcontourlinewidth', 1.0, @isscalar);
 p.addParameter('withsuperimposedpsfcontourlinecolor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+p.addParameter('withsuperimposedpsfcolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 
 p.addParameter('activation', []);
 p.addParameter('activationrange', [],@(x)((isempty(x))||(numel(x)==2)));
@@ -168,6 +170,7 @@ p.addParameter('figurebackgroundcolor', [1 1 1], @(x)( (ischar(x)&&((strcmp(x,'n
 p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x) || iscell(x)));
 p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
 p.addParameter('plottitlefontsize', 16, @isscalar);
+p.addParameter('plottitlefontweight', 'normal', @ischar);
 p.addParameter('textdisplay', '',@(x)(isempty(x) || ischar(x)));
 p.addParameter('textdisplaycolor', [], @isnumeric);
 
@@ -193,7 +196,9 @@ superimposedRGBopticalImageSpatialSupportMicrons = p.Results.withsuperimposedrgb
 superimposedRGBopticalImage = p.Results.withsuperimposedrgbopticalimage;
 superimposedRGBopticalImageAlpha = p.Results.withsuperimposedrgbopticalimagealpha;
 superimposedPSF = p.Results.withsuperimposedpsf;
+superimposedPSFcontourLineWidth = p.Results.withsuperimposedpsfcontourlinewidth;
 superimposedPSFcontourLineColor = p.Results.withsuperimposedpsfcontourlinecolor;
+superimposedPSFcolorMap = p.Results.withsuperimposedpsfcolormap;
 activation = p.Results.activation;
 activationRange = p.Results.activationrange;
 currentEMposition = p.Results.currentemposition;
@@ -218,6 +223,7 @@ displayedEyeMovementData = p.Results.displayedeyemovementdata;
 fontSize  = p.Results.fontsize;
 colorbarFontSize  = p.Results.colorbarfontsize;
 cMap = p.Results.activationcolormap;
+
 verticalColorBar  = p.Results.verticalactivationcolorbar;
 colorbarTickLabelColor = p.Results.colorbarticklabelcolor;
 horizontalColorBar = p.Results.horizontalactivationcolorbar;
@@ -233,6 +239,7 @@ figureBackgroundColor = p.Results.figurebackgroundcolor;
 plotTitle  = p.Results.plottitle;
 plotTitleColor = p.Results.plottitlecolor;
 plotTitleFontSize = p.Results.plottitlefontsize;
+plotTitleFontWeight = p.Results.plottitlefontweight;
 
 textDisplay    = p.Results.textdisplay;
 textDisplayColor = p.Results.textdisplaycolor;
@@ -351,15 +358,12 @@ end
 
 
 %% Set figure size
-if (isempty(figureHandle))
-    % This was causing a crash in R2025b.  Not in other versions.
-    % Perhaps the units are the problem. We should be checking.
-    %
-    % figureHandle = figure(); clf;
-    % set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-    %
-    figureHandle = ieFigure(); clf;
+if (isempty(figureHandle)) && (isempty(axesHandle))
+    figureHandle = figure(); clf;
+    set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
     axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
+elseif (isempty(figureHandle)) && (~isempty(axesHandle))
+    % do nothing, we will draw the the passed axesHandle
 else
     if (isempty(axesHandle))
         figure(figureHandle);
@@ -545,7 +549,7 @@ if (visualizeCones)
     
     if (~isempty(activation))
         faceAlphaCones = 0.0;
-        edgeColor = [1 0 0];
+        edgeColor = obj.lConeColor;
         lineWidth = 0.5;
     end
 
@@ -574,7 +578,7 @@ if (visualizeCones)
     
     if (~isempty(activation))
         faceAlphaCones = 0.0;
-        edgeColor = [0 1 0];
+        edgeColor = obj.mConeColor;
         lineWidth = 0.5;
     end
 
@@ -604,7 +608,7 @@ if (visualizeCones)
 
     if (~isempty(activation))
         faceAlphaCones = 0.0;
-        edgeColor = [0 0.5 1];
+        edgeColor = obj.sConeColor;
         lineWidth = 0.5;
     end
 
@@ -808,7 +812,8 @@ end
 
 % Superimpose an optical PSF
 if (~isempty(superimposedPSF))
-    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, cMap, superimposedPSFcontourLineColor);
+    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, ...
+        superimposedPSFcolorMap, superimposedPSFcontourLineColor, superimposedPSFcontourLineWidth);
 end
 
 hold(axesHandle, 'off');
@@ -885,12 +890,6 @@ else
     end
 end
 
-% Finalize plot
-xtickangle(axesHandle, 0);
-set(axesHandle, 'Color', backgroundColor);
-axis(axesHandle, 'xy');
-axis(axesHandle, 'equal');
-set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontangle);
 
 if (~isempty(densityColorMap)) && (densityContourOverlay)
     colormap(axesHandle, densityColorMap);
@@ -1023,7 +1022,9 @@ end
 
 % User can set plotTitle to false, empty or a character string.
 if (iscell(plotTitle) || ~isempty(plotTitle))
-    title(axesHandle, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+    title(axesHandle, plotTitle, 'Color', plotTitleColor, ...
+        'FontSize', plotTitleFontSize, ...
+        'FontWeight', plotTitleFontWeight);
 else
     if (numel(obj.coneDensities) == 4)
         title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
@@ -1031,13 +1032,17 @@ else
             100*obj.coneDensities(2), ...
             100*obj.coneDensities(3), ...
             100*obj.coneDensities(4), ...
-            conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+            conesNum), 'Color', plotTitleColor, ...
+            'FontSize', plotTitleFontSize, ...
+            'FontWeight', plotTitleFontWeight);
     else
         title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
             100*obj.coneDensities(1), ...
             100*obj.coneDensities(2), ...
             100*obj.coneDensities(3), ...
-            conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+            conesNum), 'Color', plotTitleColor, ...
+            'FontSize', plotTitleFontSize, ...
+            'FontWeight', plotTitleFontWeight);
     end
 end
 
@@ -1051,11 +1056,19 @@ if (~isempty(textDisplay))
         'FontSize', 16, 'Color', textDisplayColor, 'BackgroundColor', backgroundColor);
 end
 
+% Finalize plot
+xtickangle(axesHandle, 0);
+set(axesHandle, 'Color', backgroundColor);
+axis(axesHandle, 'xy');
+axis(axesHandle, 'equal');
+set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontangle);
+
+
 drawnow;
 end
 
 %% Method to superimpose an optical PSF on top of the mosaic
-function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData, theColorMap, contourLineColor)
+function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData, theColorMap, contourLineColor, contourLineWidth)
 
 
 if (strcmp(visualizationDomain, 'microns'))
@@ -1085,7 +1098,7 @@ cMosaic.semiTransparentContourPlot(axesHandle, ...
     xSupport, ySupport, ...
     thePSFData.data/max(thePSFData.data(:)), ...
     0.05:0.15:0.95, theColorMap, alpha, contourLineColor, ...
-    'lineWidth', 1.0);
+    'lineWidth', contourLineWidth);
 end
 
 

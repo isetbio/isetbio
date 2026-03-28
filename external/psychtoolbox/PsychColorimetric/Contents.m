@@ -43,7 +43,8 @@
 %   LumToRadiance       - Get spectral radiance from luminance and relative spectrum of source.
 %   LumToTrolands       - Convert luminance (cd/m2) to trolands.
 %   LuvToXYZ            - Convert from Luv to XYZ.
-%   LMSToMacBoyn        - Convert from cones to MacLeod-Boynton chromaticity.
+%   LMSToMacBoyn        - Convert from cones to MacLeod-Boynton ls chromaticity. Can be called to also return luminance.
+%   MacBoynToLMS        - Convert Macleod-Boynton ls and luminance to LMS.  Works with LMSToMacBoyn.
 %   MakeFourierBasis    - Make a set of Fourier component basis functions.
 %   MakeGaussBasis      - Make a set of Gaussian basis functions.
 %   MakeItS             - Force wavelength sampling spec. to S format.

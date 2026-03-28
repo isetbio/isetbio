@@ -19,70 +19,104 @@ function t_mRGCMosaicSynthesizeAtStage3(options)
 
 % Examples:
 %{
-
-%
-% NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
-% the directions discribed in:
-%    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
-% under section "Configuring ISETBio to access RGC resources and run RGC simulations"
-%
+    % ETTBSkip
+    %
+    % NOTE: To run any RGC-related ISETBio code, such as this tutorial, users must follow
+    % the directions discribed in:
+    %    https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cell-(RGC)-mosaics
+    % under section "Configuring ISETBio to access RGC resources and run RGC simulations"
+    %
 
     % Only visualize the surround optimization grid 
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'onlyVisualizeOptimizationGrid', true);
 
     % Only visualize the optics at the optimization grid
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'onlyVisualizeOpticsAtOptimizationGrid', true);
 
+    
     % Compute input cone mosaic STF responses (stage 3A)
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3A', true);
 
+    
     % Derive optimized surround pooling functions for L-cone dominated mRGCs (stage 3B)
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3B', true, ...
         'centerConeDominanceToOptimize', cMosaic.LCONE_ID);
 
+    
     % Derive optimized surround pooling functions for M-cone dominated mRGCs (stage 3B)
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3B', true, ...
         'centerConeDominanceToOptimize', cMosaic.MCONE_ID);
 
+
     % Inspect derived surround pooling functions for L-cone dominated mRGCs
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'inspectMosaicAtStage3B', true, ...
         'centerConeDominanceToInspect', cMosaic.LCONE_ID);
 
+   
     % Inspect derived surround pooling functions for M-cone dominated mRGCs
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'inspectMosaicAtStage3B', true, ...
         'centerConeDominanceToInspect', cMosaic.MCONE_ID);
 
+    
     % Inspect the surround pooling interpolation grid
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'inspectSurroundPoolingInterpolationGrid', true);
 
+    
     % Synthesize the compute-ready mosaic by interpolating the derived
     % surround cone poolings and deriving surround weights for all cells in
     % the synthesized mRGCMosaic
+    % ETTBSkip
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'regenerateMosaicAtStage3C', true);
 
 
     % Visualize the center/surround cone pooling maps of synthesized cells
     t_mRGCMosaicSynthesizeAtStage3(...
-        'rgcMosaicName', 'PLOSpaperNasal2DegsTinyMosaic', ...
+        'rgcMosaicName', 'JCNpaperNasal2DegsTinyMosaic', ...
         'visualizeCenterSurroundConePoolingMapsOfSynthesizedCells', true);
+
+
+    % Synthesize the mosaic at 25 degs (temporal retinal, equivalent to 6.75mm,
+    % where the Field et al (2010) cone inputs to mRGCs were measured)
+    % Note that 6.75 mm in the macaque retina, corresponds to 30 degrees in the macaque retina.
+    % Compute input cone mosaic STF responses (stage 3A)
+
+    % Only the even or odd optimization positions
+    % ETTBSkip
+    t_mRGCMosaicSynthesizeAtStage3(...
+        'rgcMosaicName', 'JCNpaperTemporal25DegsMosaic', ...
+        'regenerateMosaicAtStage3A', true, ...
+        'positionSetToCompute', 'odd', ...
+        'visualizeOptimizationGridOnTopOfMosaic', true);
+
+    % Derive optimized surround pooling functions (even or odd positions) (stage 3B)
+    % ETTBSkip
+    t_mRGCMosaicSynthesizeAtStage3(...
+        'rgcMosaicName', 'JCNpaperTemporal25DegsMosaic', ...
+        'regenerateMosaicAtStage3B', true, ...
+        'computeSelectOptimizationPositionIndices', [1]);
 
 
 %}
@@ -93,7 +127,7 @@ arguments
 
     % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
     % for what is available and to add new mosaics
-    options.rgcMosaicName (1,:) char = 'PLOSpaperNasal2DegsTinyMosaic';
+    options.rgcMosaicName (1,:) char = 'JCNpaperNasal2DegsTinyMosaic';
 
     % ---- Which species to employ ----
     % Choose between {'macaque', 'human'}. If 'macaque' is chosen, the input
@@ -107,23 +141,23 @@ arguments
         {...
         mustBeMember(options.opticsSubjectName, ...
             { ...
-            'PLOSpaperDefaultSubject' ...
-            'PLOSpaperSecondSubject' ...
+            'JCNpaperDefaultSubject' ...
+            'JCNpaperSecondSubject' ...
             'VSS2024TalkFirstSubject' ...
             'VSS2024TalkSecondSubject' ...
-            'PLOSpaperStrehlRatio_0.87' ...
-            'PLOSpaperStrehlRatio_0.72' ...
-            'PLOSpaperStrehlRatio_0.59' ...
-            'PLOSpaperStrehlRatio_0.60' ...
-            'PLOSpaperStrehlRatio_0.27' ...
-            'PLOSpaperStrehlRatio_0.23' ...
-            'PLOSpaperStrehlRatio_0.21' ...
-            'PLOSpaperStrehlRatio_0.19' ...
-            'PLOSpaperStrehlRatio_0.09' ...
+            'JCNpaperStrehlRatio_0.87' ...
+            'JCNpaperStrehlRatio_0.72' ...
+            'JCNpaperStrehlRatio_0.59' ...
+            'JCNpaperStrehlRatio_0.60' ...
+            'JCNpaperStrehlRatio_0.27' ...
+            'JCNpaperStrehlRatio_0.23' ...
+            'JCNpaperStrehlRatio_0.21' ...
+            'JCNpaperStrehlRatio_0.19' ...
+            'JCNpaperStrehlRatio_0.09' ...
             } ...
             ) ...
         } ...
-        = 'PLOSpaperDefaultSubject';
+        = 'JCNpaperDefaultSubject';
 
 
     % ------ targetVisualSTF options ----
@@ -145,6 +179,10 @@ arguments
     % Which center cone numerosity to inspect surround cone pooling function
     % for. Empty results in all cone numerosities
     options.centerConeNumerosityToInspect (1,:) double = []
+
+    % Only compute select optimization position indices.
+    % If this is non-empty, the 'positionSetToCompute' is ignored
+    options.computeSelectOptimizationPositionIndices (1,:) double = [];
 
     % Which set of optimization position to compute in the run
     options.positionSetToCompute (1,:) char {mustBeMember(options.positionSetToCompute,{'full','even', 'odd', '1/3', '2/3', '3/3', '1/4', '2/4', '3/4', '4/4'})} = 'full';
@@ -178,6 +216,9 @@ arguments
     % Whether to regenerate the mosaic at stage3C. This is the compute-ready mosaic
     options.regenerateMosaicAtStage3C (1,1) logical = false;
 
+
+    % How many parallel pool workers to use
+    options.AppleSiliconParPoolSize (1,:) char {mustBeMember(options.AppleSiliconParPoolSize, {'extreme', 'half max'})} = 'half max';
 
     % ---- Visualization options ----
 
@@ -243,6 +284,9 @@ centerConeDominanceToInspect = options.centerConeDominanceToInspect;
 % Center cone numerosity for which to inspect the derived surround pooling functions
 centerConeNumerosityToInspect = options.centerConeNumerosityToInspect;
 
+% Only compute select optimization position indices
+computeSelectOptimizationPositionIndices = options.computeSelectOptimizationPositionIndices;
+
 % Which positions subset (or full set) to compute in this run
 positionSetToCompute = options.positionSetToCompute;
 
@@ -288,6 +332,9 @@ if (closePreviouslyOpenFigures)
     close all;
 end
 
+% Start the AppleSiliconeParPoolManager
+ASPPManager = AppleSiliconParPoolManager(options.AppleSiliconParPoolSize);
+
 
 % Generate the necessary mosaic params struct
 pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters(...
@@ -312,31 +359,37 @@ if (options.onlyVisualizeOptimizationGrid)
     return;
 end
 
-% Compute surround optimization functions for all grid positions 
-switch (positionSetToCompute)
-    case 'full'
-        optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
-    case 'even'
-        optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
-    case 'odd'
-        optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
-    case '1/3'
-        optimizationPositionIndicesToCompute = 1:3:size(optimizationPositionsAndSizesGrids,1);
-    case '2/3'
-        optimizationPositionIndicesToCompute = 2:3:size(optimizationPositionsAndSizesGrids,1);
-    case '3/3'
-        optimizationPositionIndicesToCompute = 3:3:size(optimizationPositionsAndSizesGrids,1);
-    case '1/4'
-        optimizationPositionIndicesToCompute = 1:4:size(optimizationPositionsAndSizesGrids,1);
-    case '2/4'
-        optimizationPositionIndicesToCompute = 2:4:size(optimizationPositionsAndSizesGrids,1);
-    case '3/4'
-        optimizationPositionIndicesToCompute = 3:4:size(optimizationPositionsAndSizesGrids,1);
-    case '4/4'
-        optimizationPositionIndicesToCompute = 4:4:size(optimizationPositionsAndSizesGrids,1);
-    otherwise
-        error('Unknown positionSetToCompute: ''%s''.', positionSetToCompute);
-end % switch
+if (~isempty(computeSelectOptimizationPositionIndices))
+    optimizationPositionIndicesToCompute = computeSelectOptimizationPositionIndices;
+else
+    % Compute surround optimization functions for all grid positions 
+    switch (positionSetToCompute)
+        case 'full'
+            optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
+        case 'even'
+            optimizationPositionIndicesToCompute = 1:2:size(optimizationPositionsAndSizesGrids,1);
+        case 'odd'
+            optimizationPositionIndicesToCompute = 2:2:size(optimizationPositionsAndSizesGrids,1);
+        case '1/3'
+            optimizationPositionIndicesToCompute = 1:3:size(optimizationPositionsAndSizesGrids,1);
+        case '2/3'
+            optimizationPositionIndicesToCompute = 2:3:size(optimizationPositionsAndSizesGrids,1);
+        case '3/3'
+            optimizationPositionIndicesToCompute = 3:3:size(optimizationPositionsAndSizesGrids,1);
+        case '1/4'
+            optimizationPositionIndicesToCompute = 1:4:size(optimizationPositionsAndSizesGrids,1);
+        case '2/4'
+            optimizationPositionIndicesToCompute = 2:4:size(optimizationPositionsAndSizesGrids,1);
+        case '3/4'
+            optimizationPositionIndicesToCompute = 3:4:size(optimizationPositionsAndSizesGrids,1);
+        case '4/4'
+            optimizationPositionIndicesToCompute = 4:4:size(optimizationPositionsAndSizesGrids,1);
+        otherwise
+            error('Unknown positionSetToCompute: ''%s''.', positionSetToCompute);
+    end % switch
+end
+
+
 
 % Generate the surroundRetinalConePoolingModel params struct
 surroundRetinalConePoolingModelParamsStruct = ...
@@ -382,7 +435,11 @@ end
 
 if (regenerateMosaicAtStage3A)
 	% Compute input cone mosaic STF responses
-	RGCMosaicConstructor.compute.poolingFunctionsForSurroundOptimizationGrid(...
+
+    
+    
+    
+    RGCMosaicConstructor.compute.poolingFunctionsForSurroundOptimizationGrid(...
  		pStruct.whichEye, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicSizeDegs, ...

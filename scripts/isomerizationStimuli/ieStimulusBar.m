@@ -1,6 +1,10 @@
 function iStim = ieStimulusBar(varargin)
 % Creates a dynamic cone mosaic response to a moving bar stimulus
 % 
+% DHB: 2026-03-07. This is a function and should not really be in the scripts directory.
+% Adding UTTBSkip so it isn't run by the autovalidation.
+% UTTBSkip
+%
 % Inputs: a parameter structure that defines
 %   * the bar stimulus properties
 %   * cone mosaic properties

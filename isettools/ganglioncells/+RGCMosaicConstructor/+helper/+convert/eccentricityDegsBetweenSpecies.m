@@ -1,5 +1,14 @@
 function [eccDegsOut, eccMMsOut] = eccentricityDegsBetweenSpecies(conversionDirection, eccDegsIn)
 
+% Examples:
+%{
+	conversionDirection = 'MacaqueRetinaToHumanRetina';
+	eccDegsIn = 32;
+	[eccDegsOut, eccMMsOut] = RGCMosaicConstructor.helper.convert.eccentricityDegsBetweenSpecies(conversionDirection, eccDegsIn)
+
+%}
+
+
 	switch (conversionDirection)
 		case 'HumanRetinaToMacaqueRetina'
 			% Convert eccDegs to eccMMs in human retina

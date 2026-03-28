@@ -174,7 +174,7 @@ if ((~reAnalyzeSTFData) && (aggregatePreviouslyAnalyzedRunsFromMultipleTargetVis
         end % iRun
     elseif (aggregatePreviouslyAnalyzedRunsFromMultipleEccentricities)
         % Target visual STF descriptor
-        targetVisualSTFdescriptorToOptimizeFor = 'default'; % mean CK mean RsRcRatio, mean CK intSCratio (what was used in PLOSpaper)
+        targetVisualSTFdescriptorToOptimizeFor = 'default'; % mean CK mean RsRcRatio, mean CK intSCratio (what was used in JCNpaper)
 
         allConditionPstructs = cell(1, numel(aggregatedRGCmosaicNames));
         for iRun = 1:numel(aggregatedRGCmosaicNames)

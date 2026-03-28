@@ -151,11 +151,11 @@ end
 coneMosaicSpecies = 'human';
 
 % Optics subject for which the mRGC mosaics were optimized for
-opticsSubjectName = 'PLOSpaperDefaultSubject';  % This is subject #2 (ranked #3), default
+opticsSubjectName = 'JCNpaperDefaultSubject';  % This is subject #2 (ranked #3), default
 opticsSubjectName = 'VSS2024TalkFirstSubject';  % This is subject #3 (ranked #7), second subject
 
 % Target eccentricity. Dummy, gets rewritten
-RGCmosaicName = 'PLOSpaperTemporal32DegsMosaic';
+RGCmosaicName = 'JCNpaperTemporal32DegsMosaic';
 
 
 % Optics for STF responses

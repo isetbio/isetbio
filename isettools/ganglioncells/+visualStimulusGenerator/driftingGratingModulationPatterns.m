@@ -1,3 +1,6 @@
+%
+% visualStimulusGenerator.driftingGratingModulationPatterns(stimParams)
+%
 function [H, spatialSupportDegs, spatialPhasesDegs, temporalSupportSeconds, temporalRamp] = ...
     driftingGratingModulationPatterns(stimParams)
 
@@ -28,11 +31,10 @@ function [H, spatialSupportDegs, spatialPhasesDegs, temporalSupportSeconds, temp
     end
 
     H = zeros(framesNum, size(X,1), size(X,2));
-    temporalSupportSeconds = zeros(1, framesNum);
     fX = stimParams.spatialFrequencyCPD * cosd(stimParams.orientationDegs);
     fY = stimParams.spatialFrequencyCPD * sind(stimParams.orientationDegs);
 
-
+    temporalSupportSeconds = zeros(1, framesNum);
     for frameIndex = 1:framesNum
         a = 2*pi*(fX*X +fY*Y) + spatialPhasesDegs(frameIndex)/180*pi;
         thePattern = cos(a);

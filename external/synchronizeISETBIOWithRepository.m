@@ -60,17 +60,20 @@ function synchronizeISETBIOWithRepository(repositoryName)
     % Get names of sub-directories of $isetbio/external/ptb
     fprintf('\nChecking contents of destination directory (%s) to determine which files to sync.\n', dstDir);
     dirContents = dir(dstDir);
-    ignoredDirs = {'+ptb', '', '..'};
+    ignoredDirs = {'+ptb', '', '..' '.'};
     destDirs = {}; srcDirs = {};
     for k = 1:numel(dirContents)
         if (dirContents(k).isdir)
             if ismember(dirContents(k).name, ignoredDirs)
+                fprintf('\tIgnoring dir %s\n',dirContents(k).name);
                 continue;
             end
+            fprintf('Processing dir %s\n',dirContents(k).name);
             fullDirName = sprintf('%s/%s', dstDir, dirContents(k).name);
             destDirs{numel(destDirs)+1} = fullDirName;
             fullDirName = sprintf('%s/%s', srcDir, dirContents(k).name);
             srcDirs{numel(srcDirs)+1} = fullDirName;
+            fprintf('\tSrc: %s,\n\tDst: %s\n',srcDirs{numel(srcDirs)},destDirs{numel(destDirs)});
         else
             fprintf('%s is not a directory. Will not be synchronized.\n', dirContents(k).name);
         end
@@ -95,7 +98,7 @@ function synchronizeISETBIOWithRepository(repositoryName)
     for k = 1:numel(filesToSynchronize.dest)
         destinationFile = filesToSynchronize.dest{k};
         sourceFile      = filesToSynchronize.src{k};
-        if (exist(sourceFile, 'file') ~= 2) && (isempty(strfind(sourceFile, '.DS_Store')))
+        if (exist(sourceFile, 'file') ~= 2) && (isempty(strfind(sourceFile, '.DS_Store')) )
             error('%s does not exist !!', sourceFile);
         else 
             [content_differs, printout] = system(sprintf('diff --side-by-side  %s %s', sourceFile, destinationFile));

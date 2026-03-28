@@ -32,7 +32,7 @@ function theAugmentedFilePath = augmentedPathWithSubdirs(theRootDir, filePath, v
                     fprintf(2,'Hit enter to continue...');
                     pause;
                 else
-                    fprintf(2,'Generating subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
+                    fprintf('Generating subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
                 end
                 mkdir(augmentedPath);
             end

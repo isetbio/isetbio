@@ -245,6 +245,8 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
                 theMRGCMosaic, targetRGCindices, theFraction, theMetric);
     
             % Update the STF stimulus params struct
+            surroundConnectivitySimulationParamsStruct.STFparamsStruct.displayType = 'CRT-Sony-HorwitzLab';
+            surroundConnectivitySimulationParamsStruct.STFparamsStruct.displayLuminanceHeadroomPercentage = 0.1;
             surroundConnectivitySimulationParamsStruct.STFparamsStruct.resolutionDegs = stimulusResolutionDegs;
             surroundConnectivitySimulationParamsStruct.STFparamsStruct.positionDegs = theMRGCMosaic.eccentricityDegs;
             surroundConnectivitySimulationParamsStruct.STFparamsStruct.sizeDegs =  1.1*max(theMRGCMosaic.inputConeMosaic.sizeDegs);

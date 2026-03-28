@@ -494,9 +494,9 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         % First check that the OIsequence and the emPath have the same length
         [nTrials, nTimePoints, ~] = size(obj.fixEMobj.emPosMicrons);
 
-        if (~oiSequence.isPeriodic)
-            assert(numel(timeAxis) == nTimePoints, 'The oiSequence length (%d) does not match the eye movement path length (%d)', numel(timeAxis), nTimePoints);
-        end
+        %if (~oiSequence.isPeriodic)
+        assert(numel(timeAxis) == nTimePoints, 'The oiSequence length (%d) does not match the eye movement path length (%d)', numel(timeAxis), nTimePoints);
+        %end
 
         % Then check that they have the same time support
         timeAxisDifferentialsPicoSeconds = abs((timeAxis-obj.fixEMobj.timeAxis)*1e12);
@@ -507,7 +507,6 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         % All good.
         emPathsMicrons = obj.fixEMobj.emPosMicrons;
         emPathsDegs = obj.fixEMobj.emPosArcMin/60;
-        %error('cMosaic.compute(): We have not yet implemented this method for fixationalEyeMovements with an OIsequence');
     else
         if (~isempty(nTimePoints))
             fprintf('cMosaic.compute() with oiSequence: ignoring ''nTimePoints'' (set to %d) parameter, and setting it to the length of the oiSequence.', nTimePoints);

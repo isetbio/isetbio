@@ -9,9 +9,11 @@ function oi = oiTreeShrewCreate(varargin)
 %
 % History:
 %    11/23/18  NPC  ISETBIO TEAM, 2018
+%    02/28/26  NPC  Updated for ISETBio/ISETcam
 %
 % Examples:
 %{
+
     % Default TreeShrew model
     oi = oiTreeShrewCreate();
 %}
@@ -30,6 +32,8 @@ function oi = oiTreeShrewCreate(varargin)
     oi = oiSet(oi, 'diffuser method', 'skip');
     oi = oiSet(oi, 'consistency', 1);
     
+    oi = oiSet(oi,'compute method','opticsotf');
+
     % TreeShrew lens absorption.  For ISETCam integration, need to 
     % remove transmittance field first, which we do by brute force.
     if checkfields(oi.optics, 'transmittance')

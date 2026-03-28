@@ -9,6 +9,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isnumeric(x))));
     p.addParameter('compositeInsteadOfComponent', false, @islogical);
     p.addParameter('flipXYaxes', false, @islogical);
+    p.addParameter('yLimsRange', [-0.4 1.0]);
     p.addParameter('noGrid', false, @islogical);
 
     p.parse(varargin{:});
@@ -17,6 +18,7 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     compositeInsteadOfComponent = p.Results.compositeInsteadOfComponent;
     flipXYaxes = p.Results.flipXYaxes;
+    yLimsRange = p.Results.yLimsRange;
     noGrid = p.Results.noGrid;
     
 	switch (whichMeridian)
@@ -51,8 +53,8 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
     maxX = max(centerLineWeightingFunctions.xProfile.amplitude(:));
     maxY = max(centerLineWeightingFunctions.yProfile.amplitude(:));
     maxProfile = max([maxX maxY]);
-    YTicks = maxProfile*(-0.25:0.25:1.0);
-    YLims = maxProfile*[-0.4 1.0];
+    YTicks = maxProfile*(-1.0:0.25:1.0);
+    YLims = maxProfile*yLimsRange;
 
     ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure no left axis label');
 
@@ -142,14 +144,16 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
             end
     end
 
-    if (spatialSupportTickSeparationArcMin/60 > 1-100*eps)
-       xTickLabels = sprintf('%2.0f\n', xTicksDegs);
-    elseif (spatialSupportTickSeparationArcMin/60>= 0.1-100*eps)
-       xTickLabels = sprintf('%2.1f\n', xTicksDegs);
-    elseif (spatialSupportTickSeparationArcMin/60 > 0.01-100*eps)
-       xTickLabels = sprintf('%2.2f\n', xTicksDegs);
+    minTickIncrement = min(abs(diff(xTicksDegs(:))));
+   
+    if (minTickIncrement > 1-100*eps)
+       xTickLabels = sprintf('%1.0f\n', xTicksDegs);
+    elseif (minTickIncrement>= 0.1-100*eps)
+       xTickLabels = sprintf('%1.1f\n', xTicksDegs);
+    elseif (minTickIncrement > 0.01-100*eps)
+       xTickLabels = sprintf('%1.2f\n', xTicksDegs);
     else
-       xTickLabels = sprintf('%2.3f\n', xTicksDegs);
+       xTickLabels = sprintf('%1.3f\n', xTicksDegs);
     end
 
     if (flipXYaxes)
@@ -182,11 +186,6 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
 
 
     if (isempty(axesToRenderIn))
-        % Export figure
-        % OLD Way
-        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName);
-
         thePDFfileName = fullfile(pdfExportSubDir, pdfFileName);
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end

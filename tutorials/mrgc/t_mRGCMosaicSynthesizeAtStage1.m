@@ -35,17 +35,18 @@ function t_mRGCMosaicSynthesizeAtStage1(options)
 %
 
     % Example #1: Simply inspect the generation of the default mRGC mosaic lattice
-    t_mRGCMosaicSynthesizeAtStage1();
+    t_mRGCMosaicSynthesizeAtStage1('sourceLatticeSizeDegs', 2);
 
     % Example #2: Synthesize a lattice, here, a lattice of the
-    % mRGC mosaic in the right eye which is 16-deg wide
+    % mRGC mosaic in the right eye which is 2-deg wide
     % Note: synthesizing lattices is an iterative, compute-intense
     % operation which can take many hours to complete
-    % depending on the power of the computer it is run on
+    % depending on the ''sourceLatticeSizeDegs' and the power of the computer it is run on
+
     t_mRGCMosaicSynthesizeAtStage1(...
         'whichEye', 'right eye', ...
         'neuronType', 'midget ganglion cells', ...
-        'sourceLatticeSizeDegs', 16, ...
+        'sourceLatticeSizeDegs', 2, ...
         'maxIterations', 512, ...
         'onlyInspectLattice', false);
 
@@ -56,12 +57,13 @@ function t_mRGCMosaicSynthesizeAtStage1(options)
     %
     % This is a multi-step process: Do the following:
     % Step1: Find filenames of lattices that are available with their
-    generation progress history included
+    % generation progress history included
+
     theLatticePatchFileNames = retinalattice.listPrecomputedPatches(...
         'withGenerationProgressHistory', true)
     
     % Step2: Pick one of the returned filenames
-    theLatticeFileName = theLatticePatchFileNames{1};
+    theLatticeFileName = 'right_eye_midget_ganglion_cells_2.00deg_mosaic_progress.mat'; % theLatticePatchFileNames{1};
 
     % Step3: Decode the filename to extract the eye, the neuron type, and
     % the source lattice size
@@ -86,7 +88,7 @@ arguments
     options.whichEye (1,:) char {mustBeMember(options.whichEye,{'left eye','right eye'})} = 'right eye';
 
     % Currently only 64 degs is available
-    options.sourceLatticeSizeDegs = 16; 
+    options.sourceLatticeSizeDegs = 64; 
 
     % The look up entry size for eccentricity. The higher this is, 
     % the smoother the lattice will be (but will take longer to compute)
