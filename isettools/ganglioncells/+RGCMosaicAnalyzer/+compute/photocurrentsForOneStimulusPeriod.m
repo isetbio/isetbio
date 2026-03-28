@@ -31,7 +31,6 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     % Preallocate memory
     theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,1);
  
-
     temporalSupportPhotocurrent = computeSingleConePhotocurrentResponse( ...
         eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
         nWarmUpPeriods, onlyKeepResponseDuringLastStimulusPeriod, ...
@@ -80,7 +79,7 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
             theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,iConeIndex);
    
 
-            % Compute photocurrent for this cone making the cone excitation response periodic by concatenating nWarmUpPeriods
+            % Compute photocurrent for this cone, transforming the cone excitation response into a periodic waveform by concatenating nWarmUpPeriods
             [temporalSupportPhotocurrent, ...
              theConePhotoCurrentDifferentialResponse, ...
              theConeBackgroundPhotoCurrent, ...
@@ -191,48 +190,45 @@ function [temporalSupportPhotocurrent, ...
         coneMosaicIntegrationTime, osTimeStep, pCurrentTemporalResolutionSeconds, ...
         skipAssertions)
 
-% Make the cone excitation response periodic by concatenating nWarmUpPeriods
-theConeExcitations = theConeExcitations(1:end);
-theConeExcitationsPeriodic = reshape(theConeExcitations, [1 numel(theConeExcitations)]);
-for k = 1:nWarmUpPeriods
-    theConeExcitationsPeriodic = cat(2, theConeExcitationsPeriodic, theConeExcitationsPeriodic(1:numel(theConeExcitations)));
-end
-
-
-% Convert excitation counts to excitation rates
-theConeExcitationsRatePeriodic = theConeExcitationsPeriodic(:) / coneMosaicIntegrationTime;
-backgroundConeExcitationRate = mean(theConeExcitationsRatePeriodic);
-
-% Compute the pCurrent response to the periodic stimulus
-[thePcurrentDifferentialPeriodicResponse, photocurrentPeriodicResponseTimeAxis, thePcurrentBackgroundResponseTransient] = ...
-    cMosaic.photocurrentFromConeExcitationRateUsingBiophysicalOSmodel(sqrt(sum(eccentricityDegs(:).^2)), ...
-        theConeExcitationsRatePeriodic, ...
-        backgroundConeExcitationRate, ...
-        coneMosaicIntegrationTime, ...
-        pCurrentTemporalResolutionSeconds, ...
-        'osTimeStepSeconds', osTimeStep, ...
-        'skipAssertions', skipAssertions);
-
-backgroundPhotocurrent = thePcurrentBackgroundResponseTransient(end);
-
-
-if (onlyKeepResponseDuringLastStimulusPeriod)
-    % Only keep pCurrent response during the last stimulus period
+    
     dToriginal = temporalSupportSeconds(2)-temporalSupportSeconds(1);
-    dT = photocurrentPeriodicResponseTimeAxis(2)-photocurrentPeriodicResponseTimeAxis(1);
-    tOneStimulusCycle = temporalSupportSeconds(end)-temporalSupportSeconds(1)+dT;
-    idx = find(photocurrentPeriodicResponseTimeAxis >= photocurrentPeriodicResponseTimeAxis(end)-(tOneStimulusCycle+0.5*dToriginal+dT));
-
-    theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse(idx);
-    temporalSupportPhotocurrent = photocurrentPeriodicResponseTimeAxis(idx);
-else
-    theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse;
-    temporalSupportPhotocurrent = photocurrentPeriodicResponseTimeAxis;
-end
+    tOneStimulusCycle = temporalSupportSeconds(end)-temporalSupportSeconds(1)+dToriginal;
+    
+    % Make the cone excitation response periodic by concatenating nWarmUpPeriods
+    theConeExcitations = theConeExcitations(1:end);
+    theConeExcitationsPeriodic = reshape(theConeExcitations, [1 numel(theConeExcitations)]);
+    for k = 1:nWarmUpPeriods
+        theConeExcitationsPeriodic = cat(2, theConeExcitationsPeriodic, theConeExcitationsPeriodic(1:numel(theConeExcitations)));
+    end
 
 
-% Time support starts at 0 msec
-temporalSupportPhotocurrent = temporalSupportPhotocurrent - temporalSupportPhotocurrent(1);
-temporalSupportPhotocurrent = temporalSupportPhotocurrent';
+    % Convert excitation counts to excitation rates
+    theConeExcitationsRatePeriodic = theConeExcitationsPeriodic(:) / coneMosaicIntegrationTime;
+    backgroundConeExcitationRate = mean(theConeExcitationsRatePeriodic);
+    
+    % Compute the pCurrent response to the periodic stimulus
+    [thePcurrentDifferentialPeriodicResponse, photocurrentPeriodicResponseTimeAxis, thePcurrentBackgroundResponseTransient] = ...
+        cMosaic.photocurrentFromConeExcitationRateUsingBiophysicalOSmodel(sqrt(sum(eccentricityDegs(:).^2)), ...
+            theConeExcitationsRatePeriodic, ...
+            backgroundConeExcitationRate, ...
+            coneMosaicIntegrationTime, ...
+            pCurrentTemporalResolutionSeconds, ...
+            'osTimeStepSeconds', osTimeStep, ...
+            'skipAssertions', skipAssertions);
+    
+    backgroundPhotocurrent = thePcurrentBackgroundResponseTransient(end);
 
+    if (onlyKeepResponseDuringLastStimulusPeriod)
+        % Only keep pCurrent response during the last stimulus period
+        idx = find(photocurrentPeriodicResponseTimeAxis >= photocurrentPeriodicResponseTimeAxis(end)-tOneStimulusCycle);
+        theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse(idx);
+        temporalSupportPhotocurrent = photocurrentPeriodicResponseTimeAxis(idx);
+    else
+        theConePhotoCurrentDifferentialResponse = thePcurrentDifferentialPeriodicResponse;
+        temporalSupportPhotocurrent = photocurrentPeriodicResponseTimeAxis;
+    end
+    
+    % Time support starts at 0 msec
+    temporalSupportPhotocurrent = temporalSupportPhotocurrent - temporalSupportPhotocurrent(1);
+    temporalSupportPhotocurrent = temporalSupportPhotocurrent';
 end
