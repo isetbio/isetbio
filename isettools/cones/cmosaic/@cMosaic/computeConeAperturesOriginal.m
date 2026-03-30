@@ -1,16 +1,14 @@
-function computeConeApertures(obj, lowOpticalImageResolutionWarning)
+function computeConeAperturesOriginal(obj, lowOpticalImageResolutionWarning)
 % Compute apertures from the cone positions stored in the cMosaic, obj
 %
 % ******
-% Replaced by the Gemini or ChatGPT Refactored code.  That one and
-% this original produce the identical results, as far as I can tell. I
-% am holding onto this for a while.  If there are no problems by early
-% 2026, just delete this file.
+% Historical reference implementation.
+% The active class method is in computeConeApertures.m.
 % ******
 %
 % Syntax
-%  computeConeApertures(cMosaic,lowResolutionWarning)
-%  cMosaic.computeConeApertures(lowResolutionWarning)
+%  computeConeAperturesOriginal(cMosaic,lowResolutionWarning)
+%  cMosaic.computeConeAperturesOriginal(lowResolutionWarning)
 %
 % Inputs:
 %   lowResolutionWarning
@@ -20,9 +18,7 @@ function computeConeApertures(obj, lowOpticalImageResolutionWarning)
 %   is done in the included method
 %   coneZonesFromApertureSizeAndOIresolution
 %
-%  I created computeConeAperturesRefactored.m and will see if that is
-%  helpful for simplification.  Copilot thinks it is more efficient,
-%  but who knows.
+%  This file is retained as an archive of the pre-refactor logic.
 %
 % Author: NC
 %
