@@ -229,6 +229,14 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     end
 
 
+    coneResponseExtraSamplesNum = 1
+    stimParams
+    theConeModulationsBasedResponseTemporalSupportSeconds
+    halfConeResponseTimeBin = 0.5*(theConeModulationsBasedResponseTemporalSupportSeconds(2)-theConeModulationsBasedResponseTemporalSupportSeconds(1))
+    [~,photocurrentLastIndexForPhaseAlignment] = min(abs(thePhotocurrentsBasedResponseTemporalSupportSeconds-(theConeModulationsBasedResponseTemporalSupportSeconds(end-coneResponseExtraSamplesNum)+halfConeResponseTimeBin)));
+    photocurrentResponseExtraSamplesNum = numel(thePhotocurrentsBasedResponseTemporalSupportSeconds)-photocurrentLastIndexForPhaseAlignment
+
+
     % Cone modulation based mRGC response time-series
     ax = subplot('Position', subplotPosVectors(1,2).v);
 
@@ -240,13 +248,14 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
             sfColors = brewermap(5+numel(stimParams.spatialFrequencyCPD), 'blues');
         end
         for iSF = 1:numel(stimParams.spatialFrequencyCPD)
-            theConeModulationsBasedResponse = squeeze(theConeModulationsBasedResponses(iORI, iSF, :));
             phaseForAlignment = theConeModulationsBasedSTFphaseSpectra(iORI, iSF);
-            theConeModulationsBasedResponse = phaseAlignResponse(theConeModulationsBasedResponse,...
+            theConeModulationsBasedResponse = squeeze(theConeModulationsBasedResponses(iORI, iSF, :));
+            idx = 1:(numel(theConeModulationsBasedResponse)-coneResponseExtraSamplesNum);
+            thePhaseAlignedConeModulationsBasedResponse = phaseAlignResponse(theConeModulationsBasedResponse(idx),...
                 phaseForAlignment, ...
-                theConeModulationsBasedResponseTemporalSupportSeconds, ...
-                1);
-            stairs(ax, theConeModulationsBasedResponseTemporalSupportSeconds, theConeModulationsBasedResponse, ...
+                theConeModulationsBasedResponseTemporalSupportSeconds(idx), ...
+                false);
+            stairs(ax, theConeModulationsBasedResponseTemporalSupportSeconds(idx), thePhaseAlignedConeModulationsBasedResponse, ...
                 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
         end
     end
@@ -262,6 +271,8 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     title(ax, sprintf('cone modulations-based mRGC responses\n(zero phase)'), 'FontWeight', 'normal', 'FontSize', 16);
 
 
+
+   
     % Photocurrent based mRGC response time-series
     ax = subplot('Position', subplotPosVectors(2,2).v);
     
@@ -277,13 +288,13 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
             % reveal temporal delay of the photocurrent response
             % with respect to the coneModulation response
             phaseForAlignment = theConeModulationsBasedSTFphaseSpectra(iORI, iSF);
-
             thePhotocurrentBasedResponse = squeeze(thePhotocurrentsBasedResponses(iORI, iSF, :));
-            thePhotocurrentBasedResponse = phaseAlignResponse(thePhotocurrentBasedResponse,...
+            idx = 1:(numel(thePhotocurrentBasedResponse)-photocurrentResponseExtraSamplesNum);
+            thePhaseAlignedPhotocurrentBasedResponse = phaseAlignResponse(thePhotocurrentBasedResponse(idx),...
                 phaseForAlignment, ...
-                thePhotocurrentsBasedResponseTemporalSupportSeconds, ...
-                1);
-            plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds, thePhotocurrentBasedResponse, ...
+                thePhotocurrentsBasedResponseTemporalSupportSeconds(idx), ...
+                true);
+            plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds(idx), thePhaseAlignedPhotocurrentBasedResponse, ...
                 '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
         end
     end
@@ -300,8 +311,8 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     % Plotocurrent - based mRGC response time series (zero phase)
     ax = subplot('Position', subplotPosVectors(1,3).v);
 
-    allConeModulationsResponses = zeros(numel(stimParams.orientationDegs), numel(stimParams.spatialFrequencyCPD), numel(thePhotocurrentsBasedResponseTemporalSupportSeconds));
-    allPhotocurrentsResponses = allConeModulationsResponses;
+    allPhotocurrentsResponses = zeros(numel(stimParams.orientationDegs), numel(stimParams.spatialFrequencyCPD), numel(thePhotocurrentsBasedResponseTemporalSupportSeconds)-photocurrentResponseExtraSamplesNum);
+    allConeModulationsResponses = allPhotocurrentsResponses;
 
     hold (ax, 'on');
     for iORI = 1:numel(stimParams.orientationDegs)
@@ -313,28 +324,33 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
         for iSF = 1:numel(stimParams.spatialFrequencyCPD)
             phaseForAlignment = theConeModulationsBasedSTFphaseSpectra(iORI, iSF);
             theConeModulationsBasedResponse = squeeze(theConeModulationsBasedResponses(iORI, iSF, :));
-            theConeModulationsBasedResponse = phaseAlignResponse(theConeModulationsBasedResponse,...
+            idx1 = 1:(numel(theConeModulationsBasedResponse)-coneResponseExtraSamplesNum);
+            thePhaseAlignedConeModulationsBasedResponse = phaseAlignResponse(theConeModulationsBasedResponse(idx1),...
                 phaseForAlignment, ...
-                theConeModulationsBasedResponseTemporalSupportSeconds, ...
-                1);
+                theConeModulationsBasedResponseTemporalSupportSeconds(idx1), ...
+                false);
 
             phaseForAlignment = thePhotocurrentsBasedSTFphaseSpectra(iORI, iSF);
             thePhotocurrentBasedResponse = squeeze(thePhotocurrentsBasedResponses(iORI, iSF, :));
-            thePhotocurrentBasedResponse = phaseAlignResponse(thePhotocurrentBasedResponse,...
+            idx2 = 1:(numel(thePhotocurrentBasedResponse)-photocurrentResponseExtraSamplesNum);
+            thePhaseAlignedPhotocurrentBasedResponse = phaseAlignResponse(thePhotocurrentBasedResponse(idx2),...
                 phaseForAlignment, ...
-                thePhotocurrentsBasedResponseTemporalSupportSeconds, ...
-                1);
-            plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds, thePhotocurrentBasedResponse, ...
+                thePhotocurrentsBasedResponseTemporalSupportSeconds(idx2), ...
+                true);
+            plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds(idx2), thePhaseAlignedPhotocurrentBasedResponse, ...
                 '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
 
             % Interpolate cone modulations to same time base as photocurrent responses
             interpolationMethod = 'linear';
-            theConeModulationsBasedResponse = interp1(theConeModulationsBasedResponseTemporalSupportSeconds, theConeModulationsBasedResponse, ...
-                thePhotocurrentsBasedResponseTemporalSupportSeconds, interpolationMethod);
+            thePhaseAlignedConeModulationsBasedResponse = interp1(...
+                theConeModulationsBasedResponseTemporalSupportSeconds(idx1), ...
+                thePhaseAlignedConeModulationsBasedResponse, ...
+                thePhotocurrentsBasedResponseTemporalSupportSeconds(idx2), interpolationMethod);
 
             % Accumulate responses
-            allPhotocurrentsResponses(iORI,iSF,:) = thePhotocurrentBasedResponse;
-            allConeModulationsResponses(iORI,iSF,:) = theConeModulationsBasedResponse;
+            allConeModulationsResponses(iORI,iSF,:) = thePhaseAlignedConeModulationsBasedResponse;
+            allPhotocurrentsResponses(iORI,iSF,:) = thePhaseAlignedPhotocurrentBasedResponse;
+            
         end
     end
     grid(ax, 'on')
@@ -491,9 +507,13 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
                 theConeModulationBasedSTFphaseRadians = theConeModulationBasedSTFphaseDegs/180*pi;
                 thePhotocurrentBasedSTFphaseRadians = thePhotocurrentBasedSTFphaseDegs/180*pi;
 
-                % Dividing complex numbers in Euler form (r * exp(i * theta) involves dividing their magnitudes (r)
-                % and subtracting their angles 
-                theEulerRatio = exp(1j*thePhotocurrentBasedSTFphaseRadians) ./ exp(1j*theConeModulationBasedSTFphaseRadians);
+                % To get the phase difference, we divide the Euler form of the normalized STFs
+                % This is because ratios of complex numbers in Euler form (r * exp(i * theta) 
+                % involves dividing their magnitudes (r) and subtracting their angles (phase) 
+
+                EulerFormNormalizedPhotocurrentSTFs = exp(1j*thePhotocurrentBasedSTFphaseRadians);
+                EulerFormNormalizedConeModulationSTFs = exp(1j*theConeModulationBasedSTFphaseRadians);
+                theEulerRatio = EulerFormNormalizedPhotocurrentSTFs ./ EulerFormNormalizedConeModulationSTFs;
                 thePhaseDifferenceRadians = angle(theEulerRatio);
 
                 % Unwrap and back to degrees
@@ -546,12 +566,12 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
 
             % Black line joining the BPIs for all orientations for the current cell
             plot(ax,theConeModulationsBasedBPIs(end, :), thePhotocurrentsBasedBPIs(end, :), 'k-', 'LineWidth', 3.0);
-            plot(ax,theConeModulationsBasedBPIs(end, :), thePhotocurrentsBasedBPIs(end, :), '-','Color', [.8 .8 0], 'LineWidth', 1.0);
+            plot(ax,theConeModulationsBasedBPIs(end, :), thePhotocurrentsBasedBPIs(end, :), '-','Color', [0.1 0.8 1.0], 'LineWidth', 1.0);
 
-            % Current cell BPIs (large square)
+            % Current cell BPIs (large cyan square)
             for iORI = 1:numel(stimParams.orientationDegs)
                 pHandles(iORI) = scatter(ax,theConeModulationsBasedBPIs(end, iORI), thePhotocurrentsBasedBPIs(end, iORI), 20^2, ...
-                    'Marker', 's', 'MarkerFaceColor', [0.8 0.8 0] , 'MarkerFaceAlpha', 1.0, ...
+                    'Marker', 's', 'MarkerFaceColor', [0.1 0.8 1.0] , 'MarkerFaceAlpha', 1.0, ...
                     'MarkerEdgeColor', squeeze(oriColors(iORI,:)), 'MarkerEdgeAlpha', 1.0, 'LineWidth', 2.0);
 
                 theLegends{iORI} = sprintf('%d degs', stimParams.orientationDegs(iORI));
@@ -728,23 +748,24 @@ function [xx, sfTicks, sfTickLabels] = generateSFticks(sfSupport)
 
 end
 
-function theResponse = phaseAlignResponse(theResponse, theResponsePhaseDegs, theTemporalSupportSeconds, extraSamples)
+function theResponse = phaseAlignResponse(theUnshiftedResponse, theResponsePhaseDegs, theTemporalSupportSeconds, demo)
 
-    sizeResponse = size(theResponse);
-    theSampleDegs = 360/(numel(theTemporalSupportSeconds)-extraSamples);
+    sizeResponse = size(theUnshiftedResponse);
+    theSampleDegs = 360/(numel(theTemporalSupportSeconds));
     if (theResponsePhaseDegs > 180)
         theResponsePhaseDegs = -(360-theResponsePhaseDegs);
     end
 
     theShiftAmountSamples = sign(theResponsePhaseDegs) * round(abs(theResponsePhaseDegs)/theSampleDegs);
+    theResponse  = circshift(theUnshiftedResponse, -theShiftAmountSamples);
 
-    if (extraSamples > 0)
-        theResponse = theResponse(1:end-extraSamples);
-    end
-    theResponse  = circshift(theResponse , -theShiftAmountSamples);
-
-    if (extraSamples > 0)
-        theResponse = [theResponse(:);  theResponse(1:extraSamples)];
+    if (demo)
+        theShiftAmountSamples
+        figure(1000); clf;
+        plot(theTemporalSupportSeconds, theUnshiftedResponse, 'ks');
+        hold on;
+        plot(theTemporalSupportSeconds, theResponse, 'r-');
+        pause
     end
 
     theResponse = reshape(theResponse, sizeResponse);
