@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "isetbio",
+			"path": "."
+		},
+		{
+			"name": "isetcam",
+			"path": "../isetcam"
+		},
+		{
+			"name": "isetvalidate",
+			"path": "../isetvalidate"
+		}
+	],
+	"settings": {}
+}

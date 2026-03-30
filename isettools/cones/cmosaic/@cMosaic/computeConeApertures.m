@@ -155,7 +155,7 @@ else
         end
         
         [blurApertureDiameterMicronsZones, coneIndicesInZones] = ...
-            obj.coneZonesFromApertureSizeAndOIresolution(finalApertures, lowOpticalImageResolutionWarning);
+            coneZonesFromApertureSizeAndOIresolution(obj, finalApertures, lowOpticalImageResolutionWarning);
         
         if (numel(blurApertureDiameterMicronsZones) > 1)
             fprintf('Using %d blur zones\n', numel(blurApertureDiameterMicronsZones));
@@ -204,7 +204,7 @@ function [coneApertureDiameterMicronsZoneBands, ...
     oiResMicrons = obj.oiResMicronsForZoning;
 
     % Check whether there exists a cachedConePartition that is not stale
-    if (obj.cachedConePartitionIsValid()) % Use refactored cache check
+    if (cachedConePartitionIsValid(obj)) % Use refactored cache check
         fprintf('Using cached cone partition with oiRes = %f.\n', oiResMicrons);
         % Retrieve data from cache
         coneApertureDiameterMicronsZoneBands = obj.cachedConePartition.coneApertureDiameterMicronsZoneBands;
