@@ -17,13 +17,15 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
     p.addParameter('exportPDFdirectory', '', @(x)(isempty(x)||ischar(x)));
     p.addParameter('exportVideoDirectory', '', @(x)(isempty(x)||ischar(x)));
     p.addParameter('allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries', true, @islogical);
+    p.addParameter('visualizedRGCindices', [], @isnumeric);
 
     % Execute the parser
     p.parse(varargin{:});
     exportPDFdirectory = p.Results.exportPDFdirectory;
     exportVideoDirectory = p.Results.exportVideoDirectory;
     allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries = p.Results.allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries;
-    
+    visualizedRGCindices = p.Results.visualizedRGCindices;
+
     theData = who('-file', theMRGCMosaicSTFResponsesFullFileName);
     photocurrentBasedSTFsComputed = ismember('theMRGCMosaicPcurrentBasedResponseTemporalSupportSeconds', theData);
 
@@ -66,6 +68,7 @@ function mosaicSTFanalysisForTargetedCellPopulation(...
         theAnalyzedSTFsFileName, ...
         visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, ...
         visualizeConeExcitationVsPhotocurrentSTFs, ...
+        visualizedRGCindices, ...
         exportPDFdirectory, ...
         exportVideoDirectory);
 
@@ -167,6 +170,7 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
     analyzedSTFsFileName, ...
     visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, ...
     visualizeConeExcitationVsPhotocurrentSTFs, ...
+    visualizedRGCindices, ...
     exportPDFdirectory, ...
     exportVideoDirectory)
 
@@ -233,8 +237,8 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                 pause
                 % Remove mean of the pCurrent responses before fitting the sinusoid
                 thePCurrentResponses = squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex));
-                theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2);
-                thePCurrentResponses = bsxfun(@minus, thePCurrentResponses, theMeanPhotoCurrentResponsesAcrossEachTimeCourse);
+                %theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2);
+                %thePCurrentResponses = bsxfun(@minus, thePCurrentResponses, theMeanPhotoCurrentResponsesAcrossEachTimeCourse);
 
                 [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
                  thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFspectra(...
@@ -276,8 +280,8 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
 
                 % Allow zero mean of the pCurrent responses before fitting the sinusoid
                 thePCurrentResponses = squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex));
-                theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2);
-                thePCurrentResponses = bsxfun(@minus, thePCurrentResponses, theMeanPhotoCurrentResponsesAcrossEachTimeCourse);
+                %theMeanPhotoCurrentResponsesAcrossEachTimeCourse = mean(thePCurrentResponses,2);
+                %thePCurrentResponses = bsxfun(@minus, thePCurrentResponses, theMeanPhotoCurrentResponsesAcrossEachTimeCourse);
 
                 [thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :), ...
                  thePhotocurrentsBasedTargetSTFphaseSpectra(iRGC, iOri, :)] = computeSTFspectra(...
@@ -338,9 +342,16 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
             videoOBJ = [];
         end
 
+        
         for iRGC = 1:numel(targetRGCindices)
 
             theRGCindex = targetRGCindices(iRGC);
+
+            if (~isempty(visualizedRGCindices))
+                if (~ismember(theRGCindex, visualizedRGCindices))
+                    continue;
+                end
+            end
 
             if (all(stimParams.coneContrasts == [1 0 0]) && ...
                (theCenterConeDominances(iRGC) ~= cMosaic.LCONE_ID))
@@ -403,6 +414,11 @@ function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum, allFittedSFresponseT
         hFig = figure(100); clf;
         set(hFig, 'Position', [10 10 1800 1150])
     end
+
+               1./temporalFrequencyHz
+            [temporalSupportSeconds(1) temporalSupportSeconds(end)]
+            pause
+            
 
     allFittedSFresponseTimeSeries = 0*allSFresponseTimeSeries;
     for iSF = 1:theSFsNum

@@ -1,4 +1,5 @@
-function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport, thePcurrentBackgroundResponseTransient] = ...
+function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport, ...
+    thePcurrentBackgroundResponseTransient, theConeOSbiophysModel] = ...
     photocurrentFromConeExcitationRateUsingBiophysicalOSmodel(...
         theConeRadialEccentricityDegs, ...
         theConeExcitationRateResponse, ...
@@ -10,10 +11,11 @@ function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport,
     p = inputParser;
     p.addParameter('osTimeStepSeconds', 1e-5, @isscalar);
     p.addParameter('skipAssertions', false, @islogical);
+    p.addParameter('theConeOSbiophysModel', [], @(x)(isempty(x)||isstruct(x)));
     p.parse(varargin{:});
     osTimeStepSeconds = p.Results.osTimeStepSeconds;
     skipAssertions = p.Results.skipAssertions;
-
+    theConeOSbiophysModel = p.Results.theConeOSbiophysModel;
 
     nTimeBins = size(theConeExcitationRateResponse,1);
     theConeExcitationRateResponseDurationSeconds = nTimeBins * theConeIntegrationTimeSeconds;
@@ -63,16 +65,23 @@ function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport,
     % The background stimulus (flat)
     backgroundConeExcitationRate = ones(1, 1, theOSphotocurrentResponseTimeBinsNum) * theConeBackgroundExcitationRate;
 
-    % Setup biophysical model of outer segment for the cone at hand
-    os = osBioPhys('eccentricity', theConeRadialEccentricityDegs);
-    os.timeStep = osTimeStepSeconds;
-    os.set('noise flag', 'none');
-    theState = os.osAdaptSteadyState(theConeBackgroundExcitationRate, [1 1]);
-    theState.timeStep = os.timeStep;
 
-    % 1. BACKGROUND
-    % Set the state
-    os.setModelState(theState);
+    if (~isempty(theConeOSbiophysModel))
+        os = theConeOSbiophysModel.os;
+        os.setModelState(theConeOSbiophysModel.state);
+    else
+        % Setup biophysical model of outer segment for the cone at hand
+        os = osBioPhys('eccentricity', theConeRadialEccentricityDegs);
+        os.timeStep = osTimeStepSeconds;
+        os.set('noise flag', 'none');
+        theState = os.osAdaptSteadyState(theConeBackgroundExcitationRate, [1 1]);
+        theState.timeStep = os.timeStep;
+        
+        % 1. BACKGROUND
+        % Set the state
+        os.setModelState(theState);
+    end
+
 
     % Compute full photocurrent model to the background cone excitation rate (transient)
     [theOSphotoCurrentResponseTransient, theState] = os.osAdaptTemporal(backgroundConeExcitationRate);
@@ -88,6 +97,11 @@ function [photocurrentDifferentialResponse, photocurrentResponseTemporalSupport,
     [theOSphotoCurrentResponse, theState] = os.osAdaptTemporal(theConeExcitationRateResponse);
     os.setModelState(theState);
     
+    % Save os and state
+    theConeOSbiophysModel = struct();
+    theConeOSbiophysModel.os = os;
+    theConeOSbiophysModel.state = theState;
+
 
     % Compute the returned photocurrent temporal support 
     photocurrentResponseTemporalSupport = 0 : theReturnedPhotocurrentTimeResolutionSeconds : theOSphotoCurrentResponseTimeAxis(end);
