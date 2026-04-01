@@ -174,6 +174,7 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
     exportPDFdirectory, ...
     exportVideoDirectory)
 
+
     % Find the RGCs with the desired target properties
     [targetRGCindices, theSurroundConePurities, theCenterConeDominances, ...
         theCenterConeNumerosities, theCenterConePurities] = theMRGCMosaic.indicesOfRGCsWithinTargetedPropertyRanges( ...
@@ -182,26 +183,34 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
         targetedRadialEccentricityRange, ...
         targetedCenterPurityRange);
 
-    fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum);
-    examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))];
-    examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))];
-    examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))];
-    examinedSurroundConePurityRange   = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
-    fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum);
-    fprintf('\n centerConePurityRange: %2.2f - %2.2f\n', examinedCenterConePurityRange(1), examinedCenterConePurityRange(2));
-    fprintf('\n centerConePurityRange: %2.0f - %2.0f\n', examinedCenterConeNumerosityRange(1), examinedCenterConeNumerosityRange(2));
-    fprintf('\n centerConeDominanceRange: %2.2f - %2.2f\n', examinedCenterConeDominanceRange(1), examinedCenterConeDominanceRange(2));
-    fprintf('\n surroundConePurityRange: %2.2f - %2.2f\n', examinedSurroundConePurityRange(1), examinedSurroundConePurityRange(2));
-    fprintf('\n\n');
+    if (...
+            (~isempty(theSurroundConePurities)) && ...
+            (~isempty(theCenterConeDominances)) && ...
+            (~isempty(theCenterConeNumerosities)) && ...
+            (~isempty(theCenterConePurities))...
+        )
+        fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum);
+        examinedCenterConePurityRange     = [min(theCenterConePurities(:)) max(theCenterConePurities(:))];
+        examinedCenterConeDominanceRange  = [min(theCenterConeDominances(:)) max(theCenterConeDominances(:))];
+        examinedCenterConeNumerosityRange = [min(theCenterConeNumerosities(:)) max(theCenterConeNumerosities(:))];
+        examinedSurroundConePurityRange   = [min(theSurroundConePurities(:)) max(theSurroundConePurities(:))];
+        fprintf('\n\nStats for %d mRGCs (out of a total of %d)\n', numel(targetRGCindices), theMRGCMosaic.rgcsNum);
+        fprintf('\n centerConePurityRange: %2.2f - %2.2f\n', examinedCenterConePurityRange(1), examinedCenterConePurityRange(2));
+        fprintf('\n centerConePurityRange: %2.0f - %2.0f\n', examinedCenterConeNumerosityRange(1), examinedCenterConeNumerosityRange(2));
+        fprintf('\n centerConeDominanceRange: %2.2f - %2.2f\n', examinedCenterConeDominanceRange(1), examinedCenterConeDominanceRange(2));
+        fprintf('\n surroundConePurityRange: %2.2f - %2.2f\n', examinedSurroundConePurityRange(1), examinedSurroundConePurityRange(2));
+        fprintf('\n\n');
+    
+        % Sort cells according to their center cone numerosity
+        [~,idx] = sort(theCenterConeNumerosities, 'ascend');
+    
+        targetRGCindices = targetRGCindices(idx);
+        theCenterConePurities = theCenterConePurities(idx);
+        theCenterConeNumerosities = theCenterConeNumerosities(idx);
+        theCenterConeDominances = theCenterConeDominances(idx);
+        theSurroundConePurities = theSurroundConePurities(idx);
 
-    % Sort cells according to their center cone numerosity
-    [~,idx] = sort(theCenterConeNumerosities, 'ascend');
-
-    targetRGCindices = targetRGCindices(idx);
-    theCenterConePurities = theCenterConePurities(idx);
-    theCenterConeNumerosities = theCenterConeNumerosities(idx);
-    theCenterConeDominances = theCenterConeDominances(idx);
-    theSurroundConePurities = theSurroundConePurities(idx);
+    end
 
     orientationsNum = size(theMRGCMosaicConeModulationsBasedResponses,1);
     sfsNum = size(theMRGCMosaicConeModulationsBasedResponses,2);
@@ -220,6 +229,7 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
     if (visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses)
         % Serial for loop if we are visualizing
         for iRGC = 1:numel(targetRGCindices)
+
             theRGCindex = targetRGCindices(iRGC);
 
             for iOri = 1:orientationsNum
@@ -232,7 +242,8 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                     theConeModulationResponses, ...
                     stimParams.temporalFrequencyHz, ...
                     allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-                    visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses);
+                    visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, ...
+                    'cone modulations');
 
                 pause
                 % Remove mean of the pCurrent responses before fitting the sinusoid
@@ -246,7 +257,8 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                     thePCurrentResponses, ...
                     stimParams.temporalFrequencyHz, ...
                     allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-                    visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses);
+                    visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, ...
+                    'photocurrents');
 
                
                 pause
@@ -264,8 +276,9 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
     else
         % Do a parfor
         parfor iRGC = 1:numel(targetRGCindices)
-            theRGCindex = targetRGCindices(iRGC);
 
+            theRGCindex = targetRGCindices(iRGC);
+ 
             for iOri = 1:orientationsNum
 
                 theConeModulationResponses = squeeze(theMRGCMosaicConeModulationsBasedResponses(iOri, :, :, theRGCindex));
@@ -276,7 +289,7 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                     theConeModulationResponses, ...
                     stimParams.temporalFrequencyHz, ...
                     allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-                    false);
+                    false, 'cone modulations');
 
                 % Allow zero mean of the pCurrent responses before fitting the sinusoid
                 thePCurrentResponses = squeeze(theMRGCMosaicPhotocurrentBasedResponses(iOri, :, :, theRGCindex));
@@ -289,7 +302,7 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
                     thePCurrentResponses, ...
                     stimParams.temporalFrequencyHz, ...
                     allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-                    visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses);
+                    visualizeSinusoidalFitsForPhotocurrentBasedMRGCresponses, 'photocurrents');
 
                 coneModulationsSTF = squeeze(theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
                 photocurrentsSTF = squeeze(thePhotocurrentsBasedTargetSTFamplitudeSpectra(iRGC, iOri, :));
@@ -348,7 +361,10 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
             theRGCindex = targetRGCindices(iRGC);
 
             if (~isempty(visualizedRGCindices))
-                if (~ismember(theRGCindex, visualizedRGCindices))
+                if ( ...
+                    (~isnan(visualizedRGCindices)) && ...
+                    (~ismember(theRGCindex, visualizedRGCindices))...
+                   )
                     continue;
                 end
             end
@@ -403,7 +419,8 @@ end
 
 function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum, allFittedSFresponseTimeSeries] = computeSTFspectra(...
     temporalSupportSeconds, allSFresponseTimeSeries, temporalFrequencyHz, ...
-    allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, visualizeSinusoidalFits)
+    allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, visualizeSinusoidalFits, ...
+    signalSource)
 
 
     theSFsNum = size(allSFresponseTimeSeries,1);
@@ -414,10 +431,6 @@ function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum, allFittedSFresponseT
         hFig = figure(100); clf;
         set(hFig, 'Position', [10 10 1800 1150])
     end
-
-               1./temporalFrequencyHz
-            [temporalSupportSeconds(1) temporalSupportSeconds(end)]
-            pause
             
 
     allFittedSFresponseTimeSeries = 0*allSFresponseTimeSeries;
@@ -440,6 +453,7 @@ function [theSTFamplitudeSpectrum, theSTFphaseDegsSpectrum, allFittedSFresponseT
             plot(ax, temporalSupportSeconds, theFittedSinusoid, 'k-', 'LineWidth', 1.0);
             title(ax, sprintf('reponse amplitude: %2.2f\nsinusoid amplitude: %2.2f', max(abs(theResponseTimeSeries)), theSTFamplitudeSpectrum(iSF)));
             legend(ax, {'response', 'sinusoidal fit'});
+            ylabel(ax,  signalSource);
             drawnow
         end
 

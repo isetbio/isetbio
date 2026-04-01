@@ -229,13 +229,14 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     end
 
 
-    coneResponseExtraSamplesNum = 1
-    stimParams
-    theConeModulationsBasedResponseTemporalSupportSeconds
-    halfConeResponseTimeBin = 0.5*(theConeModulationsBasedResponseTemporalSupportSeconds(2)-theConeModulationsBasedResponseTemporalSupportSeconds(1))
-    [~,photocurrentLastIndexForPhaseAlignment] = min(abs(thePhotocurrentsBasedResponseTemporalSupportSeconds-(theConeModulationsBasedResponseTemporalSupportSeconds(end-coneResponseExtraSamplesNum)+halfConeResponseTimeBin)));
-    photocurrentResponseExtraSamplesNum = numel(thePhotocurrentsBasedResponseTemporalSupportSeconds)-photocurrentLastIndexForPhaseAlignment
+    coneResponseExtraSamplesNum = 1;
 
+    %stimParams
+    %theConeModulationsBasedResponseTemporalSupportSeconds
+    %halfConeResponseTimeBin = 0.5*(theConeModulationsBasedResponseTemporalSupportSeconds(2)-theConeModulationsBasedResponseTemporalSupportSeconds(1))
+    %[~,photocurrentLastIndexForPhaseAlignment] = min(abs(thePhotocurrentsBasedResponseTemporalSupportSeconds-(theConeModulationsBasedResponseTemporalSupportSeconds(end-coneResponseExtraSamplesNum)+halfConeResponseTimeBin)));
+    %photocurrentResponseExtraSamplesNum = numel(thePhotocurrentsBasedResponseTemporalSupportSeconds)-photocurrentLastIndexForPhaseAlignment
+    photocurrentResponseExtraSamplesNum = 0;
 
     % Cone modulation based mRGC response time-series
     ax = subplot('Position', subplotPosVectors(1,2).v);
@@ -254,6 +255,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
             thePhaseAlignedConeModulationsBasedResponse = phaseAlignResponse(theConeModulationsBasedResponse(idx),...
                 phaseForAlignment, ...
                 theConeModulationsBasedResponseTemporalSupportSeconds(idx), ...
+                1./(stimParams.temporalFrequencyHz), ...
                 false);
             stairs(ax, theConeModulationsBasedResponseTemporalSupportSeconds(idx), thePhaseAlignedConeModulationsBasedResponse, ...
                 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
@@ -293,7 +295,8 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
             thePhaseAlignedPhotocurrentBasedResponse = phaseAlignResponse(thePhotocurrentBasedResponse(idx),...
                 phaseForAlignment, ...
                 thePhotocurrentsBasedResponseTemporalSupportSeconds(idx), ...
-                true);
+                1./(stimParams.temporalFrequencyHz), ...
+                false);
             plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds(idx), thePhaseAlignedPhotocurrentBasedResponse, ...
                 '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
         end
@@ -328,6 +331,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
             thePhaseAlignedConeModulationsBasedResponse = phaseAlignResponse(theConeModulationsBasedResponse(idx1),...
                 phaseForAlignment, ...
                 theConeModulationsBasedResponseTemporalSupportSeconds(idx1), ...
+                1./(stimParams.temporalFrequencyHz), ...
                 false);
 
             phaseForAlignment = thePhotocurrentsBasedSTFphaseSpectra(iORI, iSF);
@@ -336,7 +340,8 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
             thePhaseAlignedPhotocurrentBasedResponse = phaseAlignResponse(thePhotocurrentBasedResponse(idx2),...
                 phaseForAlignment, ...
                 thePhotocurrentsBasedResponseTemporalSupportSeconds(idx2), ...
-                true);
+                1./(stimParams.temporalFrequencyHz), ...
+                false);
             plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds(idx2), thePhaseAlignedPhotocurrentBasedResponse, ...
                 '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
 
@@ -748,13 +753,37 @@ function [xx, sfTicks, sfTickLabels] = generateSFticks(sfSupport)
 
 end
 
-function theResponse = phaseAlignResponse(theUnshiftedResponse, theResponsePhaseDegs, theTemporalSupportSeconds, demo)
+function theResponse = phaseAlignResponse(theUnshiftedResponse, theResponsePhaseDegs, theTemporalSupportSeconds, theStimulusPeriodSeconds, demo)
 
+    dt = theTemporalSupportSeconds(2)-theTemporalSupportSeconds(1);
+    fullPeriods = (theTemporalSupportSeconds(end)-theTemporalSupportSeconds(1)+dt)/theStimulusPeriodSeconds;
+    
     sizeResponse = size(theUnshiftedResponse);
-    theSampleDegs = 360/(numel(theTemporalSupportSeconds));
-    if (theResponsePhaseDegs > 180)
-        theResponsePhaseDegs = -(360-theResponsePhaseDegs);
+
+    theSampleDegs = 360*fullPeriods/(numel(theTemporalSupportSeconds));
+
+    if (demo)
+        theResponsePhaseDegs
     end
+
+
+    if (theStimulusPeriodSeconds < 1.5)
+        if (theResponsePhaseDegs > 180)
+            theResponsePhaseDegs = theResponsePhaseDegs-360;
+        end
+    else
+        if (theResponsePhaseDegs > 0)
+            theResponsePhaseDegs = theResponsePhaseDegs-360;
+        end
+    end
+
+
+    if (demo)
+        theResponsePhaseDegs
+        pause
+    end
+
+    
 
     theShiftAmountSamples = sign(theResponsePhaseDegs) * round(abs(theResponsePhaseDegs)/theSampleDegs);
     theResponse  = circshift(theUnshiftedResponse, -theShiftAmountSamples);
@@ -764,8 +793,13 @@ function theResponse = phaseAlignResponse(theUnshiftedResponse, theResponsePhase
         figure(1000); clf;
         plot(theTemporalSupportSeconds, theUnshiftedResponse, 'ks');
         hold on;
-        plot(theTemporalSupportSeconds, theResponse, 'r-');
-        pause
+        for iDemo = 1:abs(theShiftAmountSamples)
+            theResponse  = circshift(theUnshiftedResponse, -iDemo);
+            plot(theTemporalSupportSeconds, theResponse, 'r-');
+            title(sprintf('shift: %d samples', -iDemo))
+            pause
+        end
+        
     end
 
     theResponse = reshape(theResponse, sizeResponse);
