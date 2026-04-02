@@ -55,7 +55,7 @@ mosaicSizeDegs = [1 1];
 %% Mosaic eccentricity (in degrees)
 if (fastParameters)
     fprintf('Running limited set of locations. Change fastParameters to false in the source to get more\n');
-    mosaicEccDegsX  = [-30 -20 0 20 30];
+    mosaicEccDegsX  = [-30 0 30];
     mosaicEccDegsY  = [-10 0 10];
 else
     mosaicEccDegsX  = [-12 -8 -4 -2 0 2 4 8 12];
@@ -84,7 +84,7 @@ for subjectRankOrder = 1
     % Setup a very large and complex figure.  This might
     % not fit well on your screen.
     hFig = figure(1); clf;
-    set(hFig, 'Position', [0 0 3000 1500], 'Color', [0 0 0]);
+    % set(hFig, 'Position', [0 0 3000 1500], 'Color', [0 0 0]);
 
     rowsNum = numel(mosaicEccDegsY);
     colsNum = numel(mosaicEccDegsX);

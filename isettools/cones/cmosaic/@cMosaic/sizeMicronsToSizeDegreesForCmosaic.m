@@ -27,7 +27,7 @@ function sizeDegrees = sizeMicronsToSizeDegreesForCmosaic(obj, sizeMicrons, ecce
                           obj.customMMsToDegsConversionFunction(leftCoordMM);
         else
             % Watson's non-linear transformation
-            sizeDegrees = RGCmodels.Watson.convert.sizeRetinalMicronsToSizeVisualDegs(sizeMicrons, eccentricityMicrons);
+            sizeDegrees = RGCmodels.Watson.convert.sizeRetinalMicronsToSizeVisualDegs(sizeMicrons(:), eccentricityMicrons(:));
         end
     end
     
