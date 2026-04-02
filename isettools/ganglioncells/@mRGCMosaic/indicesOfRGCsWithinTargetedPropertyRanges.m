@@ -11,6 +11,10 @@ function [targetRGCindices, surroundConePurities, centerConeDominances, ...
         	(isempty(targetedRadialEccentricityRange)) && ...
         	(isempty(targetedCenterPurityRange)) )
             	targetRGCindices = 1:obj.rgcsNum;
+                surroundConePurities = [];
+                centerConeDominances = [];
+	            centerConeNumerosities = [];
+                centerConePurities = [];
             return;
         end
 
@@ -19,6 +23,7 @@ function [targetRGCindices, surroundConePurities, centerConeDominances, ...
 		surroundConeSelection = 'surround pooling weights > center pooling weights';
 		[surroundConePurities, centerConeDominances, centerConeNumerosities, centerConePurities] = ...
 			obj.surroundConePurities(1:obj.rgcsNum, surroundConeSelection);
+
 
 		% Compute radial eccentricities
 		radialEccentricities = sqrt(sum(obj.rgcRFpositionsDegs(1:obj.rgcsNum,:).^2,2));
