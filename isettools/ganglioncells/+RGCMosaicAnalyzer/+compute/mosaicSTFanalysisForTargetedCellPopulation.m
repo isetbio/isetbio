@@ -209,8 +209,18 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
         theCenterConeNumerosities = theCenterConeNumerosities(idx);
         theCenterConeDominances = theCenterConeDominances(idx);
         theSurroundConePurities = theSurroundConePurities(idx);
-
     end
+
+    if (all(~isnan(visualizedRGCindices))) && (all(visualizedRGCindices(:)<0))
+        visualizedRGCindices = -visualizedRGCindices;
+        for i = 1:numel(visualizedRGCindices)
+            fprintf('Excluding cell %d\n', -visualizedRGCindices(i))
+        end
+        targetRGCindices = setdiff(targetRGCindices, visualizedRGCindices);
+        visualizedRGCindices = setdiff(1:theMRGCMosaic.rgcsNum, visualizedRGCindices);
+    end
+
+    fprintf('target RGCs: %d, visualized RGCs: %d\n', numel(targetRGCindices), numel(visualizedRGCindices));
 
     orientationsNum = size(theMRGCMosaicConeModulationsBasedResponses,1);
     sfsNum = size(theMRGCMosaicConeModulationsBasedResponses,2);
@@ -360,11 +370,8 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
 
             theRGCindex = targetRGCindices(iRGC);
 
-            if (~isempty(visualizedRGCindices))
-                if ( ...
-                    (~isnan(visualizedRGCindices)) && ...
-                    (~ismember(theRGCindex, visualizedRGCindices))...
-                   )
+            if (~isempty(visualizedRGCindices)) && (all(~isnan(visualizedRGCindices)))
+                if (~ismember(theRGCindex, visualizedRGCindices))
                     continue;
                 end
             end

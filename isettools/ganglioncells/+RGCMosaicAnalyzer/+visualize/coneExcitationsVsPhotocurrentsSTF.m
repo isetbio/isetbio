@@ -20,6 +20,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
 
 
     p = inputParser;
+    p.addParameter('debugPhotocurrentPhaseAlignment', false, @islogical);
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('spatialSupportTickSeparationArcMin', 7, @isscalar);
     p.addParameter('extraPlotType', 'differentialPhaseSpectraAndBPIs', @(x)(ismember(x, {'differentialPhaseSpectraAndBPIs', 'individualPhaseSpectra', '2DSTFs'})));
@@ -28,6 +29,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     % Execute the parser
     p.parse(varargin{:});
 
+    debugPhotocurrentPhaseAlignment = p.Results.debugPhotocurrentPhaseAlignment;
     theSuperimposedPSF = p.Results.withSuperimposedPSF;
     spatialSupportTickSeparationArcMin = p.Results.spatialSupportTickSeparationArcMin;
     extraPlotType = p.Results.extraPlotType;
@@ -296,7 +298,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
                 phaseForAlignment, ...
                 thePhotocurrentsBasedResponseTemporalSupportSeconds(idx), ...
                 1./(stimParams.temporalFrequencyHz), ...
-                false);
+                debugPhotocurrentPhaseAlignment);
             plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds(idx), thePhaseAlignedPhotocurrentBasedResponse, ...
                 '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
         end
@@ -341,7 +343,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
                 phaseForAlignment, ...
                 thePhotocurrentsBasedResponseTemporalSupportSeconds(idx2), ...
                 1./(stimParams.temporalFrequencyHz), ...
-                false);
+                debugPhotocurrentPhaseAlignment);
             plot(ax, thePhotocurrentsBasedResponseTemporalSupportSeconds(idx2), thePhaseAlignedPhotocurrentBasedResponse, ...
                 '-', 'Color', sfColors(5+iSF,:), 'LineWidth', 1.5);
 
@@ -571,13 +573,13 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
 
             % Black line joining the BPIs for all orientations for the current cell
             plot(ax,theConeModulationsBasedBPIs(end, :), thePhotocurrentsBasedBPIs(end, :), 'k-', 'LineWidth', 3.0);
-            plot(ax,theConeModulationsBasedBPIs(end, :), thePhotocurrentsBasedBPIs(end, :), '-','Color', [0.1 0.8 1.0], 'LineWidth', 1.0);
+            plot(ax,theConeModulationsBasedBPIs(end, :), thePhotocurrentsBasedBPIs(end, :), '-','Color', 'g', 'LineWidth', 1.0);
 
             % Current cell BPIs (large cyan square)
             for iORI = 1:numel(stimParams.orientationDegs)
                 pHandles(iORI) = scatter(ax,theConeModulationsBasedBPIs(end, iORI), thePhotocurrentsBasedBPIs(end, iORI), 20^2, ...
-                    'Marker', 's', 'MarkerFaceColor', [0.1 0.8 1.0] , 'MarkerFaceAlpha', 1.0, ...
-                    'MarkerEdgeColor', squeeze(oriColors(iORI,:)), 'MarkerEdgeAlpha', 1.0, 'LineWidth', 2.0);
+                    'Marker', 's', 'MarkerFaceColor', [0.0 1 0.0] , 'MarkerFaceAlpha', 1.0, ...
+                    'MarkerEdgeColor', [0 0 0], 'MarkerEdgeAlpha', 1.0, 'LineWidth', 2.0);
 
                 theLegends{iORI} = sprintf('%d degs', stimParams.orientationDegs(iORI));
             end
@@ -767,14 +769,14 @@ function theResponse = phaseAlignResponse(theUnshiftedResponse, theResponsePhase
     end
 
 
-    if (theStimulusPeriodSeconds < 1.5)
+    if (fullPeriods < 1.5)
         if (theResponsePhaseDegs > 180)
             theResponsePhaseDegs = theResponsePhaseDegs-360;
         end
     else
-        if (theResponsePhaseDegs > 0)
-            theResponsePhaseDegs = theResponsePhaseDegs-360;
-        end
+        %if (theResponsePhaseDegs > 0)
+        %    theResponsePhaseDegs = theResponsePhaseDegs-360;
+        %end
     end
 
 
@@ -784,17 +786,15 @@ function theResponse = phaseAlignResponse(theUnshiftedResponse, theResponsePhase
     end
 
     
-
     theShiftAmountSamples = sign(theResponsePhaseDegs) * round(abs(theResponsePhaseDegs)/theSampleDegs);
     theResponse  = circshift(theUnshiftedResponse, -theShiftAmountSamples);
 
     if (demo)
-        theShiftAmountSamples
         figure(1000); clf;
         plot(theTemporalSupportSeconds, theUnshiftedResponse, 'ks');
         hold on;
         for iDemo = 1:abs(theShiftAmountSamples)
-            theResponse  = circshift(theUnshiftedResponse, -iDemo);
+            theResponse  = circshift(theUnshiftedResponse, -sign(theShiftAmountSamples)*iDemo);
             plot(theTemporalSupportSeconds, theResponse, 'r-');
             title(sprintf('shift: %d samples', -iDemo))
             pause
