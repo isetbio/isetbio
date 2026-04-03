@@ -11,6 +11,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     thePhotocurrentsBasedResponses, ...
     theConeModulationsBasedResponseTemporalSupportSeconds, ...
     thePhotocurrentsBasedResponseTemporalSupportSeconds, ...
+    mRGCsOperateOnBackgroundAdaptedPhotocurrents, ...
     stimParams, theRGCindex, theMRGCmosaic, ...
     maxConeModulationResponses, ...
     maxPhotocurrentResponses, ...
@@ -51,10 +52,14 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
 
     % Ticks, ticklabels, and ranges
     [timeTicks, coneModulationsResponseTicks, photocurrentsResponseTicks, ...
-        coneModulationsResponseTickLabels, photocurrentsResponseTickLabels, ...
-        coneModulationsResponseRange, photocurrentsReponseRange] = generateTicksAndTickLabels(....
+     coneModulationsResponseTickLabels, photocurrentsResponseTickLabels, ...
+     coneModulationsResponseTicksLog, photocurrentsResponseTicksLog, ...
+     coneModulationsResponseTickLogLabels, photocurrentsResponseTickLogLabels, ...
+     coneModulationsResponseRange, photocurrentsReponseRange, ...
+     coneModulationsResponseRangeLog, photocurrentsReponseRangeLog] = generateTicksAndTickLabels(....
                 theConeModulationsBasedResponseTemporalSupportSeconds, ...
-                maxConeModulationResponses, maxPhotocurrentResponses);
+                maxConeModulationResponses, maxPhotocurrentResponses, ...
+                mRGCsOperateOnBackgroundAdaptedPhotocurrents);
 
     axesFontSize = 20;
     titleFontSize = 16;
@@ -160,7 +165,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     ax = subplot('Position', subplotPosVectors(1,4).v);
     renderSTFamplitudeSpectra(ax, stimParams, ...
         theConeModulationsBasedSTFamplitudeSpectra, ...
-        coneModulationsResponseRange, coneModulationsResponseTicks, coneModulationsResponseTickLabels, ...
+        coneModulationsResponseRangeLog,  coneModulationsResponseTicksLog, coneModulationsResponseTickLogLabels, ...
         theConeModulationsBasedBPIs, ...
         'STF amplitude (modulation)', ...
         sprintf('cone modulations - based\nSTF amplitude spectra'), ...
@@ -171,7 +176,7 @@ function hFig = coneExcitationsVsPhotocurrentsSTF(...
     ax = subplot('Position', subplotPosVectors(1,5).v);
     renderSTFamplitudeSpectra(ax, stimParams, ...
         thePhotocurrentsBasedSTFamplitudeSpectra, ...
-        photocurrentsReponseRange, photocurrentsResponseTicks, photocurrentsResponseTickLabels, ...
+        photocurrentsReponseRangeLog, photocurrentsResponseTicksLog, photocurrentsResponseTickLogLabels, ...
         thePhotocurrentsBasedBPIs, ...
         'STF amplitude (pAmps)', ...
         sprintf('photocurrents - based\nSTF amplitude spectra'), ...
@@ -486,7 +491,7 @@ function renderSTFamplitudeSpectra(ax, stimParams, ...
     axis(ax, 'square')
     set(ax, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30]);
     set(ax, 'YScale', 'log', 'YTick', theResponseTicks, 'YTickLabel', theResponseTickLabels);
-    set(ax, 'XLim', [0.05 60], 'YLim', [0.01 theResponseRange(2)]);
+    set(ax, 'XLim', [0.05 60], 'YLim', [theResponseRange(1) theResponseRange(2)]);
     grid(ax, 'on');
     legend(ax, thePlotHandles, theLegends, 'Location', 'SouthWest');
     set(ax, 'FontSize', axesFontSize);
@@ -662,9 +667,13 @@ end
 
 function [timeTicks, coneModulationsResponseTicks, photocurrentsResponseTicks, ...
         coneModulationsResponseTickLabels, photocurrentsResponseTickLabels, ...
-        coneModulationsResponseRange, photocurrentsReponseRange] = generateTicksAndTickLabels(....
+        coneModulationsResponseTicksLog, photocurrentsResponseTicksLog, ...
+        coneModulationsResponseTickLogLabels, photocurrentsResponseTickLogLabels, ... 
+        coneModulationsResponseRange, photocurrentsReponseRange, ...
+        coneModulationsResponseRangeLog, photocurrentsReponseRangeLog] = generateTicksAndTickLabels(....
                 theConeModulationsBasedResponseTemporalSupportSeconds, ...
-                maxConeModulationResponses, maxPhotocurrentResponses)
+                maxConeModulationResponses, maxPhotocurrentResponses, ...
+                mRGCsOperateOnBackgroundAdaptedPhotocurrents)
 
     if (theConeModulationsBasedResponseTemporalSupportSeconds(end) <= 0.1)
         timeTicks =  0:0.02:2;
@@ -684,52 +693,92 @@ function [timeTicks, coneModulationsResponseTicks, photocurrentsResponseTicks, .
 
     if (maxConeModulationResponses <= 0.2)
         coneModulationsResponseTicks = -0.2:0.05:0.2;
+        coneModulationsResponseTicksLog = [0.003 0.01 0.03 0.1 0.3];
         coneModulationsResponseTicks = coneModulationsResponseTicks(abs(coneModulationsResponseTicks)<=maxConeModulationResponses);
-        coneModulationsResponseTickLabels = strrep(sprintf('%+.2f\n', coneModulationsResponseTicks), '0.', '.');
+        coneModulationsResponseTickLabels = sprintf('%+.2f\n', coneModulationsResponseTicks);
+        coneModulationsResponseTickLogLabels = {'.003', '.01', '.03', '.1', '.3'};
         coneModulationsResponseRange = maxConeModulationResponses*[-1 1];
+        coneModulationsResponseRangeLog = [0.001 1.05] * maxConeModulationResponses;
         
     elseif (maxConeModulationResponses <= 0.4)
         coneModulationsResponseTicks = -0.4:0.1:0.4;
+        coneModulationsResponseTicksLog = [0.003 0.01 0.03 0.1 0.3];
         coneModulationsResponseTicks = coneModulationsResponseTicks(abs(coneModulationsResponseTicks)<=maxConeModulationResponses);
         coneModulationsResponseTickLabels = strrep(sprintf('%+.1f\n', coneModulationsResponseTicks), '0.', '.');
+        coneModulationsResponseTickLogLabels = {'.003', '.01', '.03', '.1', '.3'};
         coneModulationsResponseRange = maxConeModulationResponses*[-1 1];
+        coneModulationsResponseRangeLog = [0.001 1.05] * maxConeModulationResponses;
 
     elseif (maxConeModulationResponses <= 0.8)
         coneModulationsResponseTicks = -0.8:0.2:0.8;
+        coneModulationsResponseTicksLog = [0.003 0.01 0.03 0.1 0.3];
         coneModulationsResponseTicks = coneModulationsResponseTicks(abs(coneModulationsResponseTicks)<=maxConeModulationResponses);
         coneModulationsResponseTickLabels = strrep(sprintf('%+.1f\n', coneModulationsResponseTicks), '0.', '.');
+        coneModulationsResponseTickLogLabels = {'.003', '.01', '.03', '.1', '.3'};
         coneModulationsResponseRange = maxConeModulationResponses*[-1 1];
+        coneModulationsResponseRangeLog = [0.001 1.05] * maxConeModulationResponses;
     else
         coneModulationsResponseTicks = -1:0.25:1;
+        coneModulationsResponseTicksLog = [0.01 0.03 0.1 0.3 1];
         coneModulationsResponseTickLabels = strrep(sprintf('%+.2f\n', coneModulationsResponseTicks), '0.', '.');
+        coneModulationsResponseTickLogLabels = {'.01', '.03', '.1', '.3', '1.0'};
         coneModulationsResponseRange = 1*[-1 1];
+        coneModulationsResponseRangeLog = [0.001 1.05] * maxConeModulationResponses;
     end
     coneModulationsResponseTickLabels = strrep(coneModulationsResponseTickLabels, '+.0', '0');
 
-    if (maxPhotocurrentResponses <= 2.5)
-        photocurrentsResponseTicks = -2.5:0.5:2.5;
-        photocurrentsResponseTickLabels = strrep(sprintf('%.1f\n', photocurrentsResponseTicks), '0.', '.');
-        photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
-    elseif (maxPhotocurrentResponses <= 4)
-        photocurrentsResponseTicks = -4:1:4;
+    
+    if (~mRGCsOperateOnBackgroundAdaptedPhotocurrents)
+        photocurrentsReponseRange = maxPhotocurrentResponses;
+        photocurrentsResponseTicks = -200:5:200;
+        photocurrentsResponseTicksLog = [0.01 0.03 0.1 0.3 1 3 6];
         photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
-        photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
-    elseif (maxPhotocurrentResponses <= 8)
-        photocurrentsResponseTicks = -8:2:8;
-        photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
-        photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
-    elseif (maxPhotocurrentResponses <= 16)
-        photocurrentsResponseTicks = -16:4:16;
-        photocurrentsResponseTickLabels= sprintf('%.0f\n', photocurrentsResponseTicks);
-        photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
-    elseif (maxPhotocurrentResponses <= 32)
-        photocurrentsResponseTicks= -32:8:32;
-        photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
-        photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
+        photocurrentsResponseTickLogLabels = strrep(sprintf('%.2f\n', photocurrentsResponseTicksLog), '0.', '.');
+        photocurrentsReponseRangeLog = [0.001 1.05]*6;
     else
-        photocurrentsResponseTicks = -100:20:100;
-        photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
-        photocurrentsReponseRange = 100 * [-1 1];
+        if (maxPhotocurrentResponses <= 2.5)
+            photocurrentsResponseTicks = -2.5:0.5:2.5;
+            photocurrentsResponseTicksLog = [0.1 0.3 1 3];
+            photocurrentsResponseTickLabels = strrep(sprintf('%.1f\n', photocurrentsResponseTicks), '0.', '.');
+            photocurrentsResponseTickLogLabels = sprintf('%.1f\n', photocurrentsResponseTicksLog);
+            photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
+            photocurrentsReponseRangeLog = [0.001 1.05]*maxPhotocurrentResponses;
+        elseif (maxPhotocurrentResponses <= 4)
+            photocurrentsResponseTicks = -4:1:4;
+            photocurrentsResponseTicksLog = [0.1 0.3 1 3];
+            photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
+            photocurrentsResponseTickLogLabels = sprintf('%.1f\n', photocurrentsResponseTicksLog);
+            photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
+            photocurrentsReponseRangeLog = [0.001 1.05]*maxPhotocurrentResponses;
+        elseif (maxPhotocurrentResponses <= 8)
+            photocurrentsResponseTicks = -8:2:8;
+            photocurrentsResponseTicksLog = [0.1 0.3 1 3];
+            photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
+            photocurrentsResponseTickLogLabels = sprintf('%.1f\n', photocurrentsResponseTicksLog);
+            photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
+            photocurrentsReponseRangeLog = [0.001 1.05]*maxPhotocurrentResponses;
+        elseif (maxPhotocurrentResponses <= 16)
+            photocurrentsResponseTicks = -16:4:16;
+            photocurrentsResponseTicksLog = [0.1 0.3 1 3 10];
+            photocurrentsResponseTickLabels= sprintf('%.0f\n', photocurrentsResponseTicks);
+            photocurrentsResponseTickLogLabels = sprintf('%.1f\n', photocurrentsResponseTicksLog);
+            photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
+            photocurrentsReponseRangeLog = [0.001 1.05]*maxPhotocurrentResponses;
+        elseif (maxPhotocurrentResponses <= 32)
+            photocurrentsResponseTicks= -32:8:32;
+            photocurrentsResponseTicksLog = [0.1 0.3 1 3 10 30];
+            photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
+            photocurrentsResponseTickLogLabels = sprintf('%.1f\n', photocurrentsResponseTicksLog);
+            photocurrentsReponseRange = maxPhotocurrentResponses * [-1 1];
+            photocurrentsReponseRangeLog = [0.001 1.05]*maxPhotocurrentResponses;
+        else
+            photocurrentsResponseTicks = -100:20:100;
+            photocurrentsResponseTicksLog = [1 3 10 30 100];
+            photocurrentsResponseTickLabels = sprintf('%.0f\n', photocurrentsResponseTicks);
+            photocurrentsResponseTickLogLabels = sprintf('%.0f\n', photocurrentsResponseTicksLog);
+            photocurrentsReponseRange = 100 * [-1 1];
+            photocurrentsReponseRangeLog = [0.001 1.05]*maxPhotocurrentResponses;
+        end
     end
 end
 
