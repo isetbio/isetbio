@@ -480,13 +480,10 @@ function [theSpatioTemporalMRGCMosaicResponses2DSTF, theMRGCMosaicResponseTempor
                 theConeMosaicSpatioTemporalResponse, theTemporalSupportSeconds, ...
                 'nonLinearitiesList', nonLinearitiesList);
     
-            % Normalize for contrast
-            theSpatioTemporalMRCMosaicResponse = theSpatioTemporalMRCMosaicResponse / stimulusContrast;
-    
             % Save response
             theSpatioTemporalMRGCMosaicResponses2DSTF(iOri, iSF, :,:) = reshape(...
                 theSpatioTemporalMRCMosaicResponse, [1 1 numel(theMRGCMosaicResponseTemporalSupportSeconds) theMRGCMosaic.rgcsNum]);
-        end % parcomputeMRGCMosaicSTF
+        end % parfor 
     end % for iOri
 
     if (visualizeResponse)
