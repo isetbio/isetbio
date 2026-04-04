@@ -399,11 +399,12 @@ function [theConeModulationsBasedBPIs, thePhotocurrentsBasedBPIs, ...
             % and responses
             if (~mRGCsOperateOnBackgroundAdaptedPhotocurrents)
                 maxPhotocurrentsBasedResponses = prctile(theMRGCMosaicPhotocurrentBasedResponses(:),[0.3 99.7]);
+                maxPhotocurrentsBasedResponses = [-35 5];
             else
-                maxPhotocurrentsBasedResponses = prctile(abs(theMRGCMosaicPhotocurrentBasedResponses(:)),100);
+                maxPhotocurrentsBasedResponses = prctile(abs(theMRGCMosaicPhotocurrentBasedResponses(:)),99.5);
             end
 
-            maxConeModulationsBasedResponses = 0.6;
+            maxConeModulationsBasedResponses = 0.8;
 
             RGCMosaicAnalyzer.visualize.coneExcitationsVsPhotocurrentsSTF(...
                 squeeze(theConeModulationsBasedTargetSTFamplitudeSpectra(iRGC,:,:)), ...

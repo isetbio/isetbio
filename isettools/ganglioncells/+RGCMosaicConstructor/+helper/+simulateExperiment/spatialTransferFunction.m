@@ -148,7 +148,7 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
             'coneMosaicModulationBasedResponse',  true ...
             );
 
-        % Generate presentation display, 20% luminance headroom
+        % Generate presentation display
         viewingDistanceMeters = 4;
     
         thePresentationDisplay = visualStimulusGenerator.presentationDisplay(...
@@ -159,6 +159,35 @@ function computeInputConeMosaicSTF(theMRGCMosaic, theOI, STFparamsStruct, theInp
             'bitDepth', 20, ...
             'meanLuminanceCdPerM2', STFparamsStruct.backgroundLuminanceCdM2, ...
             'luminanceHeadroom', STFparamsStruct.displayLuminanceHeadroomPercentage);
+
+        
+
+       if (STFparamsStruct.adjustBackgroundChromaticityToEqualizeLandMconeExcitations)
+
+            fprintf(2,'Adjust backround to equate L and M cone excitations (2 deg Stockman only)\n')
+            displayLinearRGBToXYZ = displayGet(thePresentationDisplay, 'rgb2xyz');
+            displayLinearRGBToLMS = displayGet(thePresentationDisplay, 'rgb2lms');
+            displayLMSToLinearRGB = inv(displayLinearRGBToLMS);
+            displayXYZtoLinearRGB = inv(displayLinearRGBToXYZ);
+    
+            XYZ = xyYToXYZ([stimParams.backgroundChromaticity(1) stimParams.backgroundChromaticity(2)  STFparamsStruct.backgroundLuminanceCdM2]');
+            RGB = imageLinearTransform(XYZ', displayXYZtoLinearRGB);
+            LMScurrent = imageLinearTransform(RGB, displayLinearRGBToLMS)
+    
+     
+            backgroundLMSconeExcitations = LMScurrent;
+            backgroundLMSconeExcitations(1:2) = 0.5*sum(LMScurrent(1:2));
+    
+            backgroundRGB = imageLinearTransform(backgroundLMSconeExcitations, displayLMSToLinearRGB);
+            backgroundXYZ = imageLinearTransform(backgroundRGB, displayLinearRGBToXYZ);
+
+            xyY = XYZToxyY(backgroundXYZ(:));
+            LMSupdated = imageLinearTransform(backgroundRGB, displayLinearRGBToLMS)
+    
+            stimParams.backgroundChromaticity(1) = xyY(1);
+            stimParams.backgroundChromaticity(2) = xyY(2);
+            stimParams.backgroundLuminanceCdM2 = xyY(3);
+       end
 
 
         % Allocate memory (Single precision responses) to store all the cone mosaic responses
