@@ -73,6 +73,14 @@ function t_mRGCMosaicInspect(options)
         'coneMosaicSpecies', 'macaque', ...
         'targetRGCindexForVisualizingConePoolingMaps', 490);
 
+
+    
+
+    t_mRGCMosaicInspect(...
+        'rgcMosaicName', 'JCNpaperTemporal4DegsMosaic', ...
+        'opticsSubjectName', 'JCNpaperDefaultSubject', ...
+        'generateVideoOfRFpoolingMapsAlongHorizontalMeridian', true);
+
 %}
 
 
@@ -435,7 +443,7 @@ if (generateVideoOfRFpoolingMapsAlongHorizontalMeridian)
     % The video specs
     theVideoFileName = sprintf('%s/ConePoolingRFmapsAlongHorizontalMeridian',videoDir);
 	videoOBJ = VideoWriter(theVideoFileName, 'MPEG-4'); 
-	videoOBJ.FrameRate = 30;
+	videoOBJ.FrameRate = 1;
 	videoOBJ.Quality = 100;
 	videoOBJ.open();
 
@@ -464,10 +472,22 @@ if (generateVideoOfRFpoolingMapsAlongHorizontalMeridian)
     % Generate the video
     hFig = figure(500); clf;
     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    set(hFig, 'Color', 'none');
     ax = theAxes{1,1};
 
 
+    [~,idx] = sort(squeeze(theMRGCmosaic.rgcRFpositionsDegs(visualizedMRGCindices,1)), 'ascend');
+    visualizedMRGCindices = visualizedMRGCindices(idx);
+
     for iRGC = 1:numel(visualizedMRGCindices)
+
+        theRGChorizontalPpositionDegs = theMRGCmosaic.rgcRFpositionsDegs(visualizedMRGCindices(iRGC),1);
+        if (...
+                theRGChorizontalPpositionDegs < domainVisualizationLimits(1) || ...
+                theRGChorizontalPpositionDegs > domainVisualizationLimits(2) ...
+            )
+            continue;
+        end
 
         domainVisualizationTicks.x = theMRGCmosaic.rgcRFpositionsDegs(visualizedMRGCindices(iRGC),1);
         domainVisualizationTicks.y = theMRGCmosaic.rgcRFpositionsDegs(visualizedMRGCindices(iRGC),2);
@@ -480,9 +500,11 @@ if (generateVideoOfRFpoolingMapsAlongHorizontalMeridian)
             'doNotLabelScaleBar', true, ...
             'plotTitle', sprintf('RGC #%d', visualizedMRGCindices(iRGC)), ...
             'axesToRenderIn', ax, ...
+            'backgroundColor', 'none', ...
             'withCustomFigureFormat', '1x1 giant rectangular-wide mosaic', ...
             'domainVisualizationLimits', domainVisualizationLimits, ...
             'domainVisualizationTicks', domainVisualizationTicks);
+        set(ax, 'Color', 'none');
         drawnow;
 		videoOBJ.writeVideo(getframe(hFig));
     end
