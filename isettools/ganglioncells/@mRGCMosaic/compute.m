@@ -32,7 +32,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
 
     if (isstruct(nonLinearitiesList))
         theSingleNonLinearity = nonLinearitiesList;
-        nonLinearitiesList = cell(1,1)
+        nonLinearitiesList = cell(1,1);
         nonLinearitiesList{1} = theSingleNonLinearity;
     end
 
@@ -208,58 +208,47 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
 end
 
 
-function theResponse = applyNonLinearity(theResponse, nlParamsStruct)
+function theNonLinearResponse = applyNonLinearity(theLinearResponse, nlParamsStruct)
     switch (nlParamsStruct.type)
 
         case 'Naka Rushton'
-            if (1==2)
-                fprintf('Will apply %s nonLinearity to %s with bias: %f, c50: %f, exponent: %f, super-saturation exponent: %f, and gain: %f\n', ...
+            fprintf('Will apply %s nonLinearity to %s with RinBaseline: %f, c50: %f, exponent: %f, and super-saturation exponent: %f\n', ...
                     nlParamsStruct.type, ...
                     nlParamsStruct.sourceSignal, ...
-                    nlParamsStruct.params.bias, ...
-                    nlParamsStruct.params.c50, ...
+                    nlParamsStruct.params.RinHalfWaveRectifierThreshold, ...
+                    nlParamsStruct.params.Rin50, ...
                     nlParamsStruct.params.n, ...
-                    nlParamsStruct.params.s, ...
-                    nlParamsStruct.params.gain);
-            end
+                    nlParamsStruct.params.s);
+            
+            % Half-wave rectification
+            theRectifiedResponse = theLinearResponse - nlParamsStruct.params.RinHalfWaveRectifierThreshold;
+            theRectifiedResponse(theRectifiedResponse < 0) = 0;
 
-            % Normalize response to [-1 1]
-            maxResponse = max(abs(theResponse(:)));
-            if (maxResponse > nlParamsStruct.params.maxLinearResponse)
-                error('nonLinearity maxLinearResponse (%f) should be set to a higher value. max abs(response) encountered: %f', nlParamsStruct.params.maxLinearResponse, maxResponse);
-            end
-            theResponse = theResponse / nlParamsStruct.params.maxLinearResponse;
+            % Exponent cannot be less than 0
+            nlParamsStruct.params.n  = max([0 nlParamsStruct.params.n]);
 
-            % Apply bias
-            theResponse = theResponse + nlParamsStruct.params.bias;
+            % Super-saturation cannot be less than 1
+            nlParamsStruct.params.s = max([1 nlParamsStruct.params.s]);
 
-            % Rectify
-            idx = find(theResponse < 0);
-            if (strcmp(nlParamsStruct.params.rectification, 'half'))
-                % Half-wave rectify
-                theResponse(idx ) = 0;
-            elseif (strcmp(nlParamsStruct.params.rectification, 'full'))
-                theResponse(idx) = -theResponse(idx);
-            elseif (strcmp(nlParamsStruct.params.rectification, 'none'))
-                theResponse(idx) = -theResponse(idx);
-            else
-                error('rectification must be either ''half'',''full'', or ''none''.');
-            end
+            % Rin50 cannot be less than 0
+            nlParamsStruct.params.Rin50 = max([0 nlParamsStruct.params.Rin50]);
 
             % Pass through Naka Rushton activation function
-            Rn = theResponse.^(nlParamsStruct.params.n);
-            Rsn = theResponse.^(nlParamsStruct.params.s * nlParamsStruct.params.n);
-            c50sn = nlParamsStruct.params.c50 ^ (nlParamsStruct.params.s * nlParamsStruct.params.n);
-            theResponse = nlParamsStruct.params.gain * Rn ./ (Rsn + c50sn);
+            Rn = theRectifiedResponse .^ (nlParamsStruct.params.n);
 
-            % Ajust polarity for 'none', case rectification
-            if (strcmp(nlParamsStruct.params.rectification, 'none'))
-                theResponse(idx) = -theResponse(idx);
-            end
+            sn = nlParamsStruct.params.s * nlParamsStruct.params.n;
+            Rsn = theRectifiedResponse.^ sn;
+            R50sn = nlParamsStruct.params.Rin50 ^ sn;
 
-            % Back to original range
-            theResponse = theResponse * nlParamsStruct.params.maxLinearResponse;
+            theNonLinearResponse = Rn ./ (Rsn + R50sn);
 
+            % Determine gain to bring the nlParamsStruct.params.RoutGainAdjustmentPercentile of the
+            % theRectifiedResponse in same range as theNonLinearResponse
+            p = prctile(theRectifiedResponse, nlParamsStruct.params.RoutGainAdjustmentPercentile);
+            idx = find(theRectifiedResponse<=p);
+            gain = theRectifiedResponse(idx) / theNonLinearResponse(idx);
+
+            theNonLinearResponse = theNonLinearResponse * gain;
         otherwise
             fprintf('Unknown %s non-linearity: ''%s''.', nlParamsStruct.source, nlParamsStruct.type)
     end % switch
