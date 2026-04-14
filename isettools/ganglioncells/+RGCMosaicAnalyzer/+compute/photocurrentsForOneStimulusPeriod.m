@@ -76,8 +76,10 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
         end
 
         % Allocate memory for each cone mosaic OS biophys model
-        theConeOSbiophysModels = cell(1,numel(visualizedConeIndices));
-       
+        if (isempty(theConeOSbiophysModels))
+            theConeOSbiophysModels = cell(1,numel(visualizedConeIndices));
+        end
+        
         for iDebugConeIndex = 1:numel(visualizedConeIndices)
 
             iConeIndex = visualizedConeIndices(iDebugConeIndex);
