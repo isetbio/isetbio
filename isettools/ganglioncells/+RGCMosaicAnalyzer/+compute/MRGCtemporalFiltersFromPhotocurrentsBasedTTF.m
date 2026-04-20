@@ -1,4 +1,3 @@
-
 %
 %RGCMosaicAnalyzer.compute.MRGCtemporalFiltersFromPhotocurrentsBasedTTF
 %
