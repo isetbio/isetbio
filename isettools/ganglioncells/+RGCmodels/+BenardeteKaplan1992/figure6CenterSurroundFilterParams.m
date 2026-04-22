@@ -3,7 +3,7 @@
 %
 function params = figure6CenterSurroundFilterParams(whichCell)
 
-    % To be used with @oneStageHighPassNstageLowPassFilterCascadeTTF()
+    nL_tL_product = 48;
 
     switch (whichCell)
         case 'ON'
@@ -19,12 +19,15 @@ function params = figure6CenterSurroundFilterParams(whichCell)
             params.centerIR.pVector(4) = 18.61/1000;
             params.surroundIR.pVector(4) = 33.28/1000;
 
-            params.centerIR.pVector(5) = 1.23/1000;
-            params.surroundIR.pVector(5) = 0.42/1000;
-
             params.centerIR.pVector(6) = 38;
             params.surroundIR.pVector(6) = 124;
 
+            %params.centerIR.pVector(5) = 1.23/1000;
+            %params.surroundIR.pVector(5) = 0.42/1000;
+
+            params.centerIR.pVector(5) = nL_tL_product/params.centerIR.pVector(6)/1000;
+            params.surroundIR.pVector(5) = nL_tL_product/params.surroundIR.pVector(6)/1000;
+ 
             params.centerIR.pVector(7) = 1;
             params.surroundIR.pVector(7) = 1;
 
@@ -41,11 +44,15 @@ function params = figure6CenterSurroundFilterParams(whichCell)
             params.centerIR.pVector(4) = 24.9/1000;
             params.surroundIR.pVector(4) = 49.81/1000;
 
-            params.centerIR.pVector(5)= 2.12/1000;
-            params.surroundIR.pVector(5) = 0.76/1000;
-
             params.centerIR.pVector(6)= 25;
             params.surroundIR.pVector(6) = 83;
+
+            %params.centerIR.pVector(5)= 2.12/1000;
+            %params.surroundIR.pVector(5) = 0.76/1000;
+
+            params.centerIR.pVector(5) = nL_tL_product/params.centerIR.pVector(6)/1000;
+            params.surroundIR.pVector(5) = nL_tL_product/params.surroundIR.pVector(6)/1000;
+
 
             params.centerIR.pVector(7) = 1;
             params.surroundIR.pVector(7) = 1;
