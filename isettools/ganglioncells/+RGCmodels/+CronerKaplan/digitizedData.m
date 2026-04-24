@@ -1,3 +1,7 @@
+%
+% RGCmodels.CronerKaplan.digitizedData
+%
+
 classdef digitizedData
 % Data digitized from various figures of Croner&Kaplan (1995): ''Receptive fields of P and M ganglion cells across the primate retina'
 

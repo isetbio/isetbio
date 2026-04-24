@@ -137,44 +137,57 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     theTTFphaseRadians = theTTFphaseDegs/180*pi;
 
     % Complex TTF from amplitude and phase
-    % Add a delay of 25 msec to make the photocurrent response start at 0 msec
+    % Add a delay of 0 msec to make the photocurrent response start at 0 msec
     delaySeconds = 0/1000;
     delayRadians = delaySeconds * 2 * pi * temporalFrequenciesExamined;
     thePhotocurrentBasedMRGCcellTTF = theTTFamplitude .* exp(-1i * (theTTFphaseRadians + delayRadians));
 
 
+    if (temporalFrequenciesExamined(1) > 0)
+        % Add the zero TF point. Since we do not have it we set its
+        % magnitude equal to the that of the first frequency point
+        deltaFrequency = temporalFrequenciesExamined(2)-temporalFrequenciesExamined(1);
+        if (temporalFrequenciesExamined(1)-deltaFrequency ~= 0)
+            temporalFrequenciesExamined(1)-deltaFrequency
+            error('Cannot add 0 TF')
+        end
+        % Assume TTF(0) = norm(TTF(1))
+        temporalFrequenciesExamined = cat(2, 0, temporalFrequenciesExamined);
+        thePhotocurrentBasedMRGCcellTTF = cat(2, norm(thePhotocurrentBasedMRGCcellTTF(1)), thePhotocurrentBasedMRGCcellTTF);
+    end
+
 
     % Compute theTargetCascadedFilterTTF 
     switch (targetCellImpulseResponseSource)
-        case 'Benardete&Kaplan 1992, Figure 6 (ON), center'
-            params = RGCmodels.BenardeteKaplan1992.figure6CenterSurroundFilterParams('ON');
-            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
+        case 'Benardete&Kaplan 1997, Figure 6 (ON), center'
+            params = RGCmodels.BenardeteKaplan1997.figure6CenterSurroundFilterParams('ON');
+            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1997.oneStageHighPassNstageLowPassFilterCascadeTTF(...
                 params.centerIR.pVector, temporalFrequenciesExamined);
     
-        case 'Benardete&Kaplan 1992, Figure 6 (OFF), center'
-            params = RGCmodels.BenardeteKaplan1992.figure6CenterSurroundFilterParams('OFF');
-            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
+        case 'Benardete&Kaplan 1997, Figure 6 (OFF), center'
+            params = RGCmodels.BenardeteKaplan1997.figure6CenterSurroundFilterParams('OFF');
+            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1997.oneStageHighPassNstageLowPassFilterCascadeTTF(...
                 params.centerIR.pVector, temporalFrequenciesExamined);
 
-        case 'Benardete&Kaplan 1992, Figure 7, center'
-            params = RGCmodels.BenardeteKaplan1992.figure7CenterSurroundFilterParams();
-            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
+        case 'Benardete&Kaplan 1997, Figure 7, center'
+            params = RGCmodels.BenardeteKaplan1997.figure7CenterSurroundFilterParams();
+            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1997.oneStageHighPassNstageLowPassFilterCascadeTTF(...
                 params.centerIR.pVector, temporalFrequenciesExamined);
 
-        case 'Benardete&Kaplan 1992, Figure 6 (ON), surround'
-            params = RGCmodels.BenardeteKaplan1992.figure6CenterSurroundFilterParams('ON');
-            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
+        case 'Benardete&Kaplan 1997, Figure 6 (ON), surround'
+            params = RGCmodels.BenardeteKaplan1997.figure6CenterSurroundFilterParams('ON');
+            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1997.oneStageHighPassNstageLowPassFilterCascadeTTF(...
                 params.surroundIR.pVector, temporalFrequenciesExamined);
 
 
-        case 'Benardete&Kaplan 1992, Figure 6 (OFF), surround'
-            params = RGCmodels.BenardeteKaplan1992.figure6CenterSurroundFilterParams('OFF');
-            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
+        case 'Benardete&Kaplan 1997, Figure 6 (OFF), surround'
+            params = RGCmodels.BenardeteKaplan1997.figure6CenterSurroundFilterParams('OFF');
+            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1997.oneStageHighPassNstageLowPassFilterCascadeTTF(...
                 params.surroundIR.pVector, temporalFrequenciesExamined);
 
-        case 'Benardete&Kaplan 1992, Figure 7, surround'
-            params = RGCmodels.BenardeteKaplan1992.figure7CenterSurroundFilterParams();
-            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
+        case 'Benardete&Kaplan 1997, Figure 7, surround'
+            params = RGCmodels.BenardeteKaplan1997.figure7CenterSurroundFilterParams();
+            theTargetCascadedFilterTTF = RGCmodels.BenardeteKaplan1997.oneStageHighPassNstageLowPassFilterCascadeTTF(...
                 params.surroundIR.pVector, temporalFrequenciesExamined);
 
         otherwise
@@ -189,55 +202,93 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             theInnerRetinaTTF = theTargetCascadedFilterTTF ./ thePhotocurrentBasedMRGCcellTTF;
 
         case 'delay + highpass filter'
-            theInnerRetinaTTFfromDirectDeconvolution = theTargetCascadedFilterTTF ./ thePhotocurrentBasedMRGCcellTTF;
+           
+            filterType = 'delayLeadLagFilter'; %'delayHighPassFilter'; % 'asymmetricBandPassFilter'; %'delayLeadLagFilter';
+            
+            solverType = 'global-search' ; % 'fmincon'; %'multi-start'; 'fmincon'; %'multi-start'; %'global-search';
+            multiStartsNum = 32;
+            useParallel = true;
+
             theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.delayHighPassFilterToTransformPhotocurrentTTFtoTargetTTF(...
-                temporalFrequenciesExamined, theTargetCascadedFilterTTF,thePhotocurrentBasedMRGCcellTTF, theInnerRetinaTTFfromDirectDeconvolution);
+                temporalFrequenciesExamined, theTargetCascadedFilterTTF, thePhotocurrentBasedMRGCcellTTF, ...
+                filterType, solverType, multiStartsNum, useParallel);
 
         otherwise
             error('Unknown temporal filter synthesis method: ''%s''.', temporalFilterSynthesisMethod);
     end
 
 
-    % Compute the achieved cascaded filter TTF
-    theAchievedCascadedFilterTTF = theInnerRetinaTTF .* thePhotocurrentBasedMRGCcellTTF;
+    
+    
 
 
-    % Compute theInnerRetinaImpulseResponse
     performFFTshift = false;
     zeroPaddingLength = 512;
 
-    theInnerRetinaImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.impulseResponseFunctionFromTTF(...
-        theInnerRetinaTTF, temporalFrequenciesExamined, performFFTshift, zeroPaddingLength);
+    % The photocurrents based mRGC impulse response 
+    thePhotocurrentBasedMRGCcellImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+        thePhotocurrentBasedMRGCcellTTF, temporalFrequenciesExamined);
 
+    % Compute the achieved cascaded filter TTF
+    theAchievedCascadedFilterMRGCcellTTF = theInnerRetinaTTF .* thePhotocurrentBasedMRGCcellTTF;
 
-    % Compute theAchievedCascadedFilterImpulseResponse
-    theAchievedCascadedFilterImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.impulseResponseFunctionFromTTF(...
-        theAchievedCascadedFilterTTF, temporalFrequenciesExamined, performFFTshift, zeroPaddingLength);
+    % The achieved cascaded filter mRGC impulse response 
+    theAchievedCascadedFilterMRGCcellImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+        theAchievedCascadedFilterMRGCcellTTF, temporalFrequenciesExamined);
+
+    scalingFactor = max(abs(thePhotocurrentBasedMRGCcellImpulseResponseData.amplitude))/max(abs(theAchievedCascadedFilterMRGCcellImpulseResponseData .amplitude));
+    
+    % Scale the innerRetinaTTF by it
+    theInnerRetinaTTF = theInnerRetinaTTF * scalingFactor;
+   
+
+    % Compute theInnerRetinaImpulseResponse
+    theInnerRetinaImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+        theInnerRetinaTTF, temporalFrequenciesExamined);
+
+    % Compute the achieved cascaded filter TTF
+    theAchievedCascadedFilterTTF = theInnerRetinaTTF .* thePhotocurrentBasedMRGCcellTTF;
+
+    % Compute the achieved impulse response
+    theAchievedCascadedFilterImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+        theAchievedCascadedFilterTTF, temporalFrequenciesExamined);
 
 
     % Compute theTargetCascadedFiltermpulseResponse
-    theTargetCascadedFilterImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.impulseResponseFunctionFromTTF(...
-        theTargetCascadedFilterTTF, temporalFrequenciesExamined, performFFTshift, zeroPaddingLength);
+    theTargetCascadedFilterImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+        theTargetCascadedFilterTTF, temporalFrequenciesExamined);
 
 
-    thePhotocurrentBasedMRGCcellImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.impulseResponseFunctionFromTTF(...
-        thePhotocurrentBasedMRGCcellTTF, temporalFrequenciesExamined, performFFTshift, zeroPaddingLength);
+   
+    theMacaqueImpulseResponseData = [];
+    theMacaqueTTFData = [];
+
+    switch (targetCellImpulseResponseSource)
+        case 'Benardete&Kaplan 1997, Figure 6 (ON), center'
+            theMacaqueImpulseResponseData = RGCmodels.BenardeteKaplan1997.digitizedData.ONcenterDiskImpulseResponseFromFigure6;
+
+        case 'Benardete&Kaplan 1997, Figure 6 (ON), surround'
+            theMacaqueImpulseResponseData = RGCmodels.BenardeteKaplan1997.digitizedData.ONcenterAnnulusImpulseResponseFromFigure6;
+    end
 
     % Plot the impulse response functions
     % Plot the TTF
     hFig = figure(60); clf;
-    plotTTFdata(hFig, temporalFrequenciesExamined, ...
-        thePhotocurrentBasedMRGCcellTTF, ...
-        theTargetCascadedFilterTTF, ...
-        theAchievedCascadedFilterTTF, ...
-        theInnerRetinaTTF, ...
+    
+    plotComboData(hFig, ...
+        temporalFrequenciesExamined, ...
+        thePhotocurrentBasedMRGCcellTTF/max(abs(thePhotocurrentBasedMRGCcellTTF)), ...
+        theTargetCascadedFilterTTF / max(abs(theTargetCascadedFilterTTF)), ...
+        theAchievedCascadedFilterTTF/max(abs(theAchievedCascadedFilterTTF)), ...
+        theInnerRetinaTTF/max(abs(theInnerRetinaTTF)), ...
         targetCellImpulseResponseSource, ...
         [0 1.01], [0.3 200], [0.3 1 3 10 30 100], 'log', 'frequency (Hz)', ...
-        'TTFs');
+        'TTFs', ...
+        'withMacaqueData', theMacaqueTTFData);
 
 
     hFig = figure(61); clf;
-    plotTTFdata(hFig, ...
+    plotComboData(hFig, ...
         thePhotocurrentBasedMRGCcellImpulseResponseData.temporalSupportSeconds*1e3, ...
         thePhotocurrentBasedMRGCcellImpulseResponseData.amplitude, ...
         theTargetCascadedFilterImpulseResponseData.amplitude, ...
@@ -245,12 +296,14 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         theInnerRetinaImpulseResponseData.amplitude, ...
         targetCellImpulseResponseSource, ...
         1.01*[-1 1], [0 200], 0:20:200, 'linear', 'time (msec)', ...
-        'IRFs');
+        'IRFs', ...
+        'withMacaqueData', theMacaqueImpulseResponseData);
 
 
+    
 end
 
-function plotTTFdata(hFig, ...
+function plotComboData(hFig, ...
     theAxisData, ...
     thePhotocurrentBasedMRGCcellData, ...
     theTargetCascadedFilterData, ...
@@ -258,7 +311,13 @@ function plotTTFdata(hFig, ...
     theInnerRetinaData, ...
     targetCellImpulseResponseSource, ...
     yAxisLims, xAxisLims, xAxisTicks, xAxisScale, xAxisLabel, ...
-    pdfFileNamePostFix)
+    pdfFileNamePostFix, varargin)
+
+    p = inputParser;
+    p.addParameter('withMacaqueData', [], @(x)(isempty(x) || (isstruct(x))));
+    p.parse(varargin{:});
+    theMacaqueData = p.Results.withMacaqueData;
+    
 
     ff = PublicationReadyPlotLib.figureComponents('1x1 standard very wide figure');
     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
@@ -275,30 +334,35 @@ function plotTTFdata(hFig, ...
     else
         theAmplitude = thePhotocurrentBasedMRGCcellData;
     end
-    maxAmplitude = max(abs(theAmplitude));
+    maxPhotocurrentsBasedAmplitude = max(abs(theAmplitude));
 
-    p1 = plot(ax, theAxisData, theAmplitude/maxAmplitude, 'ro-', ...
+    p1 = plot(ax, theAxisData, theAmplitude/maxPhotocurrentsBasedAmplitude, 'ro-', ...
             'LineWidth', 1.5, ...
             'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
     allPlotHandles(numel(allPlotHandles)+1) = p1;
     allLegends{numel(allLegends)+1} = 'photocurrents-derived';
 
-    % The target cascaded filter TTF
-    if (strcmp(pdfFileNamePostFix, 'TTFs'))
-        theAmplitude = abs(theTargetCascadedFilterData);
+    if (~isempty(theTargetCascadedFilterData))
+        % The target cascaded filter TTF
+        if (strcmp(pdfFileNamePostFix, 'TTFs'))
+            theAmplitude = abs(theTargetCascadedFilterData);
+        else
+            theAmplitude = theTargetCascadedFilterData;
+        end
+        maxTargetAmplitude = max(abs(theAmplitude));
+    
+        plot(ax, theAxisData, theAmplitude/maxTargetAmplitude, 'k-', ...
+                 'LineWidth', 4, ...
+                 'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
+        p2 = plot(ax,theAxisData, theAmplitude/maxTargetAmplitude, 'c-', ...
+                 'LineWidth', 2, ...
+                 'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
+        allPlotHandles(numel(allPlotHandles)+1) = p2;
+        allLegends{numel(allLegends)+1} = sprintf('%s (fitted model)', targetCellImpulseResponseSource);
     else
-        theAmplitude = theTargetCascadedFilterData;
+        maxTargetAmplitude = [];
     end
-    maxAmplitude = max(abs(theAmplitude));
 
-    plot(ax, theAxisData, theAmplitude/maxAmplitude, 'k-', ...
-             'LineWidth', 4, ...
-             'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-    p2 = plot(ax,theAxisData, theAmplitude/maxAmplitude, 'c-', ...
-             'LineWidth', 2, ...
-             'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-    allPlotHandles(numel(allPlotHandles)+1) = p2;
-    allLegends{numel(allLegends)+1} = targetCellImpulseResponseSource;
 
 
     % The achieved cascaded filter TTF
@@ -307,15 +371,15 @@ function plotTTFdata(hFig, ...
     else
         theAmplitude = theAchievedCascadedFilterData;
     end
-    maxAmplitude = max(abs(theAmplitude));
 
-    p5 =  plot(ax,theAxisData, theAmplitude/maxAmplitude, 'd', ...
-              'LineWidth', 2.0, ...
-              'MarkerSize', 10, 'MarkerEdgeColor', 0.3*[1 0.8 0.5], ...
-              'MarkerFaceColor', 'none');
+    plot(ax, theAxisData, theAmplitude/maxPhotocurrentsBasedAmplitude, 'b-', ...
+             'LineWidth', 4)
+    p5 = plot(ax,theAxisData, theAmplitude/maxPhotocurrentsBasedAmplitude, 'r-', ...
+             'LineWidth', 3, ...
+             'Color', [0.0 1 1]);
 
     allPlotHandles(numel(allPlotHandles)+1) = p5;
-    allLegends{numel(allLegends)+1} = 'photocurrent x inner retina filter cascade';
+    allLegends{numel(allLegends)+1} = 'ISETBio model (photocurrent x inner retina filter cascade)';
 
 
     % The derived inner retina filter TTF
@@ -336,7 +400,29 @@ function plotTTFdata(hFig, ...
     allPlotHandles(numel(allPlotHandles)+1) = p4;
     allLegends{numel(allLegends)+1} = 'inner retina filter';
 
-    legend(ax, allPlotHandles, allLegends, 'Location', 'SouthWest', 'NumColumns', 1);
+
+    if (~isempty(theMacaqueData))
+        if (strcmp(pdfFileNamePostFix, 'TTFs'))
+            theAxisData = [];
+            theAmplitude = [];
+        else
+            theAxisData = theMacaqueData.temporalSupportSeconds * 1e3;
+            theAmplitude = theMacaqueData.amplitude;
+        end
+        if (isempty(maxTargetAmplitude))
+            maxTargetAmplitude = max(abs(theAmplitude));
+        end
+
+        p7 = plot(ax,theAxisData, theAmplitude/maxTargetAmplitude, 'bv', ...
+                  'LineWidth', 2, ...
+                  'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.9]);
+    
+        allPlotHandles(numel(allPlotHandles)+1) = p7;
+        allLegends{numel(allLegends)+1} = sprintf('%s (raw data)', targetCellImpulseResponseSource);
+    end
+
+
+    legend(ax, allPlotHandles, allLegends, 'Location', 'NorthEast', 'NumColumns', 1);
     xlabel(ax, xAxisLabel)
     set(ax, 'XLim', xAxisLims, 'XTick', xAxisTicks, 'YLim', yAxisLims, 'XScale', xAxisScale);
     grid(ax, 'on')
@@ -355,707 +441,4 @@ function plotTTFdata(hFig, ...
     thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
     NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
  
-end
-
-
-
-function OLD()
-
-
-    % Generate a typical Benardete&Kaplan mRGC center TTFs
-    params = RGCmodels.BenardeteKaplan1992.figure7CenterSurroundFilterParams
-
-    theCenterDiskTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
-        params.centerIR.pVector, temporalFrequencySupportHz);
-    theSurroundAnnulusTTF = RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF(...
-        params.surroundIR.pVector, temporalFrequencySupportHz);
-
-
-
-    theBenardeteKaplanFigure6MRGCcenterTTF = highPassNstageLowPassTTF(centerParamsFig6, temporalFrequenciesExamined);
-    theBenardeteKaplanFigure6MRGCcenterTTFamplitude = abs(theBenardeteKaplanFigure6MRGCcenterTTF);
-
-    theBenardeteKaplanFigure7MRGCcenterTTF = highPassNstageLowPassTTF(centerParamsFig7, temporalFrequenciesExamined);
-    theBenardeteKaplanFigure7MRGCcenterTTFamplitude = abs(theBenardeteKaplanFigure7MRGCcenterTTF);
-
-
-
-    % photocurrents-based TIR
-    zeroPaddingLength = 512;
-    performFFTshift = false;
-    delayMilliseconds = 20;
-    thePhotocurrentImpulseResponseData = temporalTransferFunctionToImpulseResponseFunction(...
-        thePhotocurrentBasedMRGCcellTTF, temporalFrequenciesExamined, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift);
-
-
-
-    % Benardete & Kaplan Fig 6&7 TIR (center)
-    delayMilliseconds = 0;
-    theBenardeteKaplanFigure6MRGCcenterTIR  = temporalTransferFunctionToImpulseResponseFunction(...
-        theBenardeteKaplanFigure6MRGCcenterTTF , temporalFrequenciesExamined, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift);
-
-    delayMilliseconds = 0;
-    theBenardeteKaplanFigure7MRGCcenterTIR  = temporalTransferFunctionToImpulseResponseFunction(...
-        theBenardeteKaplanFigure7MRGCcenterTTF , temporalFrequenciesExamined, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift);
-
-
-    % Benardete & Kaplan Fig 6&7 TIR (surrounds)
-    delayMilliseconds = 0;
-    theBenardeteKaplanFigure6MRGCsurroundTIR  = temporalTransferFunctionToImpulseResponseFunction(...
-        theBenardeteKaplanFigure6MRGCsurroundTTF , temporalFrequenciesExamined, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift);
-
-    delayMilliseconds = 0;
-    theBenardeteKaplanFigure7MRGCsurroundTIR  = temporalTransferFunctionToImpulseResponseFunction(...
-        theBenardeteKaplanFigure7MRGCsurroundTTF , temporalFrequenciesExamined, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift);
-
-
-    % Derive inner retina TTF
-    deconvolutionMode = 'amplitudeDivisionOnly';
-    deconvolutionMode = 'fullDivision';
-
-    mRGCtoMatch = 'fromFig6';
-    %mRGCtoMatch = 'fromFig7';
-
-    switch (deconvolutionMode)
-        case 'amplitudeDivisionOnly'
-            % Deconvolve by dividing with the amplitude
-            if (strcmp(stimulusShape, 'spot'))
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        theInnerRetinaTTFamplitude = theBenardeteKaplanFigure6MRGCcenterTTFamplitude ./ abs(thePhotocurrentBasedMRGCcellTTF);
-                        theInnerRetinaTTFphaseRadians = angle(theBenardeteKaplanFigure6MRGCcenterTTF);
-                    case 'fromFig7'
-                        theInnerRetinaTTFamplitude = theBenardeteKaplanFigure7MRGCcenterTTFamplitude ./ abs(thePhotocurrentBasedMRGCcellTTF);
-                        theInnerRetinaTTFphaseRadians = angle(theBenardeteKaplanFigure7MRGCcenterTTF);
-                    otherwise
-                        error('Unkown mRGCtoMatch: ''%s''.', mRGCtoMatch)
-                end % switch (mRGCtoMatch)
-
-                % Complex TTF from amplitude and phase
-                theInnerRetinaTTF = theInnerRetinaTTFamplitude .* exp(1i * theInnerRetinaTTFphaseRadians );
-            else
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        theInnerRetinaTTFamplitude = theBenardeteKaplanFigure6MRGCsurroundTTFamplitude ./ abs(thePhotocurrentBasedMRGCcellTTF);
-                        theInnerRetinaTTFphaseRadians = angle(theBenardeteKaplanFigure6MRGCsurroundTTF);
-                    case 'fromFig7'
-                        theInnerRetinaTTFamplitude = theBenardeteKaplanFigure7MRGCsurroundTTFamplitude ./ abs(thePhotocurrentBasedMRGCcellTTF);
-                        theInnerRetinaTTFphaseRadians = angle(theBenardeteKaplanFigure7MRGCsurroundTTF);
-                    otherwise
-                        error('Unkown mRGCtoMatch: ''%s''.', mRGCtoMatch);
-                end % switch (mRGCtoMatch)
-
-                % Complex TTF from amplitude and phase
-                theInnerRetinaTTF = theInnerRetinaTTFamplitude .* exp(1i * theInnerRetinaTTFphaseRadians );
-            end
-
-        case 'fullDivision'
-            if (strcmp(stimulusShape, 'spot'))
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        theInnerRetinaTTF = theBenardeteKaplanFigure6MRGCcenterTTF ./ thePhotocurrentBasedMRGCcellTTF;
-                        theInnerRetinaTTFamplitude = abs(theInnerRetinaTTF);
-                    case 'fromFig7'
-                        theInnerRetinaTTF = theBenardeteKaplanFigure7MRGCcenterTTF ./ thePhotocurrentBasedMRGCcellTTF;
-                        theInnerRetinaTTFamplitude = abs(theInnerRetinaTTF);
-                    otherwise
-                        error('Unkown mRGCtoMatch: ''%s''.', mRGCtoMatch);
-                end
-            else
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        theInnerRetinaTTF = theBenardeteKaplanFigure6MRGCsurroundTTF ./ thePhotocurrentBasedMRGCcellTTF;
-                        theInnerRetinaTTFamplitude = abs(theInnerRetinaTTF);
-                    case 'fromFig7'
-                        theInnerRetinaTTF = theBenardeteKaplanFigure7MRGCsurroundTTF ./ thePhotocurrentBasedMRGCcellTTF;
-                        theInnerRetinaTTFamplitude = abs(theInnerRetinaTTF);
-                    otherwise
-                        error('Unkown mRGCtoMatch: ''%s''.', mRGCtoMatch);
-                end
-            end
-
-        otherwise
-            error('Unknown deconvolution mode: ''%s''.', deconvolutionMode)
-    end
-
-
-    % Derive the cascade TTF
-    theCascadePhotocurrentsInnerRetinaTTF = thePhotocurrentBasedMRGCcellTTF .* theInnerRetinaTTF;
-    theCascadePhotocurrentsInnerRetinaTTFamplitude = abs(theCascadePhotocurrentsInnerRetinaTTF);
-
-    % Derive the inner retina TIR
-    theInnerRetinaTIR = temporalTransferFunctionToImpulseResponseFunction(...
-        theInnerRetinaTTF, temporalFrequenciesExamined, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift);
-
-    % Derive the cascale TIR
-    delayMilliseconds = 0;
-    theCascadePhotocurrentInnerRetinaTIR = temporalTransferFunctionToImpulseResponseFunction(...
-        theCascadePhotocurrentsInnerRetinaTTF, temporalFrequenciesExamined, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift);
-
-
-    % Build the figure in stages and export each stage separately
-    for iBuildUpStage = 1:4
-
-        allPlotHandles = [];
-        allLegends = {};
-
-        % Plot the TTF
-        hFig = figure(60); clf;
-        ff = PublicationReadyPlotLib.figureComponents('1x1 standard tall figure');
-        theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-        ax = theAxes{1,1};
-
-        XLims = [0.3 200];
-        YLims = [0 1.01];
-
-        p1 = plot(ax,temporalFrequenciesExamined, theTTFamplitude/max(theTTFamplitude), 'ro-', ...
-            'LineWidth', 1.5, ...
-            'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-        allPlotHandles(numel(allPlotHandles)+1) = p1;
-        allLegends{numel(allLegends)+1} = 'photocurrents-derived';
-
-        if (iBuildUpStage > 1)
-            hold(ax, 'on');
-            if (strcmp(stimulusShape, 'spot'))
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure6MRGCcenterTTFamplitude/max(theBenardeteKaplanFigure6MRGCcenterTTFamplitude), 'k-', ...
-                            'LineWidth', 4, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        p2 = plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure6MRGCcenterTTFamplitude/max(theBenardeteKaplanFigure6MRGCcenterTTFamplitude), 'c-', ...
-                            'LineWidth', 2, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        allPlotHandles(numel(allPlotHandles)+1) = p2;
-                        allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 6)';
-                    case 'fromFig7'
-                        plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure7MRGCcenterTTFamplitude/max(theBenardeteKaplanFigure7MRGCcenterTTFamplitude), 'k-', ...
-                            'LineWidth', 4, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        p2 = plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure7MRGCcenterTTFamplitude/max(theBenardeteKaplanFigure7MRGCcenterTTFamplitude), 'c-', ...
-                            'LineWidth', 2, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        allPlotHandles(numel(allPlotHandles)+1) = p2;
-                        allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 7)';
-                    end
-            else
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure6MRGCsurroundTTFamplitude/max(theBenardeteKaplanFigure6MRGCsurroundTTFamplitude), 'k-', ...
-                            'LineWidth', 4, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        p2 = plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure6MRGCsurroundTTFamplitude/max(theBenardeteKaplanFigure6MRGCsurroundTTFamplitude), 'c-', ...
-                            'LineWidth', 2, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        allPlotHandles(numel(allPlotHandles)+1) = p2;
-                        allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 6)';
-                    case 'fromFig7'
-                        plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure7MRGCsurroundTTFamplitude/max(theBenardeteKaplanFigure7MRGCsurroundTTFamplitude), 'k-', ...
-                            'LineWidth', 4, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        p2 = plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure7MRGCsurroundTTFamplitude/max(theBenardeteKaplanFigure7MRGCsurroundTTFamplitude), 'c-', ...
-                            'LineWidth', 2, ...
-                            'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-                        allPlotHandles(numel(allPlotHandles)+1) = p2;
-                        allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 7)';
-                    end
-            end
-
-
-
-            if (iBuildUpStage > 2)
-                %p3 = plot(ax,temporalFrequenciesExamined, theBenardeteKaplanFigure7MRGCcenterTTFamplitude/max(theBenardeteKaplanFigure7MRGCcenterTTFamplitude), 'k--', ...
-                %    'LineWidth', 1.5, ...
-                %    'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-                plot(ax,temporalFrequenciesExamined, theInnerRetinaTTFamplitude/max(theInnerRetinaTTFamplitude), 'k-', ...
-                    'LineWidth', 4, ...
-                    'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-                p4 = plot(ax,temporalFrequenciesExamined, theInnerRetinaTTFamplitude/max(theInnerRetinaTTFamplitude), 'y-', ...
-                    'LineWidth', 2, ...
-                    'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-
-                allPlotHandles(numel(allPlotHandles)+1) = p4;
-                allLegends{numel(allLegends)+1} = 'inner retina filter (derived)';
-
-                if (iBuildUpStage > 3)
-                    p5 =  plot(ax,temporalFrequenciesExamined, theCascadePhotocurrentsInnerRetinaTTFamplitude/max(theCascadePhotocurrentsInnerRetinaTTFamplitude), 'd', ...
-                        'LineWidth', 2.0, ...
-                        'MarkerSize', 10, 'MarkerEdgeColor', 0.3*[1 0.8 0.5], ...
-                        'MarkerFaceColor', 'none');
-
-                    allPlotHandles(numel(allPlotHandles)+1) = p5;
-                    allLegends{numel(allLegends)+1} = 'photocurrent x inner retina cascade';
-
-                end % if (iBuildUpStage > 3)
-            end  % if (iBuildUpStage > 2)
-        end % if (iBuildUpStage > 1)
-
-        legend(ax, allPlotHandles, allLegends, 'Location', 'SouthWest', 'NumColumns', 1);
-        xlabel(ax, 'frequency (Hz)')
-        set(ax, 'XLim', XLims, 'XTick', [0.3 1 3 10 30 100], 'YLim', YLims, 'XScale', 'log');
-        grid(ax, 'on')
-        ff.legendBox = 'on';
-        % Finalize figure using the Publication-Ready format
-        PublicationReadyPlotLib.applyFormat(ax,ff);
-        %PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
-
-        % Export
-        visualizationPDFfileName = sprintf('%s_photocurrentsBasedTTF_BuildUpStage_%d', stimulusShape, iBuildUpStage);
-        exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
-        pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
-
-        thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
-        NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
-    end  % for iBuildUpStage = 1:4
-
-
-
-    addLegends = true;
-    %addLegends = false;
-
-    % Build the figure in stages and export each stage separately
-    for iBuildUpStage = 1:4
-
-        if (addLegends)
-            allPlotHandles = [];
-            allLegends = {};
-        end
-
-        % Plot TTF-derived impulse response function
-        hFig = figure(61); clf;
-        ff = PublicationReadyPlotLib.figureComponents('1x1 standard tall figure');
-        theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-        ax = theAxes{1,1};
-
-        XLims = [0 200]
-        YLims = 1.05*[-1 1];
-
-        p1 = plot(ax,thePhotocurrentImpulseResponseData.temporalSupportSeconds*1e3, ...
-            thePhotocurrentImpulseResponseData.weights/max(abs(thePhotocurrentImpulseResponseData.weights)), 'ro-', ...
-            'LineWidth', 1.5, ...
-            'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-
-        if (addLegends)
-            allPlotHandles(numel(allPlotHandles)+1) = p1;
-            allLegends{numel(allLegends)+1} = 'photocurrents-derived';
-        end
-
-        if (iBuildUpStage > 1)
-            hold(ax, 'on');
-
-            if (strcmp(stimulusShape, 'spot'))
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        plot(ax, theBenardeteKaplanFigure6MRGCcenterTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure6MRGCcenterTIR.weights/max(abs(theBenardeteKaplanFigure6MRGCcenterTIR.weights)), 'k-', ...
-                            'LineWidth', 4);
-                        p2 = plot(ax, theBenardeteKaplanFigure6MRGCcenterTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure6MRGCcenterTIR.weights/max(abs(theBenardeteKaplanFigure6MRGCcenterTIR.weights)), 'c-', ...
-                            'LineWidth', 2.0);
-                        if (addLegends)
-                            allPlotHandles(numel(allPlotHandles)+1) = p2;
-                            allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 6)';
-                        end
-                    case 'fromFig7'
-                        plot(ax, theBenardeteKaplanFigure7MRGCcenterTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure7MRGCcenterTIR.weights/max(abs(theBenardeteKaplanFigure7MRGCcenterTIR.weights)), 'k-', ...
-                            'LineWidth', 4);
-                        p2 = plot(ax, theBenardeteKaplanFigure7MRGCcenterTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure7MRGCcenterTIR.weights/max(abs(theBenardeteKaplanFigure7MRGCcenterTIR.weights)), 'c-', ...
-                            'LineWidth', 2.0);
-                        if (addLegends)
-                            allPlotHandles(numel(allPlotHandles)+1) = p2;
-                            allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 7)';
-                        end
-                    end
-
-            else
-                switch (mRGCtoMatch)
-                    case 'fromFig6'
-                        plot(ax, theBenardeteKaplanFigure6MRGCsurroundTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure6MRGCsurroundTIR.weights/max(abs(theBenardeteKaplanFigure6MRGCsurroundTIR.weights)), 'k-', ...
-                            'LineWidth', 4);
-                        p2 = plot(ax, theBenardeteKaplanFigure6MRGCsurroundTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure6MRGCsurroundTIR.weights/max(abs(theBenardeteKaplanFigure6MRGCsurroundTIR.weights)), 'c-', ...
-                            'LineWidth', 2.0);
-                        if (addLegends)
-                            allPlotHandles(numel(allPlotHandles)+1) = p2;
-                            allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 6)';
-                        end
-                    case 'fromFig7'
-                        plot(ax, theBenardeteKaplanFigure7MRGCsurroundTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure7MRGCsurroundTIR.weights/max(abs(theBenardeteKaplanFigure6MRGCsurroundTIR.weights)), 'k-', ...
-                            'LineWidth', 4);
-                        p2 = plot(ax, theBenardeteKaplanFigure7MRGCsurroundTIR.temporalSupportSeconds*1e3, ...
-                            theBenardeteKaplanFigure7MRGCsurroundTIR.weights/max(abs(theBenardeteKaplanFigure7MRGCsurroundTIR.weights)), 'c-', ...
-                            'LineWidth', 2.0);
-                        if (addLegends)
-                            allPlotHandles(numel(allPlotHandles)+1) = p2;
-                            allLegends{numel(allLegends)+1} = 'Benardete&Kaplan (Fig 7)';
-                        end
-                    end
-            end
-
-
-            if (iBuildUpStage > 2)
-                %p3 = plot(ax, theBenardeteKaplanFigure7MRGCcenterTIR.temporalSupportSeconds*1e3, ...
-                %    theBenardeteKaplanFigure7MRGCcenterTIR.weights/max(abs(theBenardeteKaplanFigure7MRGCcenterTIR.weights)), 'k--', ...
-                %    'LineWidth', 1.5);
-                plot(ax, theInnerRetinaTIR.temporalSupportSeconds*1e3, ...
-                    theInnerRetinaTIR.weights/max(abs(theInnerRetinaTIR.weights)), 'k-', ...
-                    'LineWidth', 5);
-                hold(ax, 'on')
-                p4 = plot(ax, theInnerRetinaTIR.temporalSupportSeconds*1e3, ...
-                    theInnerRetinaTIR.weights/max(abs(theInnerRetinaTIR.weights)), 'y-', ...
-                    'LineWidth', 3);
-                if (addLegends)
-                    allPlotHandles(numel(allPlotHandles)+1) = p4;
-                    allLegends{numel(allLegends)+1} = 'inner retina filter (derived)';
-                end
-
-                if (iBuildUpStage > 3)
-                    p5 = plot(ax, theCascadePhotocurrentInnerRetinaTIR.temporalSupportSeconds*1e3, ...
-                        theCascadePhotocurrentInnerRetinaTIR.weights/max(abs(theCascadePhotocurrentInnerRetinaTIR.weights)), 'd', ...
-                        'LineWidth', 2.0, ...
-                        'MarkerSize', 10, 'MarkerEdgeColor', 0.3*[1 0.8 0.5], ...
-                        'MarkerFaceColor', 'none');
-
-                    if (addLegends)
-                        allPlotHandles(numel(allPlotHandles)+1) = p5;
-                        allLegends{numel(allLegends)+1} = 'photocurrent x inner retina cascade';
-                    end
-
-                end % if (iBuildUpStage > 3)
-            end  % if (iBuildUpStage > 2)
-        end % if (iBuildUpStage > 1)
-
-        if (addLegends)
-            if (strcmp(stimulusShape, 'spot'))
-                legend(ax, allPlotHandles, allLegends, 'Location', 'SouthEast', 'NumColumns', 1);
-            else
-                legend(ax, allPlotHandles, allLegends, 'Location', 'NorthEast', 'NumColumns', 1);
-            end
-        end
-
-        xlabel(ax, 'time (msec)')
-        set(ax, 'XLim', XLims, 'XTick', 0:50:200, 'YLim', YLims);
-        grid(ax, 'on')
-        ff.legendBox = 'on';
-
-        % Finalize figure using the Publication-Ready format
-        PublicationReadyPlotLib.applyFormat(ax,ff);
-        %PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
-
-        % Export
-        visualizationPDFfileName = sprintf('%s_photocurrentsBasedIR_BuildUpStage_%d', stimulusShape, iBuildUpStage);
-        exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
-        pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
-
-        thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
-        NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
-
-    end % for iBuildUpStage = 1:4
-end
-
-
-function previous()
-    pause
-
-
-    hold on;
-    p2 = plot(theMacaqueCenterImpulseResponseData.temporalSupportSeconds*1e3, theMacaqueCenterImpulseResponseData.weights/max(theMacaqueCenterImpulseResponseData.weights), 'r-');
-    p3 = plot(theMacaqueCenterImpulseResponseData.temporalSupportSeconds*1e3, theInnerRetinaImpulseResponseData.weights/max(theInnerRetinaImpulseResponseData.weights), 'b-');
-    p4 = plot(theMacaqueCenterImpulseResponseData.temporalSupportSeconds*1e3, prediction/max(prediction), 'ms-');
-    legend([p1, p2, p3, p4], {'pCurrent', 'macaque', 'inner retina', 'prediction macaque'})
-    xlabel('time (msec)')
-    set(gca, 'XLim', [0 500], 'XTick', 0:10:1000);
-    grid on
-
-
-
-
-    nL_tL_product = 48;
-    centerParams(1) = 184.2;        % gain (A)
-
-    centerParams(2) = 0.69;         % high-pass gain (Hs)
-    centerParams(3) = 18.61;        % high-pass time constant (msec) (Ts)
-
-    centerParams(4) = 38;           % low-pass stages num (Nl)
-    centerParams(5) = nL_tL_product/centerParams(4);         % low-pass time constant (msec) (Tl)
-
-    centerParams(6) = 4.0;          % delay (msec) (D)
-
-    theMacaqueCenterTTF = highPassNstageLowPassTTF(centerParams, temporalFrequenciesExamined);
-
-    theMacaqueCenterImpulseResponseData = temporalTransferFunctionToImpulseResponseFunction(...
-            theMacaqueCenterTTF, temporalFrequenciesExamined, false);
-
-    [theInnerRetinaImpulseResponseData.weights,tmpMacaqueWeights] = ...
-        deconv(theMacaqueCenterImpulseResponseData.weights, ...
-            thePhotocurrentImpulseResponseData.weights, 'same', ...
-            Method='least-squares', RegularizationFactor=0.005*4);
-
-    % We see that witout regularization (Factor = 0), we get noise.
-    % With regularization, we get better results, but prediction is not good
-    % Predict the macaque IR
-    prediction = conv(theInnerRetinaImpulseResponseData.weights, thePhotocurrentImpulseResponseData.weights, 'same');
-
-    figure(22); clf
-    plot(temporalFrequenciesExamined, unwrap(angle(theMacaqueCenterTTF))/pi*180, 'ko-')
-    hold on;
-    plot(temporalFrequenciesExamined, unwrap(angle(thePhotocurrentBasedMRGCcellTTF))/pi*180, 'r.-')
-    plot(temporalFrequenciesExamined, unwrap(theTTFphaseRadians)/pi*180, 'r--')
-
-
-
-
-
-    % Plot impulse response functions
-    figure(60); clf;
-    p1 = plot(thePhotocurrentImpulseResponseData.temporalSupportSeconds*1e3, thePhotocurrentImpulseResponseData.weights/max(thePhotocurrentImpulseResponseData.weights), 'ko-');
-    hold on;
-    p2 = plot(theMacaqueCenterImpulseResponseData.temporalSupportSeconds*1e3, theMacaqueCenterImpulseResponseData.weights/max(theMacaqueCenterImpulseResponseData.weights), 'r-');
-    p3 = plot(theMacaqueCenterImpulseResponseData.temporalSupportSeconds*1e3, theInnerRetinaImpulseResponseData.weights/max(theInnerRetinaImpulseResponseData.weights), 'b-');
-    p4 = plot(theMacaqueCenterImpulseResponseData.temporalSupportSeconds*1e3, prediction/max(prediction), 'ms-');
-    legend([p1, p2, p3, p4], {'pCurrent', 'macaque', 'inner retina', 'prediction macaque'})
-    xlabel('time (msec)')
-    set(gca, 'XLim', [0 500], 'XTick', 0:10:1000);
-    grid on
-
-
-
-    % Lets try a high pass filter
-    highPassParams(1) = 1.0 % gain (A)
-    highPassParams(2) = 100;            % high-pass stages num
-    highPassParams(3) = 100;          % high-pass time constant (msec) (Ts)
-    highPassParams(4) = 50.0;          % delay (msec) (D)
-
-    % Lets try a high pass filter TTF
-    theHighPassTTF = highPassNstageTTF(highPassParams, temporalFrequenciesExamined)
-
-    theHighPassImpulseResponseData = ...
-        temporalTransferFunctionToImpulseResponseFunction(theHighPassTTF, temporalFrequenciesExamined, false);
-
-    % We see that witout regularization (Factor = 0), we get noise.
-    % With regularization, we get better results, but prediction is not good
-    % Predict the macaque IR
-    highPassPrediction = conv(theHighPassImpulseResponseData.weights, thePhotocurrentImpulseResponseData.weights, 'same');
-
-
-
-     % Plot impulse response functions
-    figure(61); clf;
-    p1 = plot(thePhotocurrentImpulseResponseData.temporalSupportSeconds*1e3, thePhotocurrentImpulseResponseData.weights/max(thePhotocurrentImpulseResponseData.weights), 'ko-');
-    hold on;
-    p2 = plot(theHighPassImpulseResponseData.temporalSupportSeconds*1e3, theHighPassImpulseResponseData.weights/max(theHighPassImpulseResponseData.weights), 'b--');
-    p3 = plot(theMacaqueCenterImpulseResponseData.temporalSupportSeconds*1e3, highPassPrediction/max(highPassPrediction), 'ms-');
-    legend([p1, p2, p3], {'pCurrent', 'high-pass', 'high-pass prediction'})
-    xlabel('time (msec)')
-    set(gca, 'XLim', [0 500], 'XTick', 0:10:1000);
-    grid on
-
-
-    pause
-    % Fit
-    gain = struct(...
-        'initial', centerParams(1), ...
-        'low', centerParams(1)/100, ...
-        'high', centerParams(1)*100 ...
-        );
-
-    highPassGain = struct(...
-        'initial',centerParams(2), ...
-        'low', 0, ...
-        'high', 10 ...
-        );
-
-    highPassTimeConstant = struct(...
-        'initial',centerParams(3), ...
-        'low', 0, ...
-        'high', 100 ...
-        );
-
-    lowPassStagesNum = struct(...
-        'initial',centerParams(4), ...
-        'low', 1, ...
-        'high', 300 ...
-        );
-
-    lowPassTimeConstant = struct(...
-        'initial',centerParams(5), ...
-        'low', 0.1, ...
-        'high', 200 ...
-        );
-
-    delay = struct(...
-        'initial', centerParams(6), ...
-        'low', 0, ...
-        'high', 400 ...
-        );
-
-    TTFparams.initialValues = [gain.initial   highPassGain.initial    highPassTimeConstant.initial    lowPassStagesNum.initial  lowPassTimeConstant.initial      delay.initial];
-    TTFparams.lowerBounds   = [gain.low       highPassGain.low        highPassTimeConstant.low        lowPassStagesNum.low      lowPassTimeConstant.low          delay.low];
-    TTFparams.upperBounds   = [gain.high      highPassGain.high       highPassTimeConstant.high       lowPassStagesNum.high     lowPassTimeConstant.high         delay.high];
-    TTFparams.names         = {'gain',        'highPassGain',         'high pass tau (msec)',  'low pass stages',       'low pass tau (msec)',    'delay (msec)'};
-    TTFparams.scaling       = {'log',         'linear',               'linear',                       'linear',                 'linear',                        'linear'};
-
-    hFig = figure(100);
-    axModelParams = subplot(1,1,1);
-
-    % Fit theProductTTF
-    [TTFparams, theFitttedTTF] = highPassNstageLowPassTTFtoArbitraryTTF(...
-        theComplexTTF, temporalFrequenciesExamined, TTFparams, axModelParams);
-
-    % Check the fit
-    figure(33); clf;
-    axTTFamplitude = subplot(1,1,1);
-    p1 = plot(axTTFamplitude, temporalFrequenciesExamined, theTTFamplitude, 'ko-', 'MarkerSize', 12);
-    hold on;
-    p2 = plot(axTTFamplitude, temporalFrequenciesExamined, abs(theFitttedTTF), 'r.-', 'LineWidth', 1.5);
-    legend(axTTFamplitude, [p1 p2], {'data', 'fit'});
-    set(axTTFamplitude, 'XLim', [0.3 300], 'XTick', [0.3 1 3 10 30 100 300], 'XScale', 'log');
-    grid(axTTFamplitude, 'on');
-    xlabel(axTTFamplitude,'frequency (Hz)');
-    ylabel(axTTFamplitude,'amplitude');
-
-
-    % Convert to temporal impulse response functions
-
-    theFittedImpulseResponseData = ...
-        temporalTransferFunctionToImpulseResponseFunction(theFitttedTTF, temporalFrequenciesExamined);
-
-    % Plot impulse response functions
-    figure(60); clf;
-    plot(theFittedImpulseResponseData.temporalSupportSeconds*1e3, theFittedImpulseResponseData.weights, 'k.-');
-    xlabel('time (msec)')
-    set(gca, 'XTick', 0:10:1000);
-    grid on
-
-end
-
-
-
-function theImpulseResponseFunctionData = ...
-        temporalTransferFunctionToImpulseResponseFunction(theTTF, temporalFrequencySupportHz, ...
-        zeroPaddingLength, delayMilliseconds, performFFTshift)
-
-
-    % Add delay in frequency domain
-    theTTF  = exp(-1i*2*pi*temporalFrequencySupportHz*delayMilliseconds/1000) .* theTTF;
-
-    % Zero padding
-    if (~isempty(zeroPaddingLength))
-        extraSamplesNum = 512-numel(temporalFrequencySupportHz);
-        nSamples = numel(theTTF) + extraSamplesNum;
-        theTTF = cat(2, theTTF, zeros(1,nSamples-numel(theTTF)));
-        temporalFrequencySupportHz = temporalFrequencySupportHz(1) + (0:(nSamples-1))*(temporalFrequencySupportHz(2)-temporalFrequencySupportHz(1));
-    end
-
-    % Convert single-sided spectrum to double sided
-    theDoubleSidedTTF = [theTTF(1) theTTF(2:end)/2 fliplr(conj(theTTF(2:end)))/2];
-
-    if (performFFTshift)
-        theImpulseResponse = fftshift(ifft(theDoubleSidedTTF, 'symmetric'));
-    else
-        theImpulseResponse = ifft(theDoubleSidedTTF, 'symmetric');
-    end
-
-    fMax = max(temporalFrequencySupportHz);
-    dtSeconds = 1/(2*fMax)
-    theTemporalSupportSeconds = (1:numel(theImpulseResponse)) * dtSeconds;
-
-    theImpulseResponseFunctionData.weights = theImpulseResponse;
-    theImpulseResponseFunctionData.temporalSupportSeconds = theTemporalSupportSeconds;
-end
-
-
-% Fit the highPassNstageLowPassTTF to an arbitrary TTF
-function  [TTFparams, theFittedTTF] = highPassNstageLowPassTTFtoArbitraryTTF(theArbitraryComplexTTF, temporalFrequencySupportHz, TTFparams, ax)
-
-    objective = @(x)highPassNstageLowPassTTFresidual(x, theArbitraryComplexTTF, temporalFrequencySupportHz, ax, TTFparams);
-
-    % Multi-start
-    problem = createOptimProblem('fmincon',...
-          'objective', objective, ...
-          'x0', TTFparams.initialValues, ...
-          'lb', TTFparams.lowerBounds, ...
-          'ub', TTFparams.upperBounds, ...
-          'options', optimoptions(...
-            'fmincon',...
-            'Display', 'none', ...
-            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
-            'GradObj', 'off', ...
-            'DerivativeCheck', 'off', ...
-            'MaxFunEvals', 10^5, ...
-            'MaxIter', 10^4) ...
-          );
-
-    ms = MultiStart(...
-          'Display', 'iter', ...
-          'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
-          'UseParallel', ~true);
-
-    multiStartsNum = 128;
-
-    % Run the multi-start
-    TTFparams.finalValues = run(ms, problem, multiStartsNum);
-
-
-    theFittedTTF = highPassNstageLowPassTTF(TTFparams.finalValues, temporalFrequencySupportHz);
-
-end
-
-
-function theTTF = highPassNstageTTF(params, temporalFrequencySupportHz)
-
-    % Get params
-    gain = params(1);
-    highPassStagesNum = round(params(2));
-    highPassTimeConstantSeconds = params(3)*1e-3;
-    delaySeconds = params(4)*1e-3;
-    omega = temporalFrequencySupportHz * (2 * pi);
-
-    % The TwoStageTTF model in the frequency domain
-    j_omega_tau = 1i * omega * highPassTimeConstantSeconds;
-    theTTF = ...
-        gain * exp(-1i * omega * delaySeconds) .* ((j_omega_tau .^ highPassStagesNum) ./ ((1 + j_omega_tau) .^ highPassStagesNum));
-
-
-end
-
-function theTTF = highPassNstageLowPassTTF(params, temporalFrequencySupportHz)
-
-    % Get params
-    gain = params(1);
-    highPassGain = params(2);
-    highPassTimeConstantSeconds = params(3)*1e-3;
-    lowPassStagesNum = round(params(4));
-    lowPassTimeConstantSeconds = params(5)*1e-3;
-    delaySeconds = params(6)*1e-3;
-    omega = temporalFrequencySupportHz * (2 * pi);
-
-    % The TwoStageTTF model in the frequency domain
-    theTTF = ...
-        gain * exp(-1i * omega * delaySeconds) .* ...
-        (1 - highPassGain * 1./(1 + 1i * omega * highPassTimeConstantSeconds)) .* ...
-        (1./(1 + 1i * omega * lowPassTimeConstantSeconds)) .^ (lowPassStagesNum);
-
-end
-
-
-function theResidual = highPassNstageLowPassTTFresidual(theCurrentParams, theTTFtoFit, temporalFrequencySupportHz, ax, modelVariables)
-
-    theResidual = norm(highPassNstageLowPassTTF(theCurrentParams, temporalFrequencySupportHz) - theTTFtoFit);
-
-    modelVariables.finalValues = theCurrentParams;
-    RGCMosaicConstructor.visualize.fittedModelParams(ax, modelVariables, 'TTF fit');
-
 end

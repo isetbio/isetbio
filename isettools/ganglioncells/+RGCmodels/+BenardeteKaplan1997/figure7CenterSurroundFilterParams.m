@@ -1,5 +1,5 @@
 %
-% RGCmodels.BenardeteKaplan1992.figure7CenterSurroundFilterParams
+% RGCmodels.BenardeteKaplan1997.figure7CenterSurroundFilterParams
 %
 function params = figure7CenterSurroundFilterParams()
 
@@ -7,7 +7,7 @@ function params = figure7CenterSurroundFilterParams()
 
   
     params.centerIR.pVector(1) = 184.20;
-    params.surroundIR.pVector(1)  = 117.9;
+    params.surroundIR.pVector(1)  = -117.9;
 
     params.centerIR.pVector(2) = 4.0/1000;
     params.surroundIR.pVector(2) = 4.03/1000;

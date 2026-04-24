@@ -1,5 +1,5 @@
 %
-% RGCmodels.BenardeteKaplan1992.figure6CenterSurroundFilterParams
+% RGCmodels.BenardeteKaplan1997.figure6CenterSurroundFilterParams
 %
 function params = figure6CenterSurroundFilterParams(whichCell)
 
@@ -7,8 +7,8 @@ function params = figure6CenterSurroundFilterParams(whichCell)
 
     switch (whichCell)
         case 'ON'
-            params.centerIR.pVector(1) = 184.20;
-            params.surroundIR.pVector(1)  = 125.33;
+            params.centerIR.pVector(1) = 184.20 * 4;
+            params.surroundIR.pVector(1)  = -125.33 * 4;
 
             params.centerIR.pVector(2) = 4.0/1000;
             params.surroundIR.pVector(2) = 4.0/1000;
@@ -22,18 +22,18 @@ function params = figure6CenterSurroundFilterParams(whichCell)
             params.centerIR.pVector(6) = 38;
             params.surroundIR.pVector(6) = 124;
 
-            %params.centerIR.pVector(5) = 1.23/1000;
-            %params.surroundIR.pVector(5) = 0.42/1000;
+            params.centerIR.pVector(5) = 1.23/1000;
+            params.surroundIR.pVector(5) = 0.42/1000;
 
-            params.centerIR.pVector(5) = nL_tL_product/params.centerIR.pVector(6)/1000;
-            params.surroundIR.pVector(5) = nL_tL_product/params.surroundIR.pVector(6)/1000;
+            %params.centerIR.pVector(5) = nL_tL_product/params.centerIR.pVector(6)/1000;
+            %params.surroundIR.pVector(5) = nL_tL_product/params.surroundIR.pVector(6)/1000;
  
             params.centerIR.pVector(7) = 1;
             params.surroundIR.pVector(7) = 1;
 
       case 'OFF'
-            params.centerIR.pVector(1) = 114.12;
-            params.surroundIR.pVector(1) = 74.57;
+            params.centerIR.pVector(1) = -114.12 * 8;
+            params.surroundIR.pVector(1) = 74.57 * 4;
 
             params.centerIR.pVector(2) = 3.5/1000;
             params.surroundIR.pVector(2) = 3.5/1000;
@@ -47,11 +47,11 @@ function params = figure6CenterSurroundFilterParams(whichCell)
             params.centerIR.pVector(6)= 25;
             params.surroundIR.pVector(6) = 83;
 
-            %params.centerIR.pVector(5)= 2.12/1000;
-            %params.surroundIR.pVector(5) = 0.76/1000;
+            params.centerIR.pVector(5)= 2.12/1000;
+            params.surroundIR.pVector(5) = 0.76/1000;
 
-            params.centerIR.pVector(5) = nL_tL_product/params.centerIR.pVector(6)/1000;
-            params.surroundIR.pVector(5) = nL_tL_product/params.surroundIR.pVector(6)/1000;
+            %params.centerIR.pVector(5) = nL_tL_product/params.centerIR.pVector(6)/1000;
+            %params.surroundIR.pVector(5) = nL_tL_product/params.surroundIR.pVector(6)/1000;
 
 
             params.centerIR.pVector(7) = 1;

@@ -1,5 +1,5 @@
 %
-% RGCmodels.BenardeteKaplan1992.oneStageHighPassNstageLowPassFilterCascadeTTF
+% RGCmodels.BenardeteKaplan1997.oneStageHighPassNstageLowPassFilterCascadeTTF
 %
 
 function theTTF = oneStageHighPassNstageLowPassFilterCascadeTTF(params, temporalFrequencySupportHz)
