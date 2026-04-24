@@ -143,17 +143,20 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     thePhotocurrentBasedMRGCcellTTF = theTTFamplitude .* exp(-1i * (theTTFphaseRadians + delayRadians));
 
 
-    if (temporalFrequenciesExamined(1) > 0)
-        % Add the zero TF point. Since we do not have it we set its
-        % magnitude equal to the that of the first frequency point
-        deltaFrequency = temporalFrequenciesExamined(2)-temporalFrequenciesExamined(1);
-        if (temporalFrequenciesExamined(1)-deltaFrequency ~= 0)
-            temporalFrequenciesExamined(1)-deltaFrequency
-            error('Cannot add 0 TF')
+    addZeroFrequencyPoint = false
+    if (addZeroFrequencyPoint)
+        if (temporalFrequenciesExamined(1) > 0)
+            % Add the zero TF point. Since we do not have it we set its
+            % magnitude equal to the that of the first frequency point
+            deltaFrequency = temporalFrequenciesExamined(2)-temporalFrequenciesExamined(1);
+            if (temporalFrequenciesExamined(1)-deltaFrequency ~= 0)
+                temporalFrequenciesExamined(1)-deltaFrequency
+                error('Cannot add 0 TF')
+            end
+            % Assume TTF(0) = norm(TTF(1))
+            temporalFrequenciesExamined = cat(2, 0, temporalFrequenciesExamined);
+            thePhotocurrentBasedMRGCcellTTF = cat(2, norm(thePhotocurrentBasedMRGCcellTTF(1)), thePhotocurrentBasedMRGCcellTTF);
         end
-        % Assume TTF(0) = norm(TTF(1))
-        temporalFrequenciesExamined = cat(2, 0, temporalFrequenciesExamined);
-        thePhotocurrentBasedMRGCcellTTF = cat(2, norm(thePhotocurrentBasedMRGCcellTTF(1)), thePhotocurrentBasedMRGCcellTTF);
     end
 
 
@@ -203,11 +206,11 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
         case 'delay + highpass filter'
            
-            filterType = 'delayLeadLagFilter'; %'delayHighPassFilter'; % 'asymmetricBandPassFilter'; %'delayLeadLagFilter';
+            filterType =  'differenceOfLowPassFilters'; % 'dampedOscillationFiter'; %'delayLeadLagFilter'; %'delayHighPassFilter'; % 'asymmetricBandPassFilter'; %'delayLeadLagFilter';
             
-            solverType = 'global-search' ; % 'fmincon'; %'multi-start'; 'fmincon'; %'multi-start'; %'global-search';
+            solverType = 'multi-start'; % 'fmincon'; %'global-search' ; % 'fmincon'; %'multi-start'; 'fmincon'; %'multi-start'; %'global-search';
             multiStartsNum = 32;
-            useParallel = true;
+            useParallel = ~true;
 
             theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.delayHighPassFilterToTransformPhotocurrentTTFtoTargetTTF(...
                 temporalFrequenciesExamined, theTargetCascadedFilterTTF, thePhotocurrentBasedMRGCcellTTF, ...
@@ -218,12 +221,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     end
 
 
-    
-    
-
-
-    performFFTshift = false;
-    zeroPaddingLength = 512;
+   
 
     % The photocurrents based mRGC impulse response 
     thePhotocurrentBasedMRGCcellImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
@@ -236,7 +234,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     theAchievedCascadedFilterMRGCcellImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
         theAchievedCascadedFilterMRGCcellTTF, temporalFrequenciesExamined);
 
-    scalingFactor = max(abs(thePhotocurrentBasedMRGCcellImpulseResponseData.amplitude))/max(abs(theAchievedCascadedFilterMRGCcellImpulseResponseData .amplitude));
+    scalingFactor = max(abs(thePhotocurrentBasedMRGCcellImpulseResponseData.amplitude))/max(abs(theAchievedCascadedFilterMRGCcellImpulseResponseData .amplitude))
     
     % Scale the innerRetinaTTF by it
     theInnerRetinaTTF = theInnerRetinaTTF * scalingFactor;

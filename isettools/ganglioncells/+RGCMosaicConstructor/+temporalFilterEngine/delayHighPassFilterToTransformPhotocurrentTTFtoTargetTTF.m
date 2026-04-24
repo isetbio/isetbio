@@ -37,6 +37,21 @@ function theInnerRetinaTTF = delayHighPassFilterToTransformPhotocurrentTTFtoTarg
                 modelParams.lowerBounds, ...
                 modelParams.upperBounds, ...
                 modelParams.names] = asymmetricBandPassFilter([],temporalFrequencySupportHz);
+
+        case 'dampedOscillationFiter'
+               [~, modelParams.initialValues, ...
+                modelParams.lowerBounds, ...
+                modelParams.upperBounds, ...
+                modelParams.names] = ...
+                    dampedOscillationFilter([], temporalFrequencySupportHz);
+
+        case 'differenceOfLowPassFilters'
+             [~, modelParams.initialValues, ...
+                modelParams.lowerBounds, ...
+                modelParams.upperBounds, ...
+                modelParams.names] = ...
+                    differenceOfLowPassFilters([], temporalFrequencySupportHz);
+
         otherwise
             error('Unknown filterTye: ''%s''.', filterType);
     end
@@ -140,6 +155,15 @@ function theInnerRetinaTTF = delayHighPassFilterToTransformPhotocurrentTTFtoTarg
 
         case 'asymmetricBandPassFilter'
             theInnerRetinaTTF = asymmetricBandPassFilter(modelParams.finalValues,temporalFrequencySupportHz);
+
+        case 'dampedOscillationFiter'
+            theInnerRetinaTTF = dampedOscillationFilter(modelParams.finalValues, temporalFrequencySupportHz);
+         
+        case 'differenceOfLowPassFilters'
+            theInnerRetinaTTF = differenceOfLowPassFilters(modelParams.finalValues, temporalFrequencySupportHz);
+
+        otherwise
+            error('Unknown filterTye: ''%s''.', filterType);
     end
 
 
@@ -164,14 +188,24 @@ function theInnerRetinaTTF = delayHighPassFilterToTransformPhotocurrentTTFtoTarg
             case 'asymmetricBandPassFilter'
                 [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
                     asymmetricBandPassFilter(theCurrentParams, temporalFrequencySupportHz);
+
+            case 'dampedOscillationFiter'
+                [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
+                    dampedOscillationFilter(theCurrentParams, temporalFrequencySupportHz);
+
+            case 'differenceOfLowPassFilters'
+                [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
+                    differenceOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz);
         end
+
 
         theResidual = norm(theTargetTTF - theCurrentInnerRetinaFilterTTF.*thePhotocurrentsBasedTTF);
     
         residualsSequence(numel(residualsSequence)+1) = theResidual;
         if (theResidual == min(residualsSequence(:)))
-            figure(55)
-            plot(1:numel(residualsSequence),residualsSequence, 'ks-' )
+            figure(55); clf;
+            plot(1:numel(residualsSequence),residualsSequence, 'ks-' );
+            set(gca, 'YLim', [0 residualsSequence(1)*1.2]);
             drawnow;
             save(sprintf('OptimizationAtIteration_%d.mat', numel(residualsSequence)), ...
                 'theCurrentParams', ...
@@ -329,17 +363,18 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     upperBounds(numel(upperBounds)+1) = 50;
     paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
 
-    % lowpass FilterOrder
-    initialValues(numel(initialValues)+1) = 5;
-    lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 50;
-    paramNames{numel(paramNames)+1} = 'LP filter order';
 
     % lowpass2 timeConstantSeconds
     initialValues(numel(initialValues)+1) = 10;
     lowerBounds(numel(lowerBounds)+1) = 0.1;
     upperBounds(numel(upperBounds)+1) = 100;
     paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
+
+    % lowpass FilterOrder
+    initialValues(numel(initialValues)+1) = 5;
+    lowerBounds(numel(lowerBounds)+1) = 1;
+    upperBounds(numel(upperBounds)+1) = 50;
+    paramNames{numel(paramNames)+1} = 'LP filter order';
 
     % lowpass2 FilterOrder
     initialValues(numel(initialValues)+1) = 10;
@@ -357,24 +392,27 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     delaySeconds = theCurrentParams(2)*1e-3;
     highPassTimeConstantSeconds = theCurrentParams(3)*1e-3;
     deltaTau = theCurrentParams(4)*1e-3;
+    
     lowPassTimeConstantSeconds = theCurrentParams(6)*1e-3;
-    lowPass2TimeConstantSeconds = theCurrentParams(8)*1e-3;
+    lowPass2TimeConstantSeconds = theCurrentParams(7)*1e-3;
 
     % filter orders must be integer
-    %theCurrentParams(5) = round(theCurrentParams(5));
-    leadLagFilterOrder = theCurrentParams(5);
+    keepFilterOrdersInteger = false;
+    if (keepFilterOrdersInteger)
+        theCurrentParams(5) = round(theCurrentParams(5));
+        theCurrentParams(8) = round(theCurrentParams(8));
+        theCurrentParams(9) = round(theCurrentParams(9));
+    end
 
-    %theCurrentParams(7) = round(theCurrentParams(7));
-    lowPassFilterOrder = theCurrentParams(7);
-   
-    %theCurrentParams(9) = round(theCurrentParams(9));
+    leadLagFilterOrder = theCurrentParams(5);
+    lowPassFilterOrder = theCurrentParams(8);
     lowPass2FilterOrder = theCurrentParams(9);
     
     omega = 2 * pi * temporalFrequencySupportHz;
     theDelayFilterTTF = exp(-1i * omega * delaySeconds);
 
     % HighPass (i.e., gain and phase increase with TF) when deltaTau > 0
-    theLeadLagFilterTTF = ((1 + 1i * omega * (highPassTimeConstantSeconds+deltaTau)) ./ (1 + 1i * omega * highPassTimeConstantSeconds) ) .^ round(leadLagFilterOrder);
+    theLeadLagFilterTTF = ((1 + 1i * omega * (highPassTimeConstantSeconds+deltaTau)) ./ (1 + 1i * omega * highPassTimeConstantSeconds) ) .^ leadLagFilterOrder;
 
     % N-stage low-pass filter with lowPassTimeConstantSeconds time constant 
     theLowPassFilterTTF = (1 + 1i * omega * lowPassTimeConstantSeconds) .^ (-lowPassFilterOrder);
@@ -384,6 +422,163 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
 
 
     theFilterTTF = gain * theDelayFilterTTF .* theLeadLagFilterTTF .* theLowPassFilterTTF .* theLowPass2FilterTTF;
+end
+
+
+function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, theCurrentParams] = ...
+    differenceOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz)
+
+     % gain
+    initialValues(1) = 10;
+    lowerBounds(1) = 10;
+    upperBounds(1) = 20;
+    paramNames{1} = 'gain';
+    
+    % delaySeconds
+    initialValues(numel(initialValues)+1) = 40;
+    lowerBounds(numel(lowerBounds)+1) = -50;
+    upperBounds(numel(upperBounds)+1) = 50;
+    paramNames{numel(paramNames)+1} = 'delay (msec)';
+
+
+    % lowpass timeConstantSeconds
+    initialValues(numel(initialValues)+1) = 0.25;
+    lowerBounds(numel(lowerBounds)+1) = 0.01;
+    upperBounds(numel(upperBounds)+1) = 1.0;
+    paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
+
+
+    % lowpass2 timeConstantSeconds
+    initialValues(numel(initialValues)+1) = 0.25;
+    lowerBounds(numel(lowerBounds)+1) = 0.01;
+    upperBounds(numel(upperBounds)+1) = 1;
+    paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
+
+    % lowpass FilterOrder
+    initialValues(numel(initialValues)+1) = 5;
+    lowerBounds(numel(lowerBounds)+1) = 1;
+    upperBounds(numel(upperBounds)+1) = 20;
+    paramNames{numel(paramNames)+1} = 'LP filter order';
+
+    % lowpass2 FilterOrder
+    initialValues(numel(initialValues)+1) = 5;
+    lowerBounds(numel(lowerBounds)+1) = 1;
+    upperBounds(numel(upperBounds)+1) = 20;
+    paramNames{numel(paramNames)+1} = 'LP2 filter order';
+
+
+    % lowpass2 gain
+    initialValues(numel(initialValues)+1) = 0.9;
+    lowerBounds(numel(lowerBounds)+1) = 0.5;
+    upperBounds(numel(upperBounds)+1) = 1.5;
+    paramNames{numel(paramNames)+1} = 'LP2 filter gain';
+
+    if (isempty(theCurrentParams))
+        theFilterTTF = [];
+        return;
+    end
+
+
+    gain = theCurrentParams(1);
+    delaySeconds = theCurrentParams(2)*1e-3;
+
+    timeConstant1Seconds = theCurrentParams(3)*1e-3;
+    timeConstant2Seconds = theCurrentParams(4)*1e-3;
+    
+    % filter orders must be integer
+    keepFilterOrdersInteger = ~true;
+    if (keepFilterOrdersInteger)
+        theCurrentParams(5) = round(theCurrentParams(5));
+        theCurrentParams(6) = round(theCurrentParams(6));
+    end
+    lowPassFilterOrder = theCurrentParams(5);
+    lowPass2FilterOrder = theCurrentParams(6);
+    
+    lowpass2gain = theCurrentParams(7);
+
+
+    omega = 2 * pi * temporalFrequencySupportHz;
+    theDelayFilterTTF = exp(-1i * omega * delaySeconds);
+
+    theLowPassFilterTTF = (1 + 2i * pi * omega * timeConstant1Seconds) .^ (-lowPassFilterOrder);
+    theLowPass2FilterTTF = (1 + 2i * pi * omega * timeConstant2Seconds) .^ (-lowPass2FilterOrder);
+
+    theFilterTTF = gain * theDelayFilterTTF .* (theLowPassFilterTTF - lowpass2gain*theLowPass2FilterTTF); 
+end
+
+
+
+
+function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, theCurrentParams] = ...
+    dampedOscillationFilter(theCurrentParams, temporalFrequencySupportHz)
+
+     % gain
+    initialValues(1) = 8000;
+    lowerBounds(1) = 1;
+    upperBounds(1) = 20000;
+    paramNames{1} = 'gain';
+    
+    % delaySeconds
+    initialValues(numel(initialValues)+1) = 40;
+    lowerBounds(numel(lowerBounds)+1) = -80;
+    upperBounds(numel(upperBounds)+1) = 80;
+    paramNames{numel(paramNames)+1} = 'delay (msec)';
+
+    % a1
+    initialValues(numel(initialValues)+1) = 60;
+    lowerBounds(numel(lowerBounds)+1) = 20;
+    upperBounds(numel(upperBounds)+1) = 120;
+    paramNames{numel(paramNames)+1} = 'a1 (oscillation frequency)';
+
+    % a2
+    initialValues(numel(initialValues)+1) = 10;
+    lowerBounds(numel(lowerBounds)+1) = 0;
+    upperBounds(numel(upperBounds)+1) = 40;
+    paramNames{numel(paramNames)+1} = 'a2 (modulation of frequency over time)';
+
+    % a3
+    initialValues(numel(initialValues)+1) = 150;
+    lowerBounds(numel(lowerBounds)+1) = 50;
+    upperBounds(numel(upperBounds)+1) = 400;
+    paramNames{numel(paramNames)+1} = 'a3 (steepness of exponential decay)';
+
+    % phase of oscillation
+    initialValues(numel(initialValues)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 0;
+    upperBounds(numel(upperBounds)+1) = 360;
+    paramNames{numel(paramNames)+1} = 'phase (phase pof oscillation)';
+
+    if (isempty(theCurrentParams))
+        theFilterTTF = [];
+        return;
+    end
+
+
+    gain = theCurrentParams(1);
+    delaySeconds = theCurrentParams(2)*1e-3;
+    a1 = theCurrentParams(3);
+    a2 = theCurrentParams(4);
+    a3 = theCurrentParams(5);
+    phaseDegs = theCurrentParams(6);
+
+    omega = 2 * pi * temporalFrequencySupportHz;
+    theDelayFilterTTF = exp(-1i * omega * delaySeconds);
+
+
+    M = numel(temporalFrequencySupportHz);
+    N  = 2 * (M - 1);
+    samplingFrequency = 2 * temporalFrequencySupportHz(end);
+    temporalSupportSeconds = (0:N-1) / samplingFrequency;
+
+
+    dampedOscillationInTime = temporalSupportSeconds .* ...
+        sin(phaseDegs/180*pi + 2*pi*(a1*temporalSupportSeconds .* (temporalSupportSeconds+1).^(-a2))) .* ...
+        exp(-a3*temporalSupportSeconds);
+
+    dampedOscillationTTF = fft(dampedOscillationInTime);
+    dampedOscillationTTF = dampedOscillationTTF(1:M);
+
+    theFilterTTF = gain * theDelayFilterTTF .* dampedOscillationTTF; 
 end
 
 
