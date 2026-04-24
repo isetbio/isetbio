@@ -238,7 +238,7 @@ function theInnerRetinaTTF = innerRetinaFilterBetweenPhotocurrentBasedAndTargetT
             figure(progressFigureHandle);
             clf;
 
-            ax = subplot('Position', [0.02 0.08 0.5 0.9]);
+            ax = subplot('Position', [0.02 0.08 0.5 0.75]);
             p1 = plot(ax,theDesiredInnerRetinaFilterResponseData.temporalSupportSeconds*1e3, theDesiredInnerRetinaFilterResponseData.amplitude, ...
                 'k-', 'LineWidth', 1.5);
             hold(ax, 'on')
@@ -249,6 +249,12 @@ function theInnerRetinaTTF = innerRetinaFilterBetweenPhotocurrentBasedAndTargetT
             set(ax, 'XLim', theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds(m)+[0 200]);
             set(ax, 'FontSize', 16);
             legend(ax, [p1 p2], {'direct deconvolution', sprintf('fitted ''%s'' model', filterType)});
+            theParametersString = '';
+            for iParam = 1:numel(modelParams.names)
+                theParametersString = sprintf('%s%s: %g\n',theParametersString, modelParams.names{iParam}, theCurrentParams(iParam));
+            end
+            title(ax, theParametersString, 'FontWeight', 'normal', 'FontName', 'SourceCodePro');
+
 
             % The sequene of residuals (inset)
             ax = axes('Position', [0.25 0.13 0.25 0.3]);

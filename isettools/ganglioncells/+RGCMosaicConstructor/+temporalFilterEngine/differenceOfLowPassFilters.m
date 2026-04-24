@@ -20,48 +20,48 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
 
 
     % lowpass timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 0.25;
+    initialValues(numel(initialValues)+1) = 1.0;
     lowerBounds(numel(lowerBounds)+1) = 0.01;
     upperBounds(numel(upperBounds)+1) = 20;
     paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
 
 
     % lowpass2 timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 0.25;
+    initialValues(numel(initialValues)+1) = 2;
     lowerBounds(numel(lowerBounds)+1) = 0.01;
     upperBounds(numel(upperBounds)+1) = 20;
     paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
 
     % lowpass FilterOrder
-    initialValues(numel(initialValues)+1) = 5;
+    initialValues(numel(initialValues)+1) = 21;
     lowerBounds(numel(lowerBounds)+1) = 1;
     upperBounds(numel(upperBounds)+1) = 40;
     paramNames{numel(paramNames)+1} = 'LP filter order';
 
     % lowpass2 FilterOrder
-    initialValues(numel(initialValues)+1) = 5;
+    initialValues(numel(initialValues)+1) = 11;
     lowerBounds(numel(lowerBounds)+1) = 1;
     upperBounds(numel(upperBounds)+1) = 40;
     paramNames{numel(paramNames)+1} = 'LP2 filter order';
 
 
     % lowpass2 gain
-    initialValues(numel(initialValues)+1) = 0.9;
-    lowerBounds(numel(lowerBounds)+1) = 0.5;
-    upperBounds(numel(upperBounds)+1) = 1.5;
+    initialValues(numel(initialValues)+1) = 2;
+    lowerBounds(numel(lowerBounds)+1) = 0.0;
+    upperBounds(numel(upperBounds)+1) = 5;
     paramNames{numel(paramNames)+1} = 'LP2 filter gain';
 
 
     % phase of LP1
-    initialValues(numel(initialValues)+1) = 0;
-    lowerBounds(numel(lowerBounds)+1) = 0;
-    upperBounds(numel(upperBounds)+1) = 720;
+    initialValues(numel(initialValues)+1) = 20;
+    lowerBounds(numel(lowerBounds)+1) = -180;
+    upperBounds(numel(upperBounds)+1) = 180;
     paramNames{numel(paramNames)+1} = 'LP1 phase (degs)';
 
     % phase of LP2
-    initialValues(numel(initialValues)+1) = 0;
-    lowerBounds(numel(lowerBounds)+1) = 0;
-    upperBounds(numel(upperBounds)+1) = 720;
+    initialValues(numel(initialValues)+1) = 35;
+    lowerBounds(numel(lowerBounds)+1) = -180;
+    upperBounds(numel(upperBounds)+1) = 180;
     paramNames{numel(paramNames)+1} = 'LP2 phase (degs)';
 
 
@@ -78,7 +78,7 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     timeConstant2Seconds = theCurrentParams(4)*1e-3;
     
     % filter orders must be integer
-    keepFilterOrdersInteger = ~true;
+    keepFilterOrdersInteger = true;
     if (keepFilterOrdersInteger)
         theCurrentParams(5) = round(theCurrentParams(5));
         theCurrentParams(6) = round(theCurrentParams(6));
@@ -89,17 +89,17 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     lowpass2gain = theCurrentParams(7);
 
 
-    phaseDegs = mod(theCurrentParams(8),360);
+    phaseDegs = theCurrentParams(8);
     phaseRadians = phaseDegs/180*pi;
 
-    phaseDegs = mod(theCurrentParams(9),360);
+    phaseDegs = theCurrentParams(9);
     phaseRadians2 = phaseDegs/180*pi;
 
     omega = 2 * pi * temporalFrequencySupportHz;
     theDelayFilterTTF = exp(-1i * omega * delaySeconds);
 
-    theLowPassFilterTTF = (1 + 1i*phaseRadians + 1i * omega * timeConstant1Seconds) .^ (-lowPassFilterOrder);
-    theLowPass2FilterTTF = (1 + 1i*phaseRadians2 + 1i * omega * timeConstant2Seconds) .^ (-lowPass2FilterOrder);
+    theLowPassFilterTTF = (1 + 1i * (omega * timeConstant1Seconds - phaseRadians)) .^ (-lowPassFilterOrder);
+    theLowPass2FilterTTF = (1 + 1i * (omega * timeConstant2Seconds - phaseRadians2)) .^ (-lowPass2FilterOrder);
 
     theFilterTTF = gain * theDelayFilterTTF .* (theLowPassFilterTTF - lowpass2gain*theLowPass2FilterTTF); 
 end
