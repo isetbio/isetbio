@@ -143,7 +143,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     thePhotocurrentBasedMRGCcellTTF = theTTFamplitude .* exp(-1i * (theTTFphaseRadians + delayRadians));
 
 
-    addZeroFrequencyPoint = false
+    addZeroFrequencyPoint = true;
     if (addZeroFrequencyPoint)
         if (temporalFrequenciesExamined(1) > 0)
             % Add the zero TF point. Since we do not have it we set its
@@ -207,14 +207,17 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         case 'delay + highpass filter'
            
             filterType =  'differenceOfLowPassFilters'; % 'dampedOscillationFiter'; %'delayLeadLagFilter'; %'delayHighPassFilter'; % 'asymmetricBandPassFilter'; %'delayLeadLagFilter';
-            
+            frequencyWeights = linspace(0,1, numel(temporalFrequenciesExamined));
+            frequencyWeights(temporalFrequenciesExamined>5) = frequencyWeights(temporalFrequenciesExamined==5);
+            frequencyWeights = frequencyWeights/max(frequencyWeights);
+
             solverType = 'multi-start'; % 'fmincon'; %'global-search' ; % 'fmincon'; %'multi-start'; 'fmincon'; %'multi-start'; %'global-search';
             multiStartsNum = 32;
             useParallel = ~true;
 
-            theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.delayHighPassFilterToTransformPhotocurrentTTFtoTargetTTF(...
+            theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.innerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
                 temporalFrequenciesExamined, theTargetCascadedFilterTTF, thePhotocurrentBasedMRGCcellTTF, ...
-                filterType, solverType, multiStartsNum, useParallel);
+                frequencyWeights, filterType, solverType, multiStartsNum, useParallel);
 
         otherwise
             error('Unknown temporal filter synthesis method: ''%s''.', temporalFilterSynthesisMethod);
