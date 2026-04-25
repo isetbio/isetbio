@@ -2,13 +2,10 @@
 % RGCMosaicConstructor.temporalFilterEngine.innerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF
 %
 
-function theInnerRetinaTTF = innerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
+function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
                 temporalFrequencySupportHz, theTargetTTF, thePhotocurrentsBasedTTF, ...
                 frequencyWeights, filterType, solverType, multiStartsNum, useParallel)
 
-
-    theTargetTTF = theTargetTTF / max(abs(theTargetTTF));
-    thePhotocurrentsBasedTTF = thePhotocurrentsBasedTTF / max(abs(thePhotocurrentsBasedTTF));
 
     theDesiredInnerRetinaTTF = theTargetTTF./thePhotocurrentsBasedTTF;
     theDesiredInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...

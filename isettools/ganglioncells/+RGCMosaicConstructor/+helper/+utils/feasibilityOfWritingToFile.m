@@ -2,7 +2,7 @@
 
 function feasibilityOfWritingToFile(theFileName)
 
-    % Make sure we can write to heInputConeMosaicSTFResponsesFullFileName
+    % Make sure we can write to theFileName
     if (~isfile(theFileName))
         theResult = system(sprintf('touch %s', strrep(theFileName, ' ', '\ ')));
         if (theResult ~= 0)
