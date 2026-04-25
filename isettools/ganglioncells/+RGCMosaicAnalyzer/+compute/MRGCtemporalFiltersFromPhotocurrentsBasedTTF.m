@@ -222,7 +222,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
                     theTargetCascadedFilterTTF, temporalFrequenciesExamined);
     
         plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, theTargetCascadedFilterImpulseResponseData.amplitude/max(theTargetCascadedFilterImpulseResponseData.amplitude), 'b-');
-        pause
     end
 
 
@@ -240,7 +239,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             innerRetinaFilterDerivationParams.minFrequencyHzWithUnitWeight = temporalFrequenciesExamined(1);
             innerRetinaFilterDerivationParams.maxFrequencyHzWithUnitWeight = temporalFrequenciesExamined(end);
 
-        case {'differenceOfLowPassFilters', 'dampedOscillationFilter', 'delayLeadLagFilter'}
+        case {'differenceOfLowPassFilters', 'dampedOscillationFilter', 'delayLeadLagFilter', 'delayLeadLagFilter2', 'delayHighPassFilter', 'asymmetricBandPassFilter'}
            
             % Frequency weighting
             frequencyWeights = temporalFrequenciesExamined*0+1;

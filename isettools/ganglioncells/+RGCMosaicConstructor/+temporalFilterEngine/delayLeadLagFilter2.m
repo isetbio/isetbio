@@ -13,9 +13,9 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 0;
+    initialValues(numel(initialValues)+1) = 30;
     lowerBounds(numel(lowerBounds)+1) = -30;
-    upperBounds(numel(upperBounds)+1) = 30;
+    upperBounds(numel(upperBounds)+1) = 120;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
     
     % timeConstant1Seconds (tau2 in Purpura, Tranchina, Kaplan Shapley 1990)
