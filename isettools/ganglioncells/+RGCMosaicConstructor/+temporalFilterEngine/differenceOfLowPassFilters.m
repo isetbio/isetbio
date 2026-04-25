@@ -48,7 +48,7 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     % lowpass2 gain
     initialValues(numel(initialValues)+1) = 2;
     lowerBounds(numel(lowerBounds)+1) = 0.0;
-    upperBounds(numel(upperBounds)+1) = 5;
+    upperBounds(numel(upperBounds)+1) = 20;
     paramNames{numel(paramNames)+1} = 'LP2 filter gain';
 
 

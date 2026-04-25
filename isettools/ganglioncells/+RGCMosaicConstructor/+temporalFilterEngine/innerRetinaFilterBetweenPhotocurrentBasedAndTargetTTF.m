@@ -13,7 +13,10 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
 
     idx = find(frequencyWeights==1.0);
     minFrequencyToIncludeWithUnitWeight = temporalFrequencySupportHz(idx(1));
-    generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, minFrequencyToIncludeWithUnitWeight, theTargetTTF, thePhotocurrentsBasedTTF, theDesiredInnerRetinaTTF);
+    maxFrequencyToIncludeWithUnitWeight = temporalFrequencySupportHz(idx(end));
+
+    generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, minFrequencyToIncludeWithUnitWeight, ...
+        maxFrequencyToIncludeWithUnitWeight, theTargetTTF, thePhotocurrentsBasedTTF, theDesiredInnerRetinaTTF);
 
 
     hFig = figure(1000); clf;
@@ -45,7 +48,7 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
                 modelParams.upperBounds, ...
                 modelParams.names] = RGCMosaicConstructor.temporalFilterEngine.asymmetricBandPassFilter([],temporalFrequencySupportHz);
 
-        case 'dampedOscillationFiter'
+        case 'dampedOscillationFilter'
                [~, modelParams.initialValues, ...
                 modelParams.lowerBounds, ...
                 modelParams.upperBounds, ...
@@ -163,7 +166,7 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
         case 'asymmetricBandPassFilter'
             theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.asymmetricBandPassFilter(modelParams.finalValues,temporalFrequencySupportHz);
 
-        case 'dampedOscillationFiter'
+        case 'dampedOscillationFilter'
             theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.dampedOscillationFilter(modelParams.finalValues, temporalFrequencySupportHz);
          
         case 'differenceOfLowPassFilters'
@@ -196,7 +199,7 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
                 [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
                     RGCMosaicConstructor.temporalFilterEngine.asymmetricBandPassFilter(theCurrentParams, temporalFrequencySupportHz);
 
-            case 'dampedOscillationFiter'
+            case 'dampedOscillationFilter'
                 [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
                     RGCMosaicConstructor.temporalFilterEngine.dampedOscillationFilter(theCurrentParams, temporalFrequencySupportHz);
 
@@ -274,6 +277,7 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
                 true, false, [1 0 0], ...
                 '');
             plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
+            plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
 
             ax = subplot('Position', [0.59 0.08 0.4 0.4]);
             RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
@@ -286,6 +290,7 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
                 false, false, [1 0 0], ...
                 '');
             plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
+            plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
 
             drawnow;
         end
@@ -295,7 +300,8 @@ end
 
 
 
-function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, minFrequencyToIncludeWithUnitWeight, ...
+function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, ...
+    minFrequencyToIncludeWithUnitWeight, maxFrequencyToIncludeWithUnitWeight, ...
     theTargetTTF, thePhotocurrentsBasedTTF, theDesiredInnerRetinaTTF)
 
     hFig = figure(999);
@@ -305,20 +311,21 @@ function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, minFrequ
         ax, temporalFrequencySupportHz, theTargetTTF, 'o', ...
         true, false, [0 0 0], ...
         'target (macaque) TTF');
-
-    % Add minimum weights line
+% Add minimum & maximum weights line
     hold(ax, 'on');
-    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.0);
+    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+    plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
 
     ax = subplot(2,3,4);
     RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
         ax, temporalFrequencySupportHz, theTargetTTF, 'o', ...
         false, false, [0 0 0], ...
         '');
-
-    % Add minimum weights line
+    % Add minimum & maximum weights line
     hold(ax, 'on');
-    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.0);
+    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+    plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+
 
     ax = subplot(2,3,2);
     RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
@@ -326,19 +333,21 @@ function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, minFrequ
         true, true, [0 0 1], ...
         'photocurrents-based TTF');
 
-    % Add minimum weights line
+    % Add minimum & maximum weights line
     hold(ax, 'on');
-    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'b--', 'LineWidth', 1.0);
+    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+    plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
 
     ax = subplot(2,3,5);
     RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
         ax, temporalFrequencySupportHz, thePhotocurrentsBasedTTF, 'o', ...
         false, true, [0 0 1], ...
         '');
-
-    % Add minimum weights line
+    % Add minimum & maximum weights line
     hold(ax, 'on');
-    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'b--', 'LineWidth', 1.0);
+    plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+    plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+
 
     ax = subplot(2,3,3);
     RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
@@ -346,9 +355,11 @@ function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, minFrequ
         true, true, [1 0 0], ...
         'desired inner retina TTF');
 
-     % Add minimum weights line
+    % Add minimum & maximum weights line
     hold(ax, 'on');
     plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+    plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+    
 
     ax = subplot(2,3,6);
     RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
@@ -356,7 +367,8 @@ function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, minFrequ
         false, true, [1 0 0], ...
         '');
 
-     % Add minimum weights line
+    % Add minimum & maximum weights line
     hold(ax, 'on');
     plot(ax, minFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
+    plot(ax, maxFrequencyToIncludeWithUnitWeight*[1 1], get(ax, 'YLim'), 'r--', 'LineWidth', 1.0);
 end
