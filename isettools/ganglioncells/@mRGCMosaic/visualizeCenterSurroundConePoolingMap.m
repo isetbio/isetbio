@@ -18,10 +18,12 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     p.addParameter('doNotLabelScaleBar', false, @islogical);
     p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConeApertureImage', @(x)(ismember(x, mRGCMosaic.validRFsubregionContourGenerationMethods)));
     p.addParameter('maxNumberOfConesOutsideContour', 1, @isscalar);
+    p.addParameter('backgroundColor', [1 1 1]);
     p.addParameter('gridless', false, @islogical);
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('plotTitleFontSize', 16, @isscalar);
     p.addParameter('axesToRenderIn', [], @(x)(isempty(x)||(isa(x, 'handle'))));
     p.addParameter('figNo', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('figPos', [], @(x)(isempty(x)||(numel(x)==2)));
@@ -48,11 +50,13 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     scaleBarDegs = p.Results.scaleBarDegs;
     doNotLabelScaleBar = p.Results.doNotLabelScaleBar;
 
+    backgroundColor = p.Results.backgroundColor;
     plotLineWeightingFunctions = p.Results.withLineWeightingFunctions;
     gridless = p.Results.gridless;
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
     plotTitle = p.Results.plotTitle;
+    plotTitleFontSize = p.Results.plotTitleFontSize;
     axesToRenderIn = p.Results.axesToRenderIn;
     customFigureFormat = p.Results.withCustomFigureFormat;
     contourGenerationMethod = p.Results.contourGenerationMethod;
@@ -329,10 +333,12 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
         'withSuperimposedPSFcontourLineColor', [0 0 0], ...
         'withSuperimposedPSFcontourLineWidth', 1.5, ...
         'withSuperimposedPSF', visualizedPSFData, ...
+        'backgroundColor', backgroundColor, ...
         'domainVisualizationLimits', domainVisualizationLimits, ...
         'domainVisualizationTicks', domainVisualizationTicks, ...
         'noXLabel', plotLineWeightingFunctions, ...
-        'plotTitle', plotTitle ...
+        'plotTitle', plotTitle, ...
+        'plotTitleFontSize', plotTitleFontSize ...
         );
 
 

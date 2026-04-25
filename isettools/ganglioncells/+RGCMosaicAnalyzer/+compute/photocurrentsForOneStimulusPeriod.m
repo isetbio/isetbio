@@ -75,6 +75,11 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
             fprintf('Did not find any cones with significant response. No debug visualization')
         end
 
+        % Allocate memory for each cone mosaic OS biophys model
+        if (isempty(theConeOSbiophysModels))
+            theConeOSbiophysModels = cell(1,numel(visualizedConeIndices));
+        end
+        
         for iDebugConeIndex = 1:numel(visualizedConeIndices)
 
             iConeIndex = visualizedConeIndices(iDebugConeIndex);
@@ -82,7 +87,7 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
     
             % Retrieve the cone excitation response
             theSingleConeExcitations = theConeMosaicExcitationResponseSequence(:,iConeIndex);
-   
+ 
 
             % Compute photocurrent for this cone, transforming the cone excitation response into a periodic waveform by concatenating nWarmUpPeriods
             [temporalSupportPhotocurrent, ...
@@ -91,11 +96,14 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
              theConeExcitationsSingleConePeriodic, ...
              photocurrentResponseTimeAxisPeriodic, ...
              thePcurrentResponsePeriodic, ...
-             thePcurrentBackgroundResponseTransient] = computeSingleConePhotocurrentResponse(...
+             thePcurrentBackgroundResponseTransient, ...
+             theConeOSbiophysModels{iConeIndex}] = computeSingleConePhotocurrentResponse(...
                     eccentricityDegs, theSingleConeExcitations, temporalSupportSeconds, ...
                     nWarmUpPeriods, onlyKeepResponseDuringLastStimulusPeriod, onlyKeepResponseDuringLastTwoStimulusPeriods, ...
                     coneMosaicIntegrationTime, osTimeStep, ...
-                    pCurrentTemporalResolutionSeconds, [], true);
+                    pCurrentTemporalResolutionSeconds, ...
+                    theConeOSbiophysModels{iConeIndex}, ...
+                    true);
 
             % Retrieve the photocurrent response
             theConePhotocurrents(:, iConeIndex) = theConePhotoCurrentDifferentialResponse;
@@ -147,6 +155,9 @@ function [temporalSupportPhotocurrent, theConePhotocurrents, theConeBackgroundPh
         else
             coneIndicesToComputePhotocurrentsFor = computePhotocurrentResponsesOnlyForSelectConeIndices;
         end
+
+        % Allocate memory for each cone mosaic OS biophys model
+        theConeOSbiophysModels = cell(1,nCones);
 
         parfor iConeIndex = 1:nCones
 
