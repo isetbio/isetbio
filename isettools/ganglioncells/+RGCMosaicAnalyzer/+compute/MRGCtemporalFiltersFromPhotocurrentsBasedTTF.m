@@ -161,8 +161,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.amplitude, 'ko');
         hold on;
         plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds*0, 'r-');
-        disp('Is baseline near 0? Hit enter to proceed') 
-        pause
     end
 
 
@@ -213,8 +211,8 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
         case 'delay + highpass filter'
            
-            % Filter to fit
-            filterType =  'differenceOfLowPassFilters'; % 'dampedOscillationFiter'; %'delayLeadLagFilter'; %'delayHighPassFilter'; % 'asymmetricBandPassFilter'; %'delayLeadLagFilter';
+            % Filter to fit to the inner retina TTF
+            fittedInnerRetinalFilterType =  'differenceOfLowPassFilters'; % 'dampedOscillationFiter'; %'delayLeadLagFilter'; %'delayHighPassFilter'; % 'asymmetricBandPassFilter'; %'delayLeadLagFilter';
             
             % Frequency weighting
             minFrequencyHzWithUnitWeight = 3.0;
@@ -223,18 +221,24 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             frequencyWeights = frequencyWeights/max(frequencyWeights);
 
             solverType = 'multi-start'; % 'fmincon'; %'global-search' ; % 'fmincon'; %'multi-start'; 'fmincon'; %'multi-start'; %'global-search';
-            multiStartsNum = 32;
+            multiStartsNum = 128;
             useParallel = ~true;
 
             theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.innerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
                 temporalFrequenciesExamined, theTargetCascadedFilterTTF, thePhotocurrentBasedMRGCcellTTF, ...
-                frequencyWeights, filterType, solverType, multiStartsNum, useParallel);
+                frequencyWeights, fittedInnerRetinalFilterType, solverType, multiStartsNum, useParallel);
 
         otherwise
             error('Unknown temporal filter synthesis method: ''%s''.', temporalFilterSynthesisMethod);
     end
 
 
+    fprintf('Saving derived inner retina filter TTF to %s\n', theAnalyzedTTFsFullFileName);
+    save(theAnalyzedTTFsFullFileName, ...
+        'theMRGCMosaic', 'stimParams', 'TTFparamsStruct', ...
+        'solverType', 'multiStartsNum', 'frequencyWeights', 'fittedInnerRetinalFilterType', ...
+        'theInnerRetinaTTF', 'temporalFrequenciesExamined' ...
+        );
    
 
     % The photocurrents based mRGC impulse response 
