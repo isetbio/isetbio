@@ -136,17 +136,27 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     % Phase in radians
     theTTFphaseRadians = theTTFphaseDegs/180*pi;
 
+
     % Complex TTF from amplitude and phase
     thePhotocurrentBasedMRGCcellTTF = theTTFamplitude .* exp(-1i * (theTTFphaseRadians));
 
+    
 
-    % Adjust TTF for missing 0 Hz point
+    % Adjust TTF for missing 0 Hz point. For this we need to estimate the
+    % baseline of thePhotocurrentBasedMRGC temporal impulse response
+    % and we do so by looking at delays > 800 msec
     minimumDelaySecondsForEstimationOfBaseline = 0.8;
     [thePhotocurrentBasedMRGCcellTTF, temporalFrequenciesExamined] = RGCMosaicConstructor.temporalFilterEngine.adjustTTFtoDealWithMissingTTFsampleAt0Hz(...
         thePhotocurrentBasedMRGCcellTTF, temporalFrequenciesExamined, minimumDelaySecondsForEstimationOfBaseline);
 
-    % Add a delay of 0 msec to make the photocurrent impulse response (as esimated from its TTF) is causal
-    delaySeconds = 0/1000;
+
+    % Clean up the TTF by removing phase outliers
+    thePhotocurrentBasedMRGCcellTTF =  RGCMosaicConstructor.temporalFilterEngine.removePhaseOutliersFromTTF(...
+        temporalFrequenciesExamined, thePhotocurrentBasedMRGCcellTTF);
+
+
+    % Add a time delay to make the photocurrent impulse response (as esimated from its TTF) is causal
+    delaySeconds = 50/1000;
     omega = 2 * pi * temporalFrequenciesExamined;
     thePhotocurrentBasedMRGCcellTTF = exp(-1i * omega * delaySeconds) .* thePhotocurrentBasedMRGCcellTTF;
 
@@ -158,7 +168,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
                     thePhotocurrentBasedMRGCcellTTF , temporalFrequenciesExamined);
     
         figure(1);
-        plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.amplitude, 'ko');
+        plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.amplitude/max(thePhotocurrentBasedImpulseResponseData.amplitude), 'ko');
         hold on;
         plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds*0, 'r-');
     end
@@ -203,10 +213,22 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     end
 
 
+    % Add the same time delay to theTargetCascadedFilterTTF
+    theTargetCascadedFilterTTF = exp(-1i * omega * delaySeconds) .* theTargetCascadedFilterTTF;
+
+
+    if (verifyOffsetCorrection)
+        theTargetCascadedFilterImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+                    theTargetCascadedFilterTTF, temporalFrequenciesExamined);
+    
+        plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, theTargetCascadedFilterImpulseResponseData.amplitude/max(theTargetCascadedFilterImpulseResponseData.amplitude), 'b-');
+        pause
+    end
+
 
     % Normalize TTFs
-    theTargetCascadedFilterTTF = theTargetCascadedFilterTTF / max(abs(theTargetCascadedFilterTTF));
     thePhotocurrentBasedMRGCcellTTF = thePhotocurrentBasedMRGCcellTTF / max(abs(thePhotocurrentBasedMRGCcellTTF));
+    theTargetCascadedFilterTTF = theTargetCascadedFilterTTF / max(abs(theTargetCascadedFilterTTF));
 
 
     % Derive theInnerRetinaTTF based on the theTargetCascadedFilterTTF and thePhotocurrentBasedMRGCcellTTF
@@ -218,7 +240,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             innerRetinaFilterDerivationParams.minFrequencyHzWithUnitWeight = temporalFrequenciesExamined(1);
             innerRetinaFilterDerivationParams.maxFrequencyHzWithUnitWeight = temporalFrequenciesExamined(end);
 
-        case {'differenceOfLowPassFilters', 'dampedOscillationFilter'}
+        case {'differenceOfLowPassFilters', 'dampedOscillationFilter', 'delayLeadLagFilter'}
            
             % Frequency weighting
             frequencyWeights = temporalFrequenciesExamined*0+1;
@@ -239,6 +261,11 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     end
 
 
+    % Undo the delays
+    %thePhotocurrentBasedMRGCcellTTF = exp(1i * omega * delaySeconds) .* thePhotocurrentBasedMRGCcellTTF;
+    %theInnerRetinaTTF = exp(1i * omega * delaySeconds) .* theInnerRetinaTTF;
+    %theTargetCascadedFilterTTF  = exp(1i * omega * delaySeconds) .* theTargetCascadedFilterTTF;
+
     fprintf('Saving derived inner retina filter TTF to %s\n', theAnalyzedTTFsFullFileName);
 
     innerRetinaFilterDataStruct = struct(...
@@ -258,8 +285,8 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
    
 
     hFig = figure(9876); clf;
-    set(hFig, 'Position', [10 10 1000 1000], 'Name', sprintf('%s - %s', targetCellImpulseResponseSource, stimulusShape))
-    ax = subplot('Position', [0.05 0.05 0.4 0.9]);
+    set(hFig, 'Position', [10 10 2000 800], 'Name', sprintf('%s - %s', targetCellImpulseResponseSource, stimulusShape))
+    ax = subplot('Position', [0.05 0.05 0.25 0.9]);
     p1 = RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
         ax, innerRetinaFilterDataStruct.temporalFrequencySupportHz, ...
         innerRetinaFilterDataStruct.targetMacaqueTTF, 'o', ...
@@ -276,7 +303,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     legend(ax, [p1 p2], {'target' 'achieved'});
 
 
-    ax = subplot('Position', [0.55 0.05 0.4 0.9]);
+    ax = subplot('Position', [0.4 0.05 0.25 0.9]);
     p1 = RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
         ax, innerRetinaFilterDataStruct.temporalFrequencySupportHz, ...
         innerRetinaFilterDataStruct.targetMacaqueTTF, 'o', ...
@@ -294,6 +321,19 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     plot(ax, innerRetinaFilterDerivationParams.maxFrequencyHzWithUnitWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
     legend(ax, [p1 p2], {'target' 'achieved'});
 
+
+    
+    theTargetMacaqueIR = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+        innerRetinaFilterDataStruct.targetMacaqueTTF, innerRetinaFilterDataStruct.temporalFrequencySupportHz);
+    theAchievedIR = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+        innerRetinaFilterDataStruct.photocurrentBasedTTF .* innerRetinaFilterDataStruct.derivedInnerRetinaTTF, innerRetinaFilterDataStruct.temporalFrequencySupportHz);
+
+    ax = subplot('Position', [0.7 0.05 0.25 0.9]);
+    p1 = plot(ax, theTargetMacaqueIR.temporalSupportSeconds*1e3, theTargetMacaqueIR.amplitude, 'o');
+    hold(ax, 'on');
+    p2 = plot(ax, theAchievedIR.temporalSupportSeconds*1e3, theAchievedIR.amplitude, 'r-');
+    set(ax, 'XLim', [0 300]);
+    legend(ax, [p1 p2], {'target' 'achieved'});
     pause
 
 

@@ -7,15 +7,15 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     differenceOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz)
 
      % gain
-    initialValues(1) = 10;
+    initialValues(1) = 60;
     lowerBounds(1) = 1;
     upperBounds(1) = 200;
     paramNames{1} = 'gain';
     
     % delaySeconds
     initialValues(numel(initialValues)+1) = 32;
-    lowerBounds(numel(lowerBounds)+1) = -50;
-    upperBounds(numel(upperBounds)+1) = 50;
+    lowerBounds(numel(lowerBounds)+1) = 0;
+    upperBounds(numel(upperBounds)+1) = 150;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
 
 
@@ -23,7 +23,7 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     initialValues(numel(initialValues)+1) = 1.0;
     lowerBounds(numel(lowerBounds)+1) = 0.01;
     upperBounds(numel(upperBounds)+1) = 20;
-    paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
+    paramNames{numel(paramNames)+1} = 'LP1 time constant (msec)';
 
 
     % lowpass2 timeConstantSeconds
@@ -35,13 +35,13 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     % lowpass FilterOrder
     initialValues(numel(initialValues)+1) = 21;
     lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 40;
-    paramNames{numel(paramNames)+1} = 'LP filter order';
+    upperBounds(numel(upperBounds)+1) = 80;
+    paramNames{numel(paramNames)+1} = 'LP1 filter order';
 
     % lowpass2 FilterOrder
     initialValues(numel(initialValues)+1) = 11;
     lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 40;
+    upperBounds(numel(upperBounds)+1) = 80;
     paramNames{numel(paramNames)+1} = 'LP2 filter order';
 
 

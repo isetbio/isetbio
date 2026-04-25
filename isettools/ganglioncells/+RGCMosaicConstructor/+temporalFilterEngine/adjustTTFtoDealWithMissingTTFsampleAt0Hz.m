@@ -35,6 +35,10 @@ function [theTTF,  temporalFrequenciesExamined] = adjustTTFtoDealWithMissingTTFs
 
     % We estimate the baseline from time bins > 0.8 minimumDelaySecondsForEstimationOfBaselin
     idx = find(abs(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds)>=minimumDelaySecondsForEstimationOfBaseline);
+    if (isempty(idx))
+        error('There are no time samples in the IR (%d  msec) to estimate its baserate for delays < %d msec', ...
+            thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds(end)*1e3, minimumDelaySecondsForEstimationOfBaseline*1e3);
+    end
     baselineOffset = mean(thePhotocurrentBasedImpulseResponseData.amplitude(idx));
 
     % Correction for the thePhotocurrentBasedMRGCcellTTF(1) 
