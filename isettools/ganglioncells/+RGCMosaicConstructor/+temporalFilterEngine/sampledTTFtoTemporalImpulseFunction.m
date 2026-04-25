@@ -134,20 +134,25 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
         fprintf('──────────────────────────────────────────────\n');
     end
 
+    % Spectral window 
+    win = generateWindow(N, options.window, options.beta, options.alpha);
+
     % Build two-sided FFT spectrum
     switch fmt
         case 'onesided'
             theTTF_half          = theTTF;
             theTTF_half(2:end-1) = theTTF(2:end-1) / 2;
-            mirror          = conj(theTTF_half(end-1:-1:2));
+            mirror               = conj(theTTF_half(end-1:-1:2));
             theTTF_std           = [theTTF_half; mirror];
-            f_std           = [theFrequencySupportHz; -(theFrequencySupportHz(end-1:-1:2))];
+            f_std                = [theFrequencySupportHz; -(theFrequencySupportHz(end-1:-1:2))];
+            win                  = ifftshift(win);
         case 'centered'
             theTTF_std = ifftshift(theTTF);
-            f_std = ifftshift(theFrequencySupportHz);
+            win        = ifftshift(win);
+            f_std      = ifftshift(theFrequencySupportHz);
         case 'twosided'
             theTTF_std = theTTF;
-            f_std = theFrequencySupportHz;
+            f_std      = theFrequencySupportHz;
     end
 
     % Make the FFT spectrum symmetric
@@ -157,9 +162,20 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
     theTTF_herm(1)        = real(theTTF_std(1));
     theTTF_herm(N/2+1)    = real(theTTF_std(N/2+1));
     
-    % Spectral window 
-    win   = generateWindow(N, options.window, options.beta, options.alpha);
+    
     windowedSpectrum = theTTF_herm .* win;
+
+    if (options.plot)
+        figure(33)
+        subplot(2,1,1);
+        plot(f_std, abs(theTTF_std), 'ko');
+
+        subplot(2,1,2)
+        plot(abs(theTTF_herm), 'ko');
+        hold on;
+        plot(win, 'k-')
+        pause
+    end
 
     % UPSAMPLE: zero-insert in spectrum -> finer time axis ─────────────────────
     %

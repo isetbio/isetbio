@@ -137,27 +137,34 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     theTTFphaseRadians = theTTFphaseDegs/180*pi;
 
     % Complex TTF from amplitude and phase
-    % Add a delay of 0 msec to make the photocurrent response start at 0 msec
+    thePhotocurrentBasedMRGCcellTTF = theTTFamplitude .* exp(-1i * (theTTFphaseRadians));
+
+
+    % Adjust TTF for missing 0 Hz point
+    minimumDelaySecondsForEstimationOfBaseline = 0.8;
+    [thePhotocurrentBasedMRGCcellTTF, temporalFrequenciesExamined] = RGCMosaicConstructor.temporalFilterEngine.adjustTTFtoDealWithMissingTTFsampleAt0Hz(...
+        thePhotocurrentBasedMRGCcellTTF, temporalFrequenciesExamined, minimumDelaySecondsForEstimationOfBaseline);
+
+    % Add a delay of 0 msec to make the photocurrent impulse response (as esimated from its TTF) is causal
     delaySeconds = 0/1000;
-    delayRadians = delaySeconds * 2 * pi * temporalFrequenciesExamined;
-    thePhotocurrentBasedMRGCcellTTF = theTTFamplitude .* exp(-1i * (theTTFphaseRadians + delayRadians));
+    omega = 2 * pi * temporalFrequenciesExamined;
+    thePhotocurrentBasedMRGCcellTTF = exp(-1i * omega * delaySeconds) .* thePhotocurrentBasedMRGCcellTTF;
 
 
-    addZeroFrequencyPoint = true;
-    if (addZeroFrequencyPoint)
-        if (temporalFrequenciesExamined(1) > 0)
-            % Add the zero TF point. Since we do not have it we set its
-            % magnitude equal to the that of the first frequency point
-            deltaFrequency = temporalFrequenciesExamined(2)-temporalFrequenciesExamined(1);
-            if (temporalFrequenciesExamined(1)-deltaFrequency ~= 0)
-                temporalFrequenciesExamined(1)-deltaFrequency
-                error('Cannot add 0 TF')
-            end
-            % Assume TTF(0) = norm(TTF(1))
-            temporalFrequenciesExamined = cat(2, 0, temporalFrequenciesExamined);
-            thePhotocurrentBasedMRGCcellTTF = cat(2, norm(thePhotocurrentBasedMRGCcellTTF(1)), thePhotocurrentBasedMRGCcellTTF);
-        end
+    verifyOffsetCorrection = true;
+    if (verifyOffsetCorrection)
+        % Verify the the impulse response has a baseline very close to 0
+        thePhotocurrentBasedImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+                    thePhotocurrentBasedMRGCcellTTF , temporalFrequenciesExamined);
+    
+        figure(1);
+        plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.amplitude, 'ko');
+        hold on;
+        plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds*0, 'r-');
+        disp('Is baseline near 0? Hit enter to proceed') 
+        pause
     end
+
 
 
     % Compute theTargetCascadedFilterTTF 
@@ -206,9 +213,13 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
         case 'delay + highpass filter'
            
+            % Filter to fit
             filterType =  'differenceOfLowPassFilters'; % 'dampedOscillationFiter'; %'delayLeadLagFilter'; %'delayHighPassFilter'; % 'asymmetricBandPassFilter'; %'delayLeadLagFilter';
+            
+            % Frequency weighting
+            minFrequencyHzWithUnitWeight = 3.0;
             frequencyWeights = linspace(0,1, numel(temporalFrequenciesExamined));
-            frequencyWeights(temporalFrequenciesExamined>5) = frequencyWeights(temporalFrequenciesExamined==5);
+            frequencyWeights(temporalFrequenciesExamined>=minFrequencyHzWithUnitWeight) = frequencyWeights(temporalFrequenciesExamined==minFrequencyHzWithUnitWeight);
             frequencyWeights = frequencyWeights/max(frequencyWeights);
 
             solverType = 'multi-start'; % 'fmincon'; %'global-search' ; % 'fmincon'; %'multi-start'; 'fmincon'; %'multi-start'; %'global-search';

@@ -54,14 +54,14 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
 
     % phase of LP1
     initialValues(numel(initialValues)+1) = 20;
-    lowerBounds(numel(lowerBounds)+1) = -180;
-    upperBounds(numel(upperBounds)+1) = 180;
+    lowerBounds(numel(lowerBounds)+1) = -360;
+    upperBounds(numel(upperBounds)+1) = 360;
     paramNames{numel(paramNames)+1} = 'LP1 phase (degs)';
 
     % phase of LP2
     initialValues(numel(initialValues)+1) = 35;
-    lowerBounds(numel(lowerBounds)+1) = -180;
-    upperBounds(numel(upperBounds)+1) = 180;
+    lowerBounds(numel(lowerBounds)+1) = -360;
+    upperBounds(numel(upperBounds)+1) = 360;
     paramNames{numel(paramNames)+1} = 'LP2 phase (degs)';
 
 
