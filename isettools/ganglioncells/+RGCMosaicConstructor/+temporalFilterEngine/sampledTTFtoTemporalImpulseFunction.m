@@ -167,13 +167,14 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
 
     if (options.plot)
         figure(33)
-        subplot(2,1,1);
+        subplot(1,2,1);
         plot(f_std, abs(theTTF_std), 'ko');
 
-        subplot(2,1,2)
+        subplot(1,2,2)
         plot(abs(theTTF_herm), 'ko');
         hold on;
-        plot(win, 'k-')
+        plot(win, 'r-')
+        legend({'herm', 'win'})
         pause
     end
 

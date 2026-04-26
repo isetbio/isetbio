@@ -1,17 +1,22 @@
 %
-% RGCMosaicConstructor.temporalFilterEngine.innerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF
+% RGCMosaicConstructor.temporalFilterEngine.deriveInnerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF
 %
 
-function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
+function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
                 temporalFrequencySupportHz, theTargetTTF, thePhotocurrentsBasedTTF, ...
-                frequencyWeights, temporalWeightingLimitsSeconds, filterType, solverType, multiStartsNum, useParallel)
+                frequencyWeights, temporalWeightingLimitsSeconds, timeDomainResidualWeighting, ...
+                residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter, ...
+                filterType, solverType, multiStartsNum, useParallel)
 
 
-    theDesiredInnerRetinaTTF = theTargetTTF./thePhotocurrentsBasedTTF;
+    idx = find(abs(thePhotocurrentsBasedTTF)>10*eps);
+    theDesiredInnerRetinaTTF = theTargetTTF*0;
+    theDesiredInnerRetinaTTF(idx) = theTargetTTF(idx)./thePhotocurrentsBasedTTF(idx);
+
     theDesiredInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
                 theDesiredInnerRetinaTTF, temporalFrequencySupportHz);
 
-    idx = find(frequencyWeights==1.0);
+    idx = find(frequencyWeights>0.0);
     minFrequencyToIncludeWithUnitWeight = temporalFrequencySupportHz(idx(1));
     maxFrequencyToIncludeWithUnitWeight = temporalFrequencySupportHz(idx(end));
 
@@ -60,6 +65,13 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
                 modelParams.lowerBounds, ...
                 modelParams.upperBounds, ...
                 modelParams.names] = RGCMosaicConstructor.temporalFilterEngine.differenceOfLowPassFilters([], temporalFrequencySupportHz);
+
+        case 'sumOfLowPassFilters'
+             [~, modelParams.initialValues, ...
+                modelParams.lowerBounds, ...
+                modelParams.upperBounds, ...
+                modelParams.names] = RGCMosaicConstructor.temporalFilterEngine.sumOfLowPassFilters([], temporalFrequencySupportHz);
+
 
         otherwise
             error('Unknown filterTye: ''%s''.', filterType);
@@ -180,6 +192,10 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
             theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.differenceOfLowPassFilters(...
                 modelParams.finalValues, temporalFrequencySupportHz);
 
+        case 'sumOfLowPassFilters'
+            theInnerRetinaTTF = RGCMosaicConstructor.temporalFilterEngine.sumOfLowPassFilters(...
+                modelParams.finalValues, temporalFrequencySupportHz);
+
         otherwise
             error('Unknown filterTye: ''%s''.', filterType);
     end
@@ -217,20 +233,23 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
             case 'differenceOfLowPassFilters'
                 [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
                     RGCMosaicConstructor.temporalFilterEngine.differenceOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz);
+       
+             case 'sumOfLowPassFilters'
+                [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
+                    RGCMosaicConstructor.temporalFilterEngine.sumOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz);
+    
         end
 
 
-        residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter = false;
+        theCurrentInnerRetinaFilterTTF = RGCMosaicConstructor.temporalFilterEngine.windowedOneSidedTTF(theCurrentInnerRetinaFilterTTF);
+
         if (residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter)
             desiredTTF = theTargetTTF;
-            achievedTTF = theCurrentInnerRetinaFilterTTF.*thePhotocurrentsBasedTTF;
+            achievedTTF = theCurrentInnerRetinaFilterTTF .* thePhotocurrentsBasedTTF;
         else
             desiredTTF = theDesiredInnerRetinaTTF;
             achievedTTF = theCurrentInnerRetinaFilterTTF;
         end
-
-       
-    
 
         % Time domain residual
         theCurrentInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
@@ -247,12 +266,15 @@ function [theInnerRetinaTTF, modelParams] = innerRetinaFilterBetweenPhotocurrent
         theTimeWindowedAchievedTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(achievedTTF, temporalWeightingLimitsSeconds);
         theTimeWindowedDesiredTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(desiredTTF, temporalWeightingLimitsSeconds);
         
+        
         theTimeWindowedSpectralDomainResidual = norm(frequencyWeights .* (theTimeWindowedDesiredTTF - theTimeWindowedAchievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
     
          % Spectral residual (full temporal support) 
         theSpectralDomainResidualFullTemporalSupport = norm(frequencyWeights .* (desiredTTF - achievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
 
-        theResidual = theTimeDomainResidual + theTimeWindowedSpectralDomainResidual; 
+        theResidual = timeDomainResidualWeighting * theTimeDomainResidual + ...
+                      (1-timeDomainResidualWeighting)* theTimeWindowedSpectralDomainResidual;
+
         residualsSequence(numel(residualsSequence)+1) = theResidual;
 
         

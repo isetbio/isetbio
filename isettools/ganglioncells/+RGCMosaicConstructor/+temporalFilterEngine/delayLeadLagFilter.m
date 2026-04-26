@@ -34,7 +34,7 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     % leadLagFilterOrder
     initialValues(numel(initialValues)+1) = 3;
     lowerBounds(numel(lowerBounds)+1) = 2;
-    upperBounds(numel(upperBounds)+1) = 4;
+    upperBounds(numel(upperBounds)+1) = 50;
     paramNames{numel(paramNames)+1} = 'lead-lag filter order';
     
 
