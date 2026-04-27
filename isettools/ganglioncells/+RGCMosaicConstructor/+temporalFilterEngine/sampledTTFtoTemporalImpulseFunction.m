@@ -213,9 +213,9 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
         h_interp  = h_interp(1:N_up);        % trim to exact length
         upsampledSpectrum = fft(h_interp);
     else
-        upsampledSpectrum      = windowedSpectrum;                   % no upsampling
+        upsampledSpectrum = windowedSpectrum;                   % no upsampling
         N_up  = N;
-        fs_up = fs;
+        fs_up = samplingFrequency;
     end
 
     % IFFT -> impulse response at upsampled rate 

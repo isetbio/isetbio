@@ -7,59 +7,59 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     differenceOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz)
 
 
-    cascadeWithThirdLowPassFilter = true;
+    cascadeWithThirdLowPassFilter = ~true;
     keepFilterOrdersInteger = ~true;
 
     % gain
-    initialValues(1) = 5000;
+    initialValues(1) = 220;
     lowerBounds(1) = 1;
-    upperBounds(1) = 10000;
+    upperBounds(1) = 2000;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 43;
-    lowerBounds(numel(lowerBounds)+1) = 30;
+    initialValues(numel(initialValues)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 20;
     upperBounds(numel(upperBounds)+1) = 50;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
 
 
     % lowpass1 timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 7;
-    lowerBounds(numel(lowerBounds)+1) = 5;
-    upperBounds(numel(upperBounds)+1) = 9;
+    initialValues(numel(initialValues)+1) = 3;
+    lowerBounds(numel(lowerBounds)+1) = 0.1;
+    upperBounds(numel(upperBounds)+1) = 5;
     paramNames{numel(paramNames)+1} = 'LP1 time constant (msec)';
 
 
     % lowpass2 timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 7;
-    lowerBounds(numel(lowerBounds)+1) = 5;
-    upperBounds(numel(upperBounds)+1) = 9;
+    initialValues(numel(initialValues)+1) = 3.1;
+    lowerBounds(numel(lowerBounds)+1) = 2;
+    upperBounds(numel(upperBounds)+1) = 10;
     paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
 
 
 
-    % lowpass FilterOrder
-    initialValues(numel(initialValues)+1) = 1.5;
-    lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 2;
+    % lowpass1 FilterOrder
+    initialValues(numel(initialValues)+1) = 5;
+    lowerBounds(numel(lowerBounds)+1) = 3;
+    upperBounds(numel(upperBounds)+1) = 10;
     paramNames{numel(paramNames)+1} = 'LP1 filter order';
 
     % lowpass2 FilterOrder
-    initialValues(numel(initialValues)+1) = 1.5;
+    initialValues(numel(initialValues)+1) = 2;
     lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 2;
+    upperBounds(numel(upperBounds)+1) = 7;
     paramNames{numel(paramNames)+1} = 'LP2 filter order';
 
 
  
     % phase of LP1
-    initialValues(numel(initialValues)+1) = 10;
+    initialValues(numel(initialValues)+1) = 40;
     lowerBounds(numel(lowerBounds)+1) = -360;
     upperBounds(numel(upperBounds)+1) = 360;
     paramNames{numel(paramNames)+1} = 'LP1 phase (degs)';
 
     % phase of LP2
-    initialValues(numel(initialValues)+1) = 10;
+    initialValues(numel(initialValues)+1) = 60;
     lowerBounds(numel(lowerBounds)+1) = -360;
     upperBounds(numel(upperBounds)+1) = 360;
     paramNames{numel(paramNames)+1} = 'LP2 phase (degs)';
@@ -67,8 +67,8 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
 
     % differentiation gain
     initialValues(numel(initialValues)+1) = 0.9;
-    lowerBounds(numel(lowerBounds)+1) = -2.0;
-    upperBounds(numel(upperBounds)+1) = 2.0;
+    lowerBounds(numel(lowerBounds)+1) = 0.2;
+    upperBounds(numel(upperBounds)+1) = 1.5;
     paramNames{numel(paramNames)+1} = 'differentiation gain';
 
 

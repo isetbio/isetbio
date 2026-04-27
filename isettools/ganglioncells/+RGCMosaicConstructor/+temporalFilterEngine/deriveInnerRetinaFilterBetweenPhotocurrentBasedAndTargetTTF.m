@@ -241,7 +241,7 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
         end
 
 
-        theCurrentInnerRetinaFilterTTF = RGCMosaicConstructor.temporalFilterEngine.windowedOneSidedTTF(theCurrentInnerRetinaFilterTTF);
+        %theCurrentInnerRetinaFilterTTF = RGCMosaicConstructor.temporalFilterEngine.windowedOneSidedTTF(theCurrentInnerRetinaFilterTTF);
 
         if (residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter)
             desiredTTF = theTargetTTF;
@@ -251,29 +251,33 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
             achievedTTF = theCurrentInnerRetinaFilterTTF;
         end
 
-        % Time domain residual
+        
         theCurrentInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
                 theCurrentInnerRetinaFilterTTF, temporalFrequencySupportHz);
    
 
+        % Time domain residual
         theTimeBinsOfInterest = find((theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds>=temporalWeightingLimitsSeconds(1)) & (theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds<=temporalWeightingLimitsSeconds(2)));
         notIncludedTimeBins = setdiff(1:numel(theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds), theTimeBinsOfInterest);
         theDesiredInnerRetinaFilterResponseData.amplitude(notIncludedTimeBins) = theDesiredInnerRetinaFilterResponseData.amplitude(notIncludedTimeBins)*0;
         theTimeDomainResidual = norm(theDesiredInnerRetinaFilterResponseData.amplitude(theTimeBinsOfInterest) - theCurrentInnerRetinaFilterResponseData.amplitude(theTimeBinsOfInterest)) / sqrt(numel(theTimeBinsOfInterest));
 
 
-        % Spectral residual (time windowed)
-        theTimeWindowedAchievedTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(achievedTTF, temporalWeightingLimitsSeconds);
-        theTimeWindowedDesiredTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(desiredTTF, temporalWeightingLimitsSeconds);
+        % Do not use the raw TTF based on the entire temporal support
+        % Instead use the TTF of the centered & windowed impulse response
+        % corresponding to the raw TTF
+        theTimeWindowedAchievedTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(achievedTTF, temporalFrequencySupportHz, [0 500/1000]);
+        theTimeWindowedDesiredTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(desiredTTF, temporalFrequencySupportHz, [0 500/1000]);
         
-        
-        theTimeWindowedSpectralDomainResidual = norm(frequencyWeights .* (theTimeWindowedDesiredTTF - theTimeWindowedAchievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
+         % Spectral residual (time windowed)
+        theSpectralDomainTimeWindowedResidual = norm(frequencyWeights .* (theTimeWindowedDesiredTTF - theTimeWindowedAchievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
     
          % Spectral residual (full temporal support) 
-        theSpectralDomainResidualFullTemporalSupport = norm(frequencyWeights .* (desiredTTF - achievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
+        theSpectralDomainFullTemporalSupportResidual = norm(frequencyWeights .* (desiredTTF - achievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
 
+        theSpectralDomainResidual = theSpectralDomainTimeWindowedResidual  % %theSpectralDomainFullTemporalSupportResidual;
         theResidual = timeDomainResidualWeighting * theTimeDomainResidual + ...
-                      (1-timeDomainResidualWeighting)* theTimeWindowedSpectralDomainResidual;
+                      (1-timeDomainResidualWeighting)* theSpectralDomainResidual; 
 
         residualsSequence(numel(residualsSequence)+1) = theResidual;
 
@@ -329,7 +333,7 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
             set(ax, 'YLim', [0 residualsSequence(1)*1.2], 'Color', 'none', 'XColor', [0.4 0.4 1], 'YColor', [0.4 0.4 1]);
             box(ax, 'off');
             grid(ax, 'on')
-            title(ax, sprintf('residuals: %2.2f (frequency domain, time windowed), %2.2f (time domain)', theTimeWindowedSpectralDomainResidual, theTimeDomainResidual));
+            title(ax, sprintf('residuals: %2.2f (frequency domain, time windowed), %2.2f (time domain)', theSpectralDomainResidual, theTimeDomainResidual));
 
             
             ax = subplot('Position', [0.59 0.58 0.4 0.4]);

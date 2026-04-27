@@ -32,8 +32,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
 
     temporalFrequenciesExamined = TTFparamsStruct.tfSupport;
-   % temporalFrequenciesExamined = temporalFrequenciesExamined(temporalFrequenciesExamined< 120);
-
 
     theTTFamplitude = zeros(1, numel(temporalFrequenciesExamined));
     theTTFphaseDegs = zeros(1, numel(temporalFrequenciesExamined));
@@ -153,7 +151,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
 
     % Clean up the TTF by removing phase outliers
-    thePhotocurrentBasedMRGCcellTTF =  RGCMosaicConstructor.temporalFilterEngine.removePhaseOutliersFromTTF(...
+    thePhotocurrentBasedMRGCcellTTF = RGCMosaicConstructor.temporalFilterEngine.removePhaseOutliersFromTTF(...
         temporalFrequenciesExamined, thePhotocurrentBasedMRGCcellTTF);
 
 
