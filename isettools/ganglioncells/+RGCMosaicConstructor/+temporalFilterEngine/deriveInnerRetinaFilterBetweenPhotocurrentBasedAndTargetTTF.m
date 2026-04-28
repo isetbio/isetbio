@@ -297,6 +297,10 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
         switch (TTFcomponentToFit)
             case 'complexSpectrum'
                 theSpectralDomainResidual = norm(frequencyWeights .* (desiredTTF(:) - achievedTTF(:))) / max(norm(desiredTTF(:)));
+            case 'complexSpectrumWithBiasForAmplitudeSpectrum'
+                theSpectralDomainResidual = norm(frequencyWeights .* (desiredTTF(:) - achievedTTF(:))) / max(norm(desiredTTF(:))) + ...
+                                            3*norm(frequencyWeights .* (abs(desiredTTF(:)) - abs(achievedTTF(:)))) / max(norm(desiredTTF(:)));
+            
             case 'amplitudeSpectrumOnly'
                 theSpectralDomainResidual = norm(frequencyWeights .* (abs(desiredTTF(:)) - abs(achievedTTF(:)))) / max(norm(desiredTTF(:)));
             otherwise

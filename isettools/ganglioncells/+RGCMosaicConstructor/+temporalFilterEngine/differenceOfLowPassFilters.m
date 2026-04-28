@@ -3,6 +3,20 @@
 %
 %
 
+%{
+
+gain: 999.989
+delay (msec): 15
+LP1 time constant (msec): 0.378987
+LP2 time constant (msec): 0.614186
+nLTL-1: 36.8432
+nLTl-2: 36.5348
+differentiation gain: 1.00659
+differentiation delay (msec): 0
+
+%}
+
+
 function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, theCurrentParams] = ...
     differenceOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz)
 
@@ -10,51 +24,50 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     keepFilterOrdersInteger = ~true;
 
     
-
     % gain
-    initialValues(1) = 100;
-    lowerBounds(1) = 1;
-    upperBounds(1) = 1000;
+    initialValues(1) = 1000;
+    lowerBounds(1) = 500;
+    upperBounds(1) = 2000;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 25;
+    initialValues(numel(initialValues)+1) = 15;
     lowerBounds(numel(lowerBounds)+1) = 15;
-    upperBounds(numel(upperBounds)+1) = 50;
+    upperBounds(numel(upperBounds)+1) = 30;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
 
 
     % lowpass1 timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 0.8;
+    initialValues(numel(initialValues)+1) = 0.37;
     lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 4;
     paramNames{numel(paramNames)+1} = 'LP1 time constant (msec)';
 
 
     % lowpass2 timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 0.9;
+    initialValues(numel(initialValues)+1) = 0.61;
     lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 4;
     paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
 
 
 
-    % lowpass1 FilterOrder
-    initialValues(numel(initialValues)+1) = 10;
-    lowerBounds(numel(lowerBounds)+1) = 10;
-    upperBounds(numel(upperBounds)+1) = 40;
-    paramNames{numel(paramNames)+1} = 'nLTL-1';
+    % Product of filter orded x time constant (LP-1)
+    initialValues(numel(initialValues)+1) = 36.8;
+    lowerBounds(numel(lowerBounds)+1) = 20;
+    upperBounds(numel(upperBounds)+1) = 45;
+    paramNames{numel(paramNames)+1} = 'nStages x Tau (LP-1)';
 
-    % lowpass2 FilterOrder
-    initialValues(numel(initialValues)+1) = 30;
-    lowerBounds(numel(lowerBounds)+1) = 10;
-    upperBounds(numel(upperBounds)+1) = 40;
-    paramNames{numel(paramNames)+1} = 'nLTl-2';
+     % Product of filter orded x time constant (LP-2)
+    initialValues(numel(initialValues)+1) = 36.5;
+    lowerBounds(numel(lowerBounds)+1) = 20;
+    upperBounds(numel(upperBounds)+1) = 45;
+    paramNames{numel(paramNames)+1} = 'nStages x Tau (LP-1)';
 
     % differentiation gain
     initialValues(numel(initialValues)+1) = 0.95;
     lowerBounds(numel(lowerBounds)+1) = 0.6;
-    upperBounds(numel(upperBounds)+1) = 1.1;
+    upperBounds(numel(upperBounds)+1) = 1.0;
     paramNames{numel(paramNames)+1} = 'differentiation gain';   
 
 
