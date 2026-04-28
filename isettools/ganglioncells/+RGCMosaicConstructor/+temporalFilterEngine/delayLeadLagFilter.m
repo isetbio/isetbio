@@ -3,58 +3,73 @@
 %
 %
  
+%{
+
+gain = 21.52
+delay = 
+HP tau: 3.46
+HP delta tau: 4.31
+lead-lag filter order: 5.00
+LP-1 tau: 0.486
+nL-tL-1: 28.33
+nL-tL-2: 0.00
+%}
+
+
 function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, theCurrentParams] = ...
     delayLeadLagFilter(theCurrentParams, temporalFrequencySupportHz)
     
 
+
+    
     % gain
-    initialValues(1) = 10;
-    lowerBounds(1) = 0.01;
-    upperBounds(1) = 100;
+    initialValues(1) = 21.52;
+    lowerBounds(1) = 5;
+    upperBounds(1) = 30;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 25;
-    lowerBounds(numel(lowerBounds)+1) = 25;
-    upperBounds(numel(upperBounds)+1) = 25;
+    initialValues(numel(initialValues)+1) = 15;
+    lowerBounds(numel(lowerBounds)+1) = 0;
+    upperBounds(numel(upperBounds)+1) = 30;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
     
     % timeConstantSeconds (tau2 in Purpura, Tranchina, Kaplan Shapley 1990)
-    initialValues(numel(initialValues)+1) = 8;
-    lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 10;
+    initialValues(numel(initialValues)+1) = 3.46;
+    lowerBounds(numel(lowerBounds)+1) = 2.;
+    upperBounds(numel(upperBounds)+1) = 5;
     paramNames{numel(paramNames)+1} = 'HP time constant (msec)';
     
     % deltaTau (timeConstantSeconds + deltaTau = tau1 in Purpura, Tranchine, Kaplan Shapley 1990)
-    initialValues(numel(initialValues)+1) = 7;
-    lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 10;
+    initialValues(numel(initialValues)+1) = 4.31;
+    lowerBounds(numel(lowerBounds)+1) = 2;
+    upperBounds(numel(upperBounds)+1) = 6;
     paramNames{numel(paramNames)+1} = 'HP delta time constant (msec)';
     
     % leadLagFilterOrder
-    initialValues(numel(initialValues)+1) = 10;
-    lowerBounds(numel(lowerBounds)+1) = 5;
-    upperBounds(numel(upperBounds)+1) = 15;
+    initialValues(numel(initialValues)+1) = 5;
+    lowerBounds(numel(lowerBounds)+1) = 3;
+    upperBounds(numel(upperBounds)+1) = 10;
     paramNames{numel(paramNames)+1} = 'lead-lag filter order';
     
 
     % lowpass timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 4;
+    initialValues(numel(initialValues)+1) = 0.486;
     lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 15;
+    upperBounds(numel(upperBounds)+1) = 0.6;
     paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
 
 
     % lowpass2 timeConstantSeconds
     initialValues(numel(initialValues)+1) = 3;
-    lowerBounds(numel(lowerBounds)+1) = 0.5;
-    upperBounds(numel(upperBounds)+1) = 6;
+    lowerBounds(numel(lowerBounds)+1) = 2;
+    upperBounds(numel(upperBounds)+1) = 4;
     paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
 
     % lowpass FilterOrder
-    initialValues(numel(initialValues)+1) = 30;
-    lowerBounds(numel(lowerBounds)+1) = 15;
-    upperBounds(numel(upperBounds)+1) = 45;
+    initialValues(numel(initialValues)+1) = 28.33;
+    lowerBounds(numel(lowerBounds)+1) = 11;
+    upperBounds(numel(upperBounds)+1) = 30;
     paramNames{numel(paramNames)+1} = 'nLTL LP1';
 
     % lowpass2 FilterOrder

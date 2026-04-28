@@ -7,15 +7,15 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     delayHighPassFilter(theCurrentParams, temporalFrequencySupportHz)
     
     % gain
-    initialValues(1) = 8000;
+    initialValues(1) = 100;
     lowerBounds(1) = 1;
-    upperBounds(1) = 20000;
+    upperBounds(1) = 1000;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 0;
-    lowerBounds(numel(lowerBounds)+1) = -80;
-    upperBounds(numel(upperBounds)+1) = 80;
+    initialValues(numel(initialValues)+1) = 20;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 60;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
     
     % highpass gain
@@ -45,9 +45,9 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     
 
     % high pass FilterOrder
-    initialValues(numel(initialValues)+1) = 10;
+    initialValues(numel(initialValues)+1) = 1;
     lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 100;
+    upperBounds(numel(upperBounds)+1) = 1;
     paramNames{numel(paramNames)+1} = 'HP filter order';
 
 
