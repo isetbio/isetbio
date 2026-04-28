@@ -2,7 +2,7 @@
 % RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(achievedTTF, temporalWeightingLimitsSeconds)
 %
 
-function theTimeWindowedTTF = timeWindowedTTF(theUncroppedUncenteredTTF, temporalFrequencySupportHz, temporalLimitsSeconds)
+function [theTimeWindowedTTF, theOneSidedTimeWindowedTTF] = timeWindowedTTF(theUncroppedUncenteredTTF, temporalFrequencySupportHz, temporalLimitsSeconds)
 
     % Generate the corresponding temporal impulse response function 
     theTemporalResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
@@ -30,13 +30,25 @@ function theTimeWindowedTTF = timeWindowedTTF(theUncroppedUncenteredTTF, tempora
     % FFT of the centered, cropped IR
     theTimeWindowedTTF = fft(theCroppedTemporalImpulseResponseData.amplitude);
 
+
+    % Extract the one-sided TTF spectrum of the centered, cropped IR
+    % 1. Back to time-domain
+    tmp = ifft(theTimeWindowedTTF);
+    % 2. Undo the shift
+    tmp = circshift(tmp, -shiftSamplesToCenterImpulseResponse);
+    % 3. Back to Fourier domain
+    tmp = fft(tmp);
+    % 4. Take the one sided part
+    theOneSidedTimeWindowedTTF = 2*tmp(1:numel(temporalFrequencySupportHz));
+    % 5. Reshape to original shape
+    theOneSidedTimeWindowedTTF = reshape(theOneSidedTimeWindowedTTF, size(theUncroppedUncenteredTTF));
+
+    
     debug = ~true;
     if (debug)
-        % Extract the one sided spectrum
-        theTimeWindowedTTF = 2*theTimeWindowedTTF(1:numel(temporalFrequencySupportHz));
-    
+
         theTemporalResponseDataAfterCropping = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
-                    theTimeWindowedTTF, temporalFrequencySupportHz);
+                    theOneSidedTimeWindowedTTF, temporalFrequencySupportHz);
     
         figure(111); clf
         subplot(1,2,1)
@@ -47,7 +59,7 @@ function theTimeWindowedTTF = timeWindowedTTF(theUncroppedUncenteredTTF, tempora
         subplot(1,2,2);
         plot(temporalFrequencySupportHz, abs(theUncroppedUncenteredTTF), 'ko');
         hold on;
-        plot(temporalFrequencySupportHz, abs(theTimeWindowedTTF), 'r-', 'LineWidth',1.0);
+        plot(temporalFrequencySupportHz, abs(theOneSidedTimeWindowedTTF), 'r-', 'LineWidth',1.0);
         set(gca, 'XScale', 'log', 'XLim', [0.3 300], 'XTick', [0.3 1 3 10 30 100 300]);
         pause;
     end

@@ -3,18 +3,30 @@
 %
 
 function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
-                temporalFrequencySupportHz, theTargetTTF, thePhotocurrentsBasedTTF, ...
+                temporalFrequencySupportHz, theTargetTTF, thePhotocurrentsBasedTTF, theIdealInnerRetinaTTF, ...
+                minimumDelaySecondsForEstimationOfBaseline, ...
                 frequencyWeights, temporalWeightingLimitsSeconds, timeDomainResidualWeighting, ...
                 residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter, ...
                 filterType, solverType, multiStartsNum, useParallel)
 
 
-    idx = find(abs(thePhotocurrentsBasedTTF)>10*eps);
-    theDesiredInnerRetinaTTF = theTargetTTF*0;
-    theDesiredInnerRetinaTTF(idx) = theTargetTTF(idx)./thePhotocurrentsBasedTTF(idx);
+    % Normalized target TTFs
+    theTargetTTF = theTargetTTF / max(abs(theTargetTTF(:)));
+    theIdealInnerRetinaTTF = theIdealInnerRetinaTTF / max(abs(theIdealInnerRetinaTTF(:)));
+    theIdealInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+                theIdealInnerRetinaTTF, temporalFrequencySupportHz, ...
+                'causal', false);
 
-    theDesiredInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
-                theDesiredInnerRetinaTTF, temporalFrequencySupportHz);
+    theIdealInnerRetinaFilterResponseData.amplitude = ...
+        theIdealInnerRetinaFilterResponseData.amplitude/max(abs(theIdealInnerRetinaFilterResponseData.amplitude));
+
+    mPos = max(theIdealInnerRetinaFilterResponseData.amplitude(:));
+    mNeg = max(-theIdealInnerRetinaFilterResponseData.amplitude(:));
+    if (mNeg > mPos)
+        waveformPolarity = -1;
+    else
+        waveformPolarity = 1;
+    end
 
     idx = find(frequencyWeights>0.0);
     minFrequencyToIncludeWithUnitWeight = temporalFrequencySupportHz(idx(1));
@@ -22,7 +34,7 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
 
     generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, ...
         [minFrequencyToIncludeWithUnitWeight, maxFrequencyToIncludeWithUnitWeight],...
-        theTargetTTF, thePhotocurrentsBasedTTF, theDesiredInnerRetinaTTF);
+        theTargetTTF, thePhotocurrentsBasedTTF, theIdealInnerRetinaTTF);
 
 
     hFig = figure(1000); clf;
@@ -93,6 +105,7 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
     progressFigureHandle = figure(201); clf;
     set(progressFigureHandle, 'Position', [1 35 1200 1250]);
 
+
     objectiveFunctionToMinimize = @(x)theObjectiveFunctionToMinimize(x, ...
         temporalFrequencySupportHz, ...
         theTargetTTF, thePhotocurrentsBasedTTF, frequencyWeights, ...
@@ -109,7 +122,7 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
           'options', optimoptions(...
             'fmincon',...
             'Display', 'none', ...
-            'Algorithm', 'sqp',... % 'sqp', ... % 'interior-point',...
+            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
             'GradObj', 'off', ...
             'DerivativeCheck', 'off', ...
             'MaxFunEvals', 10^5, ...
@@ -144,6 +157,67 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
      end % switch (solver)
 
   
+      repeatWithOtherTarget = false;
+
+    if (repeatWithOtherTarget)
+    modelParams.initialValues = modelParams.finalValues;
+
+    % Repeat withresidualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter = true; 
+    residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter = true;
+
+    objectiveFunctionToMinimize = @(x)theObjectiveFunctionToMinimize(x, ...
+        temporalFrequencySupportHz, ...
+        theTargetTTF, thePhotocurrentsBasedTTF, frequencyWeights, ...
+        filterType, fittedModelParamsAxes, progressFigureHandle, modelParams, ...
+        showCurrentParamValuesPlot, showFitResult);
+
+    
+    residualsSequence = [];
+    problem = createOptimProblem('fmincon',...
+          'objective', objectiveFunctionToMinimize , ...
+          'x0', modelParams.initialValues, ...
+          'lb', modelParams.lowerBounds, ...
+          'ub', modelParams.upperBounds, ...
+          'options', optimoptions(...
+            'fmincon',...
+            'Display', 'none', ...
+            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
+            'GradObj', 'off', ...
+            'DerivativeCheck', 'off', ...
+            'MaxFunEvals', 10^5, ...
+            'MaxIter', 10^4) ...
+          );
+
+
+     switch (solverType)
+            case 'multi-start'
+                % Setup the multi-start solver
+                ms = MultiStart(...
+                'Display', 'iter', ...
+                'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
+                'UseParallel', useParallel);
+    
+                % Run the multi-start
+                modelParams.finalValues = run(ms, problem, multiStartsNum)
+    
+            case 'global-search'
+    
+                gs = GlobalSearch;
+                gs = GlobalSearch(gs,'XTolerance',1e-3,'StartPointsToRun','bounds');
+                modelParams.finalValues = run(gs,problem)
+    
+    
+            case 'fmincon'
+                modelParams.finalValues = fmincon(problem)
+    
+            otherwise
+                error('Uknown solver type: ''%s''.', solverType)
+                
+     end % switch (solver)
+
+    end
+
+
 
     % For lead-lag filter order fixed to 1.0, modelParams.finalValues were found as follows:
     % 0.1306 -7.6329 1.1930 150 (MAX) 1 0.9796 20.9183 0.9796 13.9997
@@ -201,6 +275,16 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
     end
 
 
+    theInnerRetinaTTF  = theInnerRetinaTTF  * waveformPolarity;
+
+    % Compute the TTF after adjusting for a zero baseline IR
+    verifyOffsetCorrection = ~true;
+    centerIR = false;
+    [theInnerRetinaTTFcentered, ~, theInnerRetinaTTF] = RGCMosaicConstructor.temporalFilterEngine.zeroBaselineWindowedCenteredTTF(...
+        theInnerRetinaTTF, temporalFrequencySupportHz, minimumDelaySecondsForEstimationOfBaseline, centerIR, verifyOffsetCorrection);
+    
+
+
     % Nested function
     function theResidual = theObjectiveFunctionToMinimize(theCurrentParams, ...
         temporalFrequencySupportHz, ...
@@ -234,51 +318,50 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
                 [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
                     RGCMosaicConstructor.temporalFilterEngine.differenceOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz);
        
-             case 'sumOfLowPassFilters'
+            case 'sumOfLowPassFilters'
                 [theCurrentInnerRetinaFilterTTF, ~, ~, ~, ~, theCurrentParams] = ...
                     RGCMosaicConstructor.temporalFilterEngine.sumOfLowPassFilters(theCurrentParams, temporalFrequencySupportHz);
     
         end
 
+        theCurrentInnerRetinaFilterTTF  = theCurrentInnerRetinaFilterTTF * waveformPolarity;
 
-        %theCurrentInnerRetinaFilterTTF = RGCMosaicConstructor.temporalFilterEngine.windowedOneSidedTTF(theCurrentInnerRetinaFilterTTF);
+        % Compute the TTF after adjusting for a zero baseline IR
+        verifyOffsetCorrection = ~true;
+        centerIR = false;
+        [theCurrentInnerRetinaFilterTTF, theCurrentDelay, theCurrentInnerRetinaFilterTTFnonCentered] = RGCMosaicConstructor.temporalFilterEngine.zeroBaselineWindowedCenteredTTF(...
+            theCurrentInnerRetinaFilterTTF, temporalFrequencySupportHz, minimumDelaySecondsForEstimationOfBaseline, centerIR, verifyOffsetCorrection);
+  
+        % Compute the time domain-residual
+        theCurrentInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
+                theCurrentInnerRetinaFilterTTFnonCentered, temporalFrequencySupportHz, ...
+                'causal', false);
+        theCurrentInnerRetinaFilterResponseData.amplitude = theCurrentInnerRetinaFilterResponseData.amplitude/max(abs(theCurrentInnerRetinaFilterResponseData.amplitude));
 
+        theTimeBinsOfInterest = find((theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds>=temporalWeightingLimitsSeconds(1)) & (theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds<=temporalWeightingLimitsSeconds(2)));
+        theTimeDomainResidual = norm(theIdealInnerRetinaFilterResponseData.amplitude(theTimeBinsOfInterest) - theCurrentInnerRetinaFilterResponseData.amplitude(theTimeBinsOfInterest)) / max(theIdealInnerRetinaFilterResponseData.amplitude);
+
+
+        % Compute the spectral-domain redidual
         if (residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter)
+
             desiredTTF = theTargetTTF;
             achievedTTF = theCurrentInnerRetinaFilterTTF .* thePhotocurrentsBasedTTF;
+
         else
-            desiredTTF = theDesiredInnerRetinaTTF;
+            desiredTTF = theIdealInnerRetinaTTF;
             achievedTTF = theCurrentInnerRetinaFilterTTF;
         end
 
         
-        theCurrentInnerRetinaFilterResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
-                theCurrentInnerRetinaFilterTTF, temporalFrequencySupportHz);
-   
+        % Spectral residual
+        theSpectralDomainResidual = norm(frequencyWeights .* (desiredTTF(:) - achievedTTF(:))) / max(norm(desiredTTF(:)));
+       
 
-        % Time domain residual
-        theTimeBinsOfInterest = find((theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds>=temporalWeightingLimitsSeconds(1)) & (theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds<=temporalWeightingLimitsSeconds(2)));
-        notIncludedTimeBins = setdiff(1:numel(theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds), theTimeBinsOfInterest);
-        theDesiredInnerRetinaFilterResponseData.amplitude(notIncludedTimeBins) = theDesiredInnerRetinaFilterResponseData.amplitude(notIncludedTimeBins)*0;
-        theTimeDomainResidual = norm(theDesiredInnerRetinaFilterResponseData.amplitude(theTimeBinsOfInterest) - theCurrentInnerRetinaFilterResponseData.amplitude(theTimeBinsOfInterest)) / sqrt(numel(theTimeBinsOfInterest));
-
-
-        % Do not use the raw TTF based on the entire temporal support
-        % Instead use the TTF of the centered & windowed impulse response
-        % corresponding to the raw TTF
-        theTimeWindowedAchievedTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(achievedTTF, temporalFrequencySupportHz, [0 500/1000]);
-        theTimeWindowedDesiredTTF = RGCMosaicConstructor.temporalFilterEngine.timeWindowedTTF(desiredTTF, temporalFrequencySupportHz, [0 500/1000]);
         
-         % Spectral residual (time windowed)
-        theSpectralDomainTimeWindowedResidual = norm(frequencyWeights .* (theTimeWindowedDesiredTTF - theTimeWindowedAchievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
-    
-         % Spectral residual (full temporal support) 
-        theSpectralDomainFullTemporalSupportResidual = norm(frequencyWeights .* (desiredTTF - achievedTTF)) / sqrt(numel(find(frequencyWeights>0)));
-
-        theSpectralDomainResidual = theSpectralDomainTimeWindowedResidual  % %theSpectralDomainFullTemporalSupportResidual;
-        theResidual = timeDomainResidualWeighting * theTimeDomainResidual + ...
-                      (1-timeDomainResidualWeighting)* theSpectralDomainResidual; 
-
+        % Combine the two residuals
+        %
+        theResidual = timeDomainResidualWeighting * theTimeDomainResidual + (1-timeDomainResidualWeighting)* theSpectralDomainResidual; 
         residualsSequence(numel(residualsSequence)+1) = theResidual;
 
         
@@ -305,8 +388,8 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
             clf;
 
             ax = subplot('Position', [0.02 0.08 0.5 0.7]);
-            p1 = plot(ax,theDesiredInnerRetinaFilterResponseData.temporalSupportSeconds*1e3, ...
-                      theDesiredInnerRetinaFilterResponseData.amplitude, ...
+            p1 = plot(ax,theIdealInnerRetinaFilterResponseData.temporalSupportSeconds*1e3, ...
+                      theIdealInnerRetinaFilterResponseData.amplitude, ...
                       'k-', 'LineWidth', 1.5);
             hold(ax, 'on')
             p2 = plot(ax,theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds*1e3, ...
@@ -319,7 +402,7 @@ function [theInnerRetinaTTF, modelParams] = deriveInnerRetinaFilterBetweenPhotoc
             m = numel(theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds);
             set(ax, 'XLim', theCurrentInnerRetinaFilterResponseData.temporalSupportSeconds(m)+[0 200]);
             set(ax, 'FontSize', 16);
-            legend(ax, [p1 p2], {'direct deconvolution', sprintf('fitted ''%s'' model', filterType)});
+            legend(ax, [p1 p2], {'ideal (direct deconvolution)', sprintf('fitted ''%s'' model', filterType)});
             theParametersString = '';
             for iParam = 1:numel(modelParams.names)
                 theParametersString = sprintf('%s%s: %g\n',theParametersString, modelParams.names{iParam}, theCurrentParams(iParam));
@@ -373,7 +456,7 @@ end
 
 function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, ...
     frequencyWeightingLimits, ...
-    theTargetTTF, thePhotocurrentsBasedTTF, theDesiredInnerRetinaTTF)
+    theTargetTTF, thePhotocurrentsBasedTTF, theIdealInnerRetinaTTF)
 
     hFig = figure(999);
     set(hFig, 'Position', [10 10 1500 800]);
@@ -422,7 +505,7 @@ function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, ...
 
     ax = subplot(2,3,3);
     RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
-        ax, temporalFrequencySupportHz, theDesiredInnerRetinaTTF, 'o', ...
+        ax, temporalFrequencySupportHz, theIdealInnerRetinaTTF, 'o', ...
         true, true, [1 0 0], ...
         'desired inner retina TTF');
 
@@ -433,7 +516,7 @@ function generateMagnitudePhaseSpectraPlots(temporalFrequencySupportHz, ...
 
     ax = subplot(2,3,6);
     RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
-        ax, temporalFrequencySupportHz, theDesiredInnerRetinaTTF, 'o', ...
+        ax, temporalFrequencySupportHz, theIdealInnerRetinaTTF, 'o', ...
         false, true, [1 0 0], ...
         '');
 

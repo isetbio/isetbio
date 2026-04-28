@@ -9,9 +9,9 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     cascadeWithSecondDampedOscillatorFilter = ~true;
 
      % gain
-    initialValues(1) = 8000;
-    lowerBounds(1) = 1;
-    upperBounds(1) = 20000;
+    initialValues(1) = 100;
+    lowerBounds(1) = 0.1;
+    upperBounds(1) = 10000;
     paramNames{1} = 'gain';
     
     % delaySeconds
@@ -34,8 +34,8 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
 
     % a3
     initialValues(numel(initialValues)+1) = 150;
-    lowerBounds(numel(lowerBounds)+1) = 50;
-    upperBounds(numel(upperBounds)+1) = 800;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 1800;
     paramNames{numel(paramNames)+1} = 'a3 (steepness of exponential decay)';
 
     % phase of oscillation

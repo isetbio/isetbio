@@ -8,60 +8,60 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     
 
     % gain
-    initialValues(1) = 0.13;
-    lowerBounds(1) = 0.05;
-    upperBounds(1) = 10;
+    initialValues(1) = 10;
+    lowerBounds(1) = 0.01;
+    upperBounds(1) = 100;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = -30;
-    lowerBounds(numel(lowerBounds)+1) = -60;
-    upperBounds(numel(upperBounds)+1) = 60;
+    initialValues(numel(initialValues)+1) = 25;
+    lowerBounds(numel(lowerBounds)+1) = 25;
+    upperBounds(numel(upperBounds)+1) = 25;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
     
     % timeConstantSeconds (tau2 in Purpura, Tranchina, Kaplan Shapley 1990)
-    initialValues(numel(initialValues)+1) = 5;
-    lowerBounds(numel(lowerBounds)+1) = 0.2;
-    upperBounds(numel(upperBounds)+1) = 50;
+    initialValues(numel(initialValues)+1) = 8;
+    lowerBounds(numel(lowerBounds)+1) = 1;
+    upperBounds(numel(upperBounds)+1) = 10;
     paramNames{numel(paramNames)+1} = 'HP time constant (msec)';
     
     % deltaTau (timeConstantSeconds + deltaTau = tau1 in Purpura, Tranchine, Kaplan Shapley 1990)
-    initialValues(numel(initialValues)+1) = 20;
-    lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 200;
+    initialValues(numel(initialValues)+1) = 7;
+    lowerBounds(numel(lowerBounds)+1) = 1;
+    upperBounds(numel(upperBounds)+1) = 10;
     paramNames{numel(paramNames)+1} = 'HP delta time constant (msec)';
     
     % leadLagFilterOrder
-    initialValues(numel(initialValues)+1) = 3;
-    lowerBounds(numel(lowerBounds)+1) = 2;
-    upperBounds(numel(upperBounds)+1) = 50;
+    initialValues(numel(initialValues)+1) = 10;
+    lowerBounds(numel(lowerBounds)+1) = 5;
+    upperBounds(numel(upperBounds)+1) = 15;
     paramNames{numel(paramNames)+1} = 'lead-lag filter order';
     
 
     % lowpass timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 0.65;
+    initialValues(numel(initialValues)+1) = 4;
     lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 50;
+    upperBounds(numel(upperBounds)+1) = 15;
     paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
 
 
     % lowpass2 timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 10;
-    lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 100;
+    initialValues(numel(initialValues)+1) = 3;
+    lowerBounds(numel(lowerBounds)+1) = 0.5;
+    upperBounds(numel(upperBounds)+1) = 6;
     paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
 
     % lowpass FilterOrder
-    initialValues(numel(initialValues)+1) = 5;
-    lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 50;
-    paramNames{numel(paramNames)+1} = 'LP filter order';
+    initialValues(numel(initialValues)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 15;
+    upperBounds(numel(upperBounds)+1) = 45;
+    paramNames{numel(paramNames)+1} = 'nLTL LP1';
 
     % lowpass2 FilterOrder
-    initialValues(numel(initialValues)+1) = 10;
-    lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 100;
-    paramNames{numel(paramNames)+1} = 'LP2 filter order';
+    initialValues(numel(initialValues)+1) = 0;
+    lowerBounds(numel(lowerBounds)+1) = 0;
+    upperBounds(numel(upperBounds)+1) = 0;
+    paramNames{numel(paramNames)+1} = 'nLTL LP1';
 
     if (isempty(theCurrentParams))
         theFilterTTF = [];
@@ -86,14 +86,15 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     end
 
     leadLagFilterOrder = theCurrentParams(5);
-    lowPassFilterOrder = theCurrentParams(8);
-    lowPass2FilterOrder = theCurrentParams(9);
+
+    lowPassFilterOrder = theCurrentParams(8)/theCurrentParams(6);
+    lowPass2FilterOrder = theCurrentParams(9)/theCurrentParams(7);
     
     omega = 2 * pi * temporalFrequencySupportHz;
     theDelayFilterTTF = exp(-1i * omega * delaySeconds);
 
     % HighPass (i.e., gain and phase increase with TF) when deltaTau > 0
-    theLeadLagFilterTTF = ((1 + 1i * omega * (highPassTimeConstantSeconds+deltaTau)) ./ (1 + 1i * omega * highPassTimeConstantSeconds) ) .^ leadLagFilterOrder;
+    theLeadLagFilterTTF = ((1 + 1i * omega * (highPassTimeConstantSeconds+deltaTau)) ./ (1 + 1i * omega * highPassTimeConstantSeconds)) .^ leadLagFilterOrder;
 
     % N-stage low-pass filter with lowPassTimeConstantSeconds time constant 
     theLowPassFilterTTF = (1 + 1i * omega * lowPassTimeConstantSeconds) .^ (-lowPassFilterOrder);
