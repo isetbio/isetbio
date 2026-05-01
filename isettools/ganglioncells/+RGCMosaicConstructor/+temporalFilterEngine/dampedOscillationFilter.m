@@ -5,22 +5,15 @@
 
 %{
 %   Some good parameters
-    gain: 60810.9
-    delay (msec): 40.1591
-    a1 (oscillation frequency): 75.1656
-    a2 (modulation of frequency over time): 15
-    a3 (steepness of exponential decay): 217.162
-    phase (phase pof oscillation): 212.84
-
-    gain: 51226.6
-    delay (msec): 39.7861
-    a1 (oscillation frequency): 71.0385
-    a2 (modulation of frequency over time): 13.6069
-    a3 (steepness of exponential decay): 202.863
-    phase (phase pof oscillation): 212.483
+    gain: 1400.58
+    delay (msec): 15
+    a1 (oscillation frequency): 115.607
+    a2 (modulation of frequency over time): 37.1896
+    a3 (steepness of exponential decay): 222.208
+    phase (phase of oscillation): -5.82764
 
 
-    theFrequencySupportHz = 0:0.5:300;
+    theFrequencySupportHz = 0:0.5:200;
     [~, initialValues] = RGCMosaicConstructor.temporalFilterEngine.dampedOscillationFilter([],[]);
     theFilterTTF = RGCMosaicConstructor.temporalFilterEngine.dampedOscillationFilter(...
         initialValues, theFrequencySupportHz);
@@ -28,6 +21,63 @@
     theImpulseResponseFunctionStruct = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
         theFilterTTF, theFrequencySupportHz, ...
         'causal', false);
+
+    idx = find(theImpulseResponseFunctionStruct.temporalSupportSeconds<0.25);
+    theImpulseResponseFunctionStruct.temporalSupportSeconds = theImpulseResponseFunctionStruct.temporalSupportSeconds(idx);
+    theImpulseResponseFunctionStruct.amplitude = theImpulseResponseFunctionStruct.amplitude(idx);
+
+    theFrequencySupportHz = 0.5:0.5:200;
+    nWarmpUpCycles = 4;
+    dtSeconds = theImpulseResponseFunctionStruct.temporalSupportSeconds(2)-theImpulseResponseFunctionStruct.temporalSupportSeconds(1)
+    for iTF = 1:numel(theFrequencySupportHz)
+        temporalFrequencyHz = theFrequencySupportHz(iTF);
+        tOneStimulusCycle = 1/temporalFrequencyHz
+        temporalSupportSeconds = 0:dtSeconds:(nWarmpUpCycles*tOneStimulusCycle);
+        theSinusoidalInput = sin(2*pi*temporalFrequencyHz*temporalSupportSeconds);
+      
+        [theSinusoidalInput(1) theSinusoidalInput(end)]
+        theFullResponse = conv(theSinusoidalInput(:),theImpulseResponseFunctionStruct.amplitude(:));
+        theFullResponse = theFullResponse(1:numel(temporalSupportSeconds));
+        temporalSupportSecondsFullResponse = temporalSupportSeconds;
+
+        theFullResponse = 0.5*theFullResponse / max(abs(theFullResponse));
+
+        
+        figure(1); clf;
+        subplot(3,1,1);
+        % plot the impulse response
+        plot(theImpulseResponseFunctionStruct.temporalSupportSeconds, theImpulseResponseFunctionStruct.amplitude, 'r-');
+
+        
+        % Plot the stimulus and the full response
+        subplot(3,1,2);
+        plot(temporalSupportSeconds, theSinusoidalInput, 'k-');
+        hold on
+        plot(temporalSupportSecondsFullResponse, theFullResponse, 'r-');
+
+        % Trim the stimulus response to the last period
+        idx = find(temporalSupportSecondsFullResponse >= temporalSupportSecondsFullResponse(end)-tOneStimulusCycle);
+        temporalSupportSecondsLastPeriod = temporalSupportSecondsFullResponse(idx);
+
+        t1 = temporalSupportSecondsLastPeriod(1);
+        temporalSupportSecondsLastPeriod = temporalSupportSecondsLastPeriod-t1;
+        theResponse = theFullResponse(idx);
+
+        idxSinusoidalInput = find(temporalSupportSeconds>=t1);
+        theStimulus = theSinusoidalInput(idxSinusoidalInput);
+        temporalSupportSeconds = temporalSupportSeconds(idxSinusoidalInput);
+        temporalSupportSeconds = temporalSupportSeconds-t1;
+
+        subplot(3, 1,3);
+        plot(temporalSupportSecondsLastPeriod,theResponse, 'r-');
+        hold on;
+        plot(temporalSupportSeconds,theStimulus, 'k-');
+        
+        pause
+    end
+
+
+
 
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1000 1000]);
@@ -64,40 +114,41 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     dampedOscillationFilter(theCurrentParams, temporalFrequencySupportHz)
 
     % gain
-    initialValues(1) = 10.0;
-    lowerBounds(1) = 1;
-    upperBounds(1) = 100.0;
+    initialValues(1) = 1.0;
+    lowerBounds(1) = 0.01;
+    upperBounds(1) = 10.0;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 40;
-    lowerBounds(numel(lowerBounds)+1) = 20;
-    upperBounds(numel(upperBounds)+1) = 120;
+    initialValues(numel(initialValues)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 60;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
 
     % a1
-    initialValues(numel(initialValues)+1) = 75;
-    lowerBounds(numel(lowerBounds)+1) = 40;
-    upperBounds(numel(upperBounds)+1) = 90;
+    initialValues(numel(initialValues)+1) = 10;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 120;
     paramNames{numel(paramNames)+1} = 'a1 (oscillation frequency)';
 
     % a2
-    initialValues(numel(initialValues)+1) = 15;
-    lowerBounds(numel(lowerBounds)+1) = 0;
-    upperBounds(numel(upperBounds)+1) = 30;
+    initialValues(numel(initialValues)+1) = 20;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 500;
     paramNames{numel(paramNames)+1} = 'a2 (modulation of frequency over time)';
 
     % a3
-    initialValues(numel(initialValues)+1) = 215;
-    lowerBounds(numel(lowerBounds)+1) = 100;
-    upperBounds(numel(upperBounds)+1) = 300; %500;
+    initialValues(numel(initialValues)+1) = 130;
+    lowerBounds(numel(lowerBounds)+1) = 50;
+    upperBounds(numel(upperBounds)+1) = 500;
     paramNames{numel(paramNames)+1} = 'a3 (steepness of exponential decay)';
 
     % phase of oscillation
-    initialValues(numel(initialValues)+1) = 210;
-    lowerBounds(numel(lowerBounds)+1) = -360;
-    upperBounds(numel(upperBounds)+1) = 360;
-    paramNames{numel(paramNames)+1} = 'phase (phase pof oscillation)';
+    initialValues(numel(initialValues)+1) = 20;
+    lowerBounds(numel(lowerBounds)+1) = -180;
+    upperBounds(numel(upperBounds)+1) = 180;
+    paramNames{numel(paramNames)+1} = 'phase (phase of oscillation)';
+
 
 
     if (isempty(theCurrentParams))
@@ -123,22 +174,18 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     temporalSupportSeconds = (0:N-1) / samplingFrequency;
 
 
+    tCausal = max(0,temporalSupportSeconds-delaySeconds);
+
     dampedOscillationImpulseResponse = temporalSupportSeconds .* ...
-        sin(phaseDegs/180*pi + 2*pi*(a1*temporalSupportSeconds .* (abs(temporalSupportSeconds-0.05)+1).^(-a2))) .* ...
-        exp(-a3*temporalSupportSeconds);
+        sin(phaseDegs/180*pi + 2*pi*(a1*tCausal .* (tCausal+1).^(-a2))) .* ...
+        exp(-a3*tCausal);
 
-    % Center the waveform
-    [theCenteredIR, theCenteringDelaySeconds] = ...
-        RGCMosaicConstructor.temporalFilterEngine.centerAndWindowTemporalImpulseResponse(temporalSupportSeconds, dampedOscillationImpulseResponse);
 
-    dampedOscillationTTFtwoSided = fft(theCenteredIR);
+    dampedOscillationTTFtwoSided = fft(dampedOscillationImpulseResponse);
 
     % Generate one sided TTF
     dampedOscillationTTFoneSided(1:M) = dampedOscillationTTFtwoSided(1:M);
     dampedOscillationTTFoneSided(2:M) = 2*dampedOscillationTTFtwoSided(2:M);
-
-    % Undo the centering
-    dampedOscillationTTFoneSided = exp(-1i * omega * (-theCenteringDelaySeconds)) .* dampedOscillationTTFoneSided;
 
     theFilterTTF = 1e3 * gain * theDelayFilterTTF .* dampedOscillationTTFoneSided;
 end

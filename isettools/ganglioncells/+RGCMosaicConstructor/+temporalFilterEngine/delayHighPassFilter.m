@@ -8,47 +8,47 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     
     % gain
     initialValues(1) = 100;
-    lowerBounds(1) = 1;
+    lowerBounds(1) = 0.1;
     upperBounds(1) = 1000;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 20;
-    lowerBounds(numel(lowerBounds)+1) = 10;
-    upperBounds(numel(upperBounds)+1) = 60;
+    initialValues(numel(initialValues)+1) = 10;
+    lowerBounds(numel(lowerBounds)+1) = 0;
+    upperBounds(numel(upperBounds)+1) = 40;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
     
     % highpass gain
-    initialValues(numel(initialValues)+1) = 0.1;
+    initialValues(numel(initialValues)+1) = 0.4;
     lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 1.0;
+    upperBounds(numel(upperBounds)+1) = 10.0;
     paramNames{numel(paramNames)+1} = 'highpaass gain';
   
     % highpass timeConstant msec
-    initialValues(numel(initialValues)+1) = 2;
-    lowerBounds(numel(lowerBounds)+1) = 0.1;
+    initialValues(numel(initialValues)+1) = 0.01;
+    lowerBounds(numel(lowerBounds)+1) = 0.01;
     upperBounds(numel(upperBounds)+1) = 10;
     paramNames{numel(paramNames)+1} = 'HP time constant (msec)';
     
 
     % lowpass time cosntat msec
-    initialValues(numel(initialValues)+1) = 1;
-    lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 10;
+    initialValues(numel(initialValues)+1) = 0.1;
+    lowerBounds(numel(lowerBounds)+1) = 0.01;
+    upperBounds(numel(upperBounds)+1) = 1;
     paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
     
-    % lowpass filter order
-    initialValues(numel(initialValues)+1) = 10;
-    lowerBounds(numel(lowerBounds)+1) = 1;
-    upperBounds(numel(upperBounds)+1) = 100;
-    paramNames{numel(paramNames)+1} = 'LP filter order';
+    % nL-tL
+    initialValues(numel(initialValues)+1) = 40;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 50;
+    paramNames{numel(paramNames)+1} = 'nL-TL (LP)';
     
 
     % high pass FilterOrder
-    initialValues(numel(initialValues)+1) = 1;
-    lowerBounds(numel(lowerBounds)+1) = 1;
+    initialValues(numel(initialValues)+1) = 0.1;
+    lowerBounds(numel(lowerBounds)+1) = 0.1;
     upperBounds(numel(upperBounds)+1) = 1;
-    paramNames{numel(paramNames)+1} = 'HP filter order';
+    paramNames{numel(paramNames)+1} = 'nL-TL (HP)';
 
 
 
@@ -65,25 +65,20 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     highPassTimeConstantSeconds = theCurrentParams(4)*1e-3;  % Tau_s (Benardete and Kaplan (1992a) varied this for different contrast levels)
     lowPassTimeConstantSeconds = theCurrentParams(5)*1e-3;   % Tau_l
     
-    
-    keepFilterOrdersInteger = ~true;
-    if (keepFilterOrdersInteger)
-        theCurrentParams(6) = max([1 round(theCurrentParams(6))]);
-        theCurrentParams(7) = max([1 round(theCurrentParams(7))]);
-    end
+   
 
-    nLowPassStagesNum = theCurrentParams(6) ;               % NlTl
-    nHighPassStagesNum = theCurrentParams(7);                % always 1 in Benardete & Kaplan (1992a)
+    nLowPassStagesNum = theCurrentParams(6)/theCurrentParams(5);               % NlTl
+    nHighPassStagesNum = theCurrentParams(7)/theCurrentParams(4);                % always 1 in Benardete & Kaplan (1992a)
 
 
     % Circular frequency in radians
     omega = 2 * pi * temporalFrequencySupportHz;
 
     % Delay filter
-    theDelayFilterTTF = 1+0*exp(-1i * omega * conductionDelaySeconds);
+    theDelayFilterTTF = exp(-1i * omega * conductionDelaySeconds);
 
     % 1-stage high-pass filter
-    theHighPassFilterTTF = 1 - highPassGain * (1 + 1i * omega * highPassTimeConstantSeconds) .^ (-nHighPassStagesNum);
+    theHighPassFilterTTF = (1 - highPassGain * (1 + 1i * omega * highPassTimeConstantSeconds) .^ (-nHighPassStagesNum));
 
     % N-stage low-pass filter
     theLowPassFilterTTF = (1 + 1i * omega * lowPassTimeConstantSeconds) .^ (-nLowPassStagesNum);

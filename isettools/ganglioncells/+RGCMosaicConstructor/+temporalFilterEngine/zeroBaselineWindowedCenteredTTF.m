@@ -6,6 +6,8 @@ function [theComplexTTF, delaySeconds, theComplexTTFnonCentered] = ...
     zeroBaselineWindowedCenteredTTF(theComplexTTF, temporalFrequencySupportHz, ...
     minimumDelaySecondsForEstimationOfBaseline, centerIR, verifyOffsetCorrection)
 
+    error('do not use. it changes the phase ')
+
     % Save the original shape, so we can replicate it
     originalShape = size(theComplexTTF);
 

@@ -31,8 +31,8 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 15;
-    lowerBounds(numel(lowerBounds)+1) = 15;
+    initialValues(numel(initialValues)+1) = -15;
+    lowerBounds(numel(lowerBounds)+1) = -50;
     upperBounds(numel(upperBounds)+1) = 30;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
 

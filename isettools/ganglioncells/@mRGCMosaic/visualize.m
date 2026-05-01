@@ -562,7 +562,7 @@ function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawi
                     maxRadius = max(sqrt(sum(bsxfun(@minus,obj.inputConeMosaic.coneRFpositionsDegs(identifiedInputConeIndices,:), theRGCpos).^2,2)));
                     xx = theRGCpos(1) + maxRadius*cosd(0:10:350);
                     yy = theRGCpos(2) + maxRadius*sind(0:10:350);
-                    plot(ax, xx,yy, 'k--', 'LineWidth', 2.0);
+                    plot(ax, xx,yy, 'k--', 'Color', plottedRFoutlineEdgeColor, 'LineWidth', 2.0);
                 end
             end
         end

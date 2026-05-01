@@ -5,14 +5,14 @@
 
 %{
 %   Some good parameters
-    gain: 14.9942
-    delay (msec): 25
-    a1 (oscillation frequency): 110.683
-    a2 (modulation of frequency over time): 23.206
-    a3 (steepness of exponential decay): 272.017
-    phase (phase of oscillation): 203.047
-    LP time constant (msec): 0.750553
-    nStages x Tau (LP): 28.5834
+    gain: 1400.58
+    delay (msec): 15
+    a1 (oscillation frequency): 115.607
+    a2 (modulation of frequency over time): 37.1896
+    a3 (steepness of exponential decay): 222.208
+    phase (phase of oscillation): -5.82764
+    LP time constant (msec): 0.617673
+    nStages x Tau (LP): 19.153
 
 
     theFrequencySupportHz = 0:0.5:300;
@@ -59,58 +59,56 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     dampedOscillationLowPassCascadeFilter(theCurrentParams, temporalFrequencySupportHz)
 
     % gain
-    initialValues(1) = 4.0;
-    lowerBounds(1) = 1.0;
-    upperBounds(1) = 50.0;
+    initialValues(1) = 10;
+    lowerBounds(1) = 1;
+    upperBounds(1) = 2000;
     paramNames{1} = 'gain';
     
     % delaySeconds
-    initialValues(numel(initialValues)+1) = 25;
-    lowerBounds(numel(lowerBounds)+1) = 25;
-    upperBounds(numel(upperBounds)+1) = 25;
+    initialValues(numel(initialValues)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 60;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
 
     % a1
-    initialValues(numel(initialValues)+1) = 80;
-    lowerBounds(numel(lowerBounds)+1) = 50;
-    upperBounds(numel(upperBounds)+1) = 100;
+    initialValues(numel(initialValues)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 30;
+    upperBounds(numel(upperBounds)+1) = 120;
     paramNames{numel(paramNames)+1} = 'a1 (oscillation frequency)';
 
     % a2
-    initialValues(numel(initialValues)+1) = 15;
-    lowerBounds(numel(lowerBounds)+1) = 5;
-    upperBounds(numel(upperBounds)+1) = 30;
+    initialValues(numel(initialValues)+1) = 20;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 200;
     paramNames{numel(paramNames)+1} = 'a2 (modulation of frequency over time)';
 
     % a3
-    initialValues(numel(initialValues)+1) = 215;
+    initialValues(numel(initialValues)+1) = 130;
     lowerBounds(numel(lowerBounds)+1) = 100;
     upperBounds(numel(upperBounds)+1) = 500;
     paramNames{numel(paramNames)+1} = 'a3 (steepness of exponential decay)';
 
     % phase of oscillation
-    initialValues(numel(initialValues)+1) = 210;
-    lowerBounds(numel(lowerBounds)+1) = -360;
-    upperBounds(numel(upperBounds)+1) = 360;
+    initialValues(numel(initialValues)+1) = 20;
+    lowerBounds(numel(lowerBounds)+1) = -180;
+    upperBounds(numel(upperBounds)+1) = 180;
     paramNames{numel(paramNames)+1} = 'phase (phase of oscillation)';
 
 
     % lowpas timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 0.36;
-    lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 1;
+    initialValues(numel(initialValues)+1) = 0.1;
+    lowerBounds(numel(lowerBounds)+1) = 0.01;
+    upperBounds(numel(upperBounds)+1) = 4;
     paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
 
 
     % Product of filter orded x time constant (LP)
     initialValues(numel(initialValues)+1) = 25;
     lowerBounds(numel(lowerBounds)+1) = 10;
-    upperBounds(numel(upperBounds)+1) = 40;
+    upperBounds(numel(upperBounds)+1) = 80;
     paramNames{numel(paramNames)+1} = 'nStages x Tau (LP)';
 
 
-    lowerBounds = initialValues*(1-0.5);
-    upperBounds = initialValues*(1+0.5);
 
     if (isempty(theCurrentParams))
         theFilterTTF = [];
@@ -140,27 +138,25 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     temporalSupportSeconds = (0:N-1) / samplingFrequency;
 
 
+    tCausal = max(0,temporalSupportSeconds-delaySeconds);
+
     dampedOscillationImpulseResponse = temporalSupportSeconds .* ...
-        sin(phaseDegs/180*pi + 2*pi*(a1*temporalSupportSeconds .* (abs(temporalSupportSeconds)+1).^(-a2))) .* ...
-        exp(-a3*temporalSupportSeconds);
+        sin(phaseDegs/180*pi + 2*pi*(a1*tCausal .* (tCausal+1).^(-a2))) .* ...
+        exp(-a3*tCausal);
 
-    % Center the waveform
-    [theCenteredIR, theCenteringDelaySeconds] = ...
-        RGCMosaicConstructor.temporalFilterEngine.centerAndWindowTemporalImpulseResponse(temporalSupportSeconds, dampedOscillationImpulseResponse);
 
-    dampedOscillationTTFtwoSided = fft(theCenteredIR);
+
+    dampedOscillationTTFtwoSided = fft(dampedOscillationImpulseResponse);
 
     % Generate one sided TTF
     dampedOscillationTTFoneSided(1:M) = dampedOscillationTTFtwoSided(1:M);
     dampedOscillationTTFoneSided(2:M) = 2*dampedOscillationTTFtwoSided(2:M);
 
-    % Undo the centering
-    dampedOscillationTTFoneSided = exp(-1i * omega * (-theCenteringDelaySeconds)) .* dampedOscillationTTFoneSided;
 
     % Synthesize the low-pass filter
     theLowPassFilterTTF = (1 + 1i * (omega * lowPassFilterTimeConstantSeconds)) .^ (-lowPassFilterOrder);
 
-    theFilterTTF = 1e4 * gain * theDelayFilterTTF .* theLowPassFilterTTF .* dampedOscillationTTFoneSided;
+    theFilterTTF = gain * theDelayFilterTTF .* theLowPassFilterTTF .* dampedOscillationTTFoneSided;
     
 end
 

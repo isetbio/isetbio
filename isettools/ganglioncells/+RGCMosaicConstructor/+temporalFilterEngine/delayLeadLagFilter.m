@@ -23,59 +23,59 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
 
     
     % gain
-    initialValues(1) = 21.52;
-    lowerBounds(1) = 5;
-    upperBounds(1) = 30;
+    initialValues(1) = 0.05;
+    lowerBounds(1) = 0.01;
+    upperBounds(1) = 2;
     paramNames{1} = 'gain';
     
     % delaySeconds
     initialValues(numel(initialValues)+1) = 15;
-    lowerBounds(numel(lowerBounds)+1) = 0;
-    upperBounds(numel(upperBounds)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 25;
+    upperBounds(numel(upperBounds)+1) = 45;
     paramNames{numel(paramNames)+1} = 'delay (msec)';
     
     % timeConstantSeconds (tau2 in Purpura, Tranchina, Kaplan Shapley 1990)
-    initialValues(numel(initialValues)+1) = 3.46;
-    lowerBounds(numel(lowerBounds)+1) = 2.;
-    upperBounds(numel(upperBounds)+1) = 5;
+    initialValues(numel(initialValues)+1) = 0.11;
+    lowerBounds(numel(lowerBounds)+1) = 0.1;
+    upperBounds(numel(upperBounds)+1) = 20;
     paramNames{numel(paramNames)+1} = 'HP time constant (msec)';
     
     % deltaTau (timeConstantSeconds + deltaTau = tau1 in Purpura, Tranchine, Kaplan Shapley 1990)
-    initialValues(numel(initialValues)+1) = 4.31;
-    lowerBounds(numel(lowerBounds)+1) = 2;
-    upperBounds(numel(upperBounds)+1) = 6;
+    initialValues(numel(initialValues)+1) = 10.31;
+    lowerBounds(numel(lowerBounds)+1) = 0.3;
+    upperBounds(numel(upperBounds)+1) = 15.5;
     paramNames{numel(paramNames)+1} = 'HP delta time constant (msec)';
     
     % leadLagFilterOrder
     initialValues(numel(initialValues)+1) = 5;
-    lowerBounds(numel(lowerBounds)+1) = 3;
-    upperBounds(numel(upperBounds)+1) = 10;
+    lowerBounds(numel(lowerBounds)+1) = 1;
+    upperBounds(numel(upperBounds)+1) = 17;
     paramNames{numel(paramNames)+1} = 'lead-lag filter order';
     
 
     % lowpass timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 0.486;
+    initialValues(numel(initialValues)+1) = 0.3;
     lowerBounds(numel(lowerBounds)+1) = 0.1;
-    upperBounds(numel(upperBounds)+1) = 0.6;
+    upperBounds(numel(upperBounds)+1) = 0.5;
     paramNames{numel(paramNames)+1} = 'LP time constant (msec)';
 
 
     % lowpass2 timeConstantSeconds
-    initialValues(numel(initialValues)+1) = 3;
-    lowerBounds(numel(lowerBounds)+1) = 2;
-    upperBounds(numel(upperBounds)+1) = 4;
+    initialValues(numel(initialValues)+1) = 0.5;
+    lowerBounds(numel(lowerBounds)+1) = 0.1;
+    upperBounds(numel(upperBounds)+1) = 1.0;
     paramNames{numel(paramNames)+1} = 'LP2 time constant (msec)';
 
     % lowpass FilterOrder
     initialValues(numel(initialValues)+1) = 28.33;
-    lowerBounds(numel(lowerBounds)+1) = 11;
-    upperBounds(numel(upperBounds)+1) = 30;
+    lowerBounds(numel(lowerBounds)+1) = 27;
+    upperBounds(numel(upperBounds)+1) = 50;
     paramNames{numel(paramNames)+1} = 'nLTL LP1';
 
     % lowpass2 FilterOrder
-    initialValues(numel(initialValues)+1) = 0;
-    lowerBounds(numel(lowerBounds)+1) = 0;
-    upperBounds(numel(upperBounds)+1) = 0;
+    initialValues(numel(initialValues)+1) = 10;
+    lowerBounds(numel(lowerBounds)+1) = 10;
+    upperBounds(numel(upperBounds)+1) = 40;
     paramNames{numel(paramNames)+1} = 'nLTL LP1';
 
     if (isempty(theCurrentParams))
@@ -92,13 +92,6 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
     lowPassTimeConstantSeconds = theCurrentParams(6)*1e-3;
     lowPass2TimeConstantSeconds = theCurrentParams(7)*1e-3;
 
-    % filter orders must be integer
-    keepFilterOrdersInteger = false;
-    if (keepFilterOrdersInteger)
-        theCurrentParams(5) = round(theCurrentParams(5));
-        theCurrentParams(8) = round(theCurrentParams(8));
-        theCurrentParams(9) = round(theCurrentParams(9));
-    end
 
     leadLagFilterOrder = theCurrentParams(5);
 

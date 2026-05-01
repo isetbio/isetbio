@@ -49,7 +49,7 @@ function [theSurroundConnectedMRGCMosaicFullFileName, theInputConeMosaicResponse
         surroundConnectivityStage = 'surround connected';
     end
 
-    % The surround-connected, compute-reday MRGCmosaic
+    % The surround-connected, compute-redy MRGCmosaic
     theSurroundConnectedMRGCMosaicFullFileName = RGCMosaicConstructor.filepathFor.exportedMosaicFileName(...
                     surroundConnectedParamsStruct, surroundConnectivityStage);
 

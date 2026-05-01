@@ -2,7 +2,7 @@
 % RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries
 %
 
-function [theFittedResponse, fittedParams] = sinusoidToResponseTimeSeries(...
+function [theFittedResponse, fittedParams, meanResponse] = sinusoidToResponseTimeSeries(...
     temporalSupportSeconds, theResponseTimeSeries, temporalFrequencyHz, temporalSupportHR, varargin)
 
     p = inputParser;

@@ -10,6 +10,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     theTargetRGCindex, ...
     theMRGCMosaicTTFResponsesFullFileName, ...
     theAnalyzedTTFsFullFileName, ...
+    delayMsecondsForPhaseComputation, ...
     visualizeSinusoidalFits)
 
 
@@ -38,22 +39,50 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     % Compute the complex temporal transfer function (TTF) theTargetRGCindex
     minimumDelaySecondsForEstimationOfBaseline = 800/1000;
 
-    % Compute thePhotocurrentBasedMRGCcellTTF, for a zero-baseline,
-    % centered & Tukey windowed impulse response
-    [thePhotocurrentBasedMRGCcellTTF, temporalFrequencySupportHz] = computeComplexValuedTTFforSingleMRGC(...
-        TTFparamsStruct, ...
-        theMRGCMosaicTemporalSupportSecondsAllConditions, ...
-        theMRGCMosaicTTFresponsesAllConditions, ...
-        theTargetRGCindex, ...
-        allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-        visualizeSinusoidalFits);
+    % How to compute the phase of the complex TTF
+    if (isempty(delayMsecondsForPhaseComputation))
+        phaseComputationParams = [];
+    else
+        if ( ...
+                ( contains(targetCellImpulseResponseSource, 'ON') && contains(targetCellImpulseResponseSource, 'surround') ) || ...
+                ( contains(targetCellImpulseResponseSource, 'OFF') && contains(targetCellImpulseResponseSource, 'center')  ) ...
+           )
+            phaseDegsAtZeroHz = 180;
+        elseif( ...
+                ( contains(targetCellImpulseResponseSource, 'OFF') && contains(targetCellImpulseResponseSource, 'surround') ) || ...
+                ( contains(targetCellImpulseResponseSource, 'ON') && contains(targetCellImpulseResponseSource, 'center')  ) ...
+           )
+            phaseDegsAtZeroHz = 0;
+        else
+            error('Dont know how to interpted the targer cell data for phase computation: ''%s''.', targetCellImpulseResponseSource);
+        end
+
+        phaseComputationParams = struct(...
+            'delayMilliSeconds', delayMsecondsForPhaseComputation, ...
+            'phaseDegsAtZeroHz', phaseDegsAtZeroHz ...
+            );
+    end
 
 
-    % Compute the TTF after adjusting for a zero baseline IR
-    verifyOffsetCorrection = ~true;
-    centerIR = true;
-    [thePhotocurrentBasedMRGCcellTTF, delaySecondsForPhotocurrentIR] = RGCMosaicConstructor.temporalFilterEngine.zeroBaselineWindowedCenteredTTF(...
-        thePhotocurrentBasedMRGCcellTTF, temporalFrequencySupportHz, minimumDelaySecondsForEstimationOfBaseline, centerIR, verifyOffsetCorrection);
+    if (strcmp(stimParams.stimulusShape, 'annulus'))
+        theColor = [50 110 180]/255;
+    else
+        theColor = [200 50 100]/255;
+    end
+
+    % Compute thePhotocurrentBasedMRGCcellTTF
+
+    [thePhotocurrentBasedMRGCcellTTF, temporalFrequencySupportHz] = ...
+        RGCMosaicConstructor.temporalFilterEngine.complexValuedTTFfromResponsesToSinusoidalModulations(...
+            TTFparamsStruct.tfSupport, ...
+            theMRGCMosaicTemporalSupportSecondsAllConditions, ...
+            squeeze(theMRGCMosaicTTFresponsesAllConditions(:,:,theTargetRGCindex)), ...
+            allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
+            phaseComputationParams, ...
+            visualizeSinusoidalFits, ...
+            stimParams.stimulusShape, ...
+            theColor);
+    
 
     % Compute theTargetCascadedFilterTTF from the Benardete&Kaplan work
     switch (targetCellImpulseResponseSource)
@@ -93,15 +122,71 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     end
 
 
-    % Compute the TTF after adjusting for a zero baseline IR
-    verifyOffsetCorrection = ~true;
-    centerIR = false;
-    [theTargetCascadedFilterTTF, delaySecondsForTargetIR] = RGCMosaicConstructor.temporalFilterEngine.zeroBaselineWindowedCenteredTTF(...
-        theTargetCascadedFilterTTF, temporalFrequencySupportHz, minimumDelaySecondsForEstimationOfBaseline, centerIR, verifyOffsetCorrection);
-
     % Normalize the TTFs
     thePhotocurrentBasedMRGCcellTTF = thePhotocurrentBasedMRGCcellTTF / max(abs(thePhotocurrentBasedMRGCcellTTF(:)));
     theTargetCascadedFilterTTF = theTargetCascadedFilterTTF / max(abs(theTargetCascadedFilterTTF(:)));
+    
+
+    % Plot the amplitude spectrum
+    hFig = figure(1001); clf;
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
+           ax, temporalFrequencySupportHz, thePhotocurrentBasedMRGCcellTTF , 'o', ...
+           false, false, theColor, ...
+          '');
+    yTicks = get(ax, 'YTick');
+    yTickLabels = get(ax, 'YTickLabel');
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+    set(ax, 'YTick', yTicks);
+    set(ax, 'YTickLabel', yTickLabels);
+
+    % Export
+    visualizationPDFfileName = sprintf('mRGC_%d_photocurrentsBasedTTFamplitudeSpectrum_%s', theTargetRGCindex, stimParams.stimulusShape);
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+    % Plot the phase spectrum
+    hFig = figure(1002); clf;
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
+           ax, temporalFrequencySupportHz, thePhotocurrentBasedMRGCcellTTF , 'o', ...
+           false, false, theColor, ...
+          '');
+
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+
+    % Export
+    visualizationPDFfileName = sprintf('mRGC_%d_photocurrentsBasedTTFphaseSpectrum_%s', theTargetRGCindex, stimParams.stimulusShape);
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+
 
 
     % ONLY for debuggin purposes
@@ -119,7 +204,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         assert(numel(theTargetCascadedFilterImpulseResponseData.temporalSupportSeconds) == numel(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds), ...
             'unequal temporal support lengths');
 
-        figure(1);
+        figure(1); clf;
         p1 = plot(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds, thePhotocurrentBasedImpulseResponseData.amplitude/max(thePhotocurrentBasedImpulseResponseData.amplitude), 'r-');
         hold on;
         p2 = plot(theTargetCascadedFilterImpulseResponseData.temporalSupportSeconds, theTargetCascadedFilterImpulseResponseData.amplitude/max(thePhotocurrentBasedImpulseResponseData.amplitude), 'b-');
@@ -141,40 +226,18 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             theInnerRetinaTTF = theTargetCascadedFilterTTF*0;
             theInnerRetinaTTF(idx) = theTargetCascadedFilterTTF(idx)./thePhotocurrentBasedMRGCcellTTF(idx);
 
-            % Undo the delays we introduced to center the photocurrent and target TTFs
-            delaySeconds = -delaySecondsForPhotocurrentIR;
-            omega = 2 * pi * temporalFrequencySupportHz;
-            thePhotocurrentBasedMRGCcellTTF = exp(-1i * omega * delaySeconds) .* thePhotocurrentBasedMRGCcellTTF;
-        
-            delaySeconds = -delaySecondsForTargetIR;
-            theTargetCascadedFilterTTF  = exp(-1i * omega * delaySeconds) .* theTargetCascadedFilterTTF;
-        
-            % Undo the corresponding delay in the inner retinal TTF
-            delaySeconds = -(delaySecondsForTargetIR-delaySecondsForPhotocurrentIR);
-            theInnerRetinaTTF = exp(-1i * omega * delaySeconds) .* theInnerRetinaTTF;
-
-
             modelParams = [];
             frequencyWeights = temporalFrequencySupportHz*0+1;
             innerRetinaFilterDerivationParams.minFrequencyHzWithNonZeroWeight = temporalFrequencySupportHz(1);
             innerRetinaFilterDerivationParams.maxFrequencyHzWithNonZeroWeight = temporalFrequencySupportHz(end);
 
-        case {'differenceOfLowPassFilters', 'differenceOfLowPassFilters2', 'sumOfLowPassFilters', 'dampedOscillationFilter', 'dampedOscillationLowPassCascadeFilter', 'delayLeadLagFilter', 'delayLeadLagFilter2', 'delayHighPassFilter', 'asymmetricBandPassFilter'}
+            theAnalyzedTTFsFullFileName = strrep(theAnalyzedTTFsFullFileName, '???', 'direct');
+
+        case {'differenceOfLowPassFilters', 'dampedOscillationFilter', 'dampedOscillationLowPassCascadeFilter', 'delayLeadLagFilter', 'delayHighPassFilter'}
            
             idx = find(abs(thePhotocurrentBasedMRGCcellTTF)>10*eps);
             theIdealInnerRetinaTTF = theTargetCascadedFilterTTF*0;
             theIdealInnerRetinaTTF(idx) = theTargetCascadedFilterTTF(idx)./thePhotocurrentBasedMRGCcellTTF(idx);
-
-            % Undo the delays we introduced to center the photocurrent and target TTFs
-            delaySeconds = -(delaySecondsForTargetIR-delaySecondsForPhotocurrentIR);
-            omega = 2 * pi * temporalFrequencySupportHz;
-            theIdealInnerRetinaTTF = exp(-1i * omega * delaySeconds) .* theIdealInnerRetinaTTF;
-
-            % Undo the delays we introduced to center the photocurrent and target TTFs
-            delaySeconds = -delaySecondsForPhotocurrentIR;
-            omega = 2 * pi * temporalFrequencySupportHz;
-            thePhotocurrentBasedMRGCcellTTF = exp(-1i * omega * delaySeconds) .* thePhotocurrentBasedMRGCcellTTF;
-        
 
             % Frequency weighting
             [~,bin1] = min(abs(temporalFrequencySupportHz - innerRetinaFilterDerivationParams.minFrequencyHzWithNonZeroWeight));
@@ -190,8 +253,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             temporalWeightingLimitsSeconds = [innerRetinaFilterDerivationParams.minTimeDelaySecondsWithUnitWeight innerRetinaFilterDerivationParams.maxTimeDelaySecondsWithUnitWeight];
  
 
-           
-
             [theInnerRetinaTTF, modelParams] = RGCMosaicConstructor.temporalFilterEngine.deriveInnerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
                 temporalFrequencySupportHz, theTargetCascadedFilterTTF, thePhotocurrentBasedMRGCcellTTF, theIdealInnerRetinaTTF, ...
                 minimumDelaySecondsForEstimationOfBaseline, ...
@@ -205,13 +266,29 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
                 innerRetinaFilterDerivationParams.useParallel);
 
 
+            % Add the filter synthesis method name to theAnalyzedTTFsFullFileName
+            switch (innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod)
+                 case 'dampedOscillationFilter'
+                     shortTemporalFilterSynthesisMethodName = 'dOsc';
+                 case 'dampedOscillationLowPassCascadeFilter'
+                     shortTemporalFilterSynthesisMethodName = 'dOscLP';
+                 case 'differenceOfLowPassFilters'
+                     shortTemporalFilterSynthesisMethodName = 'diffLP';
+                 case 'delayLeadLagFilter'
+                     shortTemporalFilterSynthesisMethodName = 'ld-lag';
+                 case 'delayHighPassFilter'
+                     shortTemporalFilterSynthesisMethodName = 'hp-lp';
+                 otherwise
+                        error('No short name for  synthesis method: ''%s''.', temporalFilterSynthesisMethod);
+             end
+
+             theAnalyzedTTFsFullFileName = strrep(theAnalyzedTTFsFullFileName, '???', shortTemporalFilterSynthesisMethodName);
 
         otherwise
-            error('Unknown temporal filter synthesis method: ''%s''.', temporalFilterSynthesisMethod);
+            error('Unknown temporal filter synthesis method: ''%s''.', innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod);
     end
 
-    
-
+   
 
     fprintf('Saving derived inner retina filter TTF to %s\n', theAnalyzedTTFsFullFileName);
 
@@ -488,132 +565,3 @@ function plotComboData(hFig, ...
  
 end
 
-
-
-function [theComplexTTF, temporalFrequencySupportHz] = computeComplexValuedTTFforSingleMRGC(...
-        TTFparamsStruct, ...
-        theMRGCMosaicTemporalSupportSecondsAllConditions, ...
-        theMRGCMosaicTTFresponsesAllConditions, ...
-        theRGCindex, ...
-        allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-        visualizeSinusoidalFits)
-
-    temporalFrequenciesExamined = TTFparamsStruct.tfSupport;
-
-    theTTFamplitude = zeros(1, numel(temporalFrequenciesExamined));
-    theTTFphaseDegs = zeros(1, numel(temporalFrequenciesExamined));
-
-    for iTF = 1:numel(temporalFrequenciesExamined)
-
-        % Retrieve the photocurrent response data for this TF
-        theTemporalSupportSecondsForThisTF = squeeze(theMRGCMosaicTemporalSupportSecondsAllConditions(iTF,:));
-        theMRGCMosaicPhotocurrentResponsesForThisTF = squeeze(theMRGCMosaicTTFresponsesAllConditions(iTF,:,theRGCindex));
-
-        % find valid time bins for this TF (we have stored 1 period of the
-        % respons, so each TF response has a different length)
-        nanIndices = find(isnan(theMRGCMosaicPhotocurrentResponsesForThisTF));
-        if (isempty(nanIndices))
-            theTimeBins = 1:size(theMRGCMosaicTTFresponsesAllConditions,2);
-        else
-            theTimeBins = 1:(nanIndices(1)-1);
-        end
-
-        theTemporalSupportSecondsForThisTF = theTemporalSupportSecondsForThisTF(theTimeBins);
-        theMRGCMosaicPhotocurrentResponsesForThisTF = theMRGCMosaicPhotocurrentResponsesForThisTF(theTimeBins);
-
-        assert(isempty(find(isnan(theMRGCMosaicPhotocurrentResponsesForThisTF(:)))), 'did not remove all nan part of the response');
-        assert(isempty(find(isnan(theTemporalSupportSecondsForThisTF(:)))), 'did not remove all nan part of the response temporal support');
-
-        dt = theTemporalSupportSecondsForThisTF(2)-theTemporalSupportSecondsForThisTF(1);
-        temporalSupport1Msec = 0:1/1000:(theTemporalSupportSecondsForThisTF(end)+dt);
-
-        [theFittedResponse, fittedParams] = RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries(...
-            theTemporalSupportSecondsForThisTF, ...
-            theMRGCMosaicPhotocurrentResponsesForThisTF, ...
-            temporalFrequenciesExamined(iTF), ...
-            temporalSupport1Msec, ...
-            'allowOffset', allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries);
-
-        theTTFamplitude(iTF) = fittedParams(1);
-        theTTFphaseDegs(iTF) = fittedParams(2);
-
-        if (visualizeSinusoidalFits)
-            hFig = figure(1); clf;
-            ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
-            theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-            ax = theAxes{1,1};
-
-            if (theTemporalSupportSecondsForThisTF(end) > 1)
-                dTick = 0.4;
-            elseif (theTemporalSupportSecondsForThisTF(end) > 0.5)
-                dTick = 0.2;
-            elseif (theTemporalSupportSecondsForThisTF(end) > 0.3)
-                dTick = 0.1;
-            elseif (theTemporalSupportSecondsForThisTF(end) > 0.1)
-                dTick = 0.05;
-            elseif (theTemporalSupportSecondsForThisTF(end) > 0.06)
-                dTick = 0.02;
-            elseif (theTemporalSupportSecondsForThisTF(end) > 0.03)
-                dTick = 0.01;
-            else
-                dTick = 0.005;
-            end
-            xTicks = 0:dTick:2.0;
-            if (theTemporalSupportSecondsForThisTF(end) > 0.5)
-                xTickLabels = sprintf('%.1f\n', xTicks);
-            elseif (theTemporalSupportSecondsForThisTF(end) > 0.1)
-                xTickLabels = sprintf('%.2f\n', xTicks);
-            else
-                xTickLabels = sprintf('%.3f\n', xTicks);
-            end
-
-            XLims = [0 theTemporalSupportSecondsForThisTF(end)];
-            YLims = [-2 2];
-
-            plot(ax,theTemporalSupportSecondsForThisTF, theMRGCMosaicPhotocurrentResponsesForThisTF, 'ro', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-            hold(ax, 'on')
-            plot(ax, temporalSupport1Msec, theFittedResponse, 'k-', 'LineWidth', 1.5);
-            set(ax, 'XLim', XLims, 'YLim', YLims, 'XTick', xTicks, 'YTick', [-20:1:2], 'XTickLabel', xTickLabels);
-            grid(ax, 'on');
-            xlabel(ax,'time (sec)');
-            ylabel(ax,'pAmps');
-            title(ax, sprintf('%s, TF = %2.2fHz', stimulusShape, temporalFrequenciesExamined(iTF)));
-
-            % Finalize figure using the Publication-Ready format
-            PublicationReadyPlotLib.applyFormat(ax,ff);
-            PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
-
-            % Export
-            visualizationPDFfileName = sprintf('%s_TF_%2.2fHz', stimulusShape, temporalFrequenciesExamined(iTF));
-            exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
-            pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-            theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
-
-            % Generate the path if we need to
-            RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-                pdfExportRootDir, theVisualizationPDFfilename, ...
-                'generateMissingSubDirs', true);
-
-            thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
-            NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
-        end % visualizeSinusoidalFits
-    end % iTF
-
-
-    % Phase in radians
-    theTTFphaseRadians = theTTFphaseDegs/180*pi;
-
-
-    % Complex TTF from amplitude and phase
-    theComplexTTF = theTTFamplitude .* exp(-1i * (theTTFphaseRadians));
-
-    % Adjust TTF for missing 0 Hz point.
-    [theComplexTTF, temporalFrequencySupportHz] = RGCMosaicConstructor.temporalFilterEngine.adjustTTFtoDealWithMissingTTFsampleAt0Hz(...
-        theComplexTTF, temporalFrequenciesExamined);
-
-    % Clean up the TTF by removing phase outliers
-    theComplexTTF = RGCMosaicConstructor.temporalFilterEngine.removePhaseOutliersFromTTF(...
-        temporalFrequencySupportHz, theComplexTTF);
-
-
-end
