@@ -17,6 +17,7 @@ function applyFormat(ax,ff)
     % Legend
     set(ax.Legend, 'BackgroundAlpha', ff.legendBackgroundAlpha);
     set(ax.Legend, 'Color', ff.legendBackgroundColor);
+    set(ax.Legend, 'TextColor', ff.legendTextColor);
     set(ax.Legend, 'EdgeColor', ff.legendEdgeColor);
     set(ax.Legend, 'LineWidth', ff.legendLineWidth);
     set(ax.Legend, 'FontSize', ff.legendFontSize);

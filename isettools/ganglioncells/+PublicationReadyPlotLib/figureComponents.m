@@ -1,4 +1,10 @@
-function f = figureComponents(panelFormat)
+function f = figureComponents(panelFormat, varargin)
+
+    p = inputParser;
+    p.addParameter('darkScheme', false, @islogical);
+    % Execute the parser
+    p.parse(varargin{:});
+    darkScheme = p.Results.darkScheme;
 
     
     f.markerSize = 16;
@@ -23,12 +29,24 @@ function f = figureComponents(panelFormat)
     f.legendBackgroundColor = [0.9 0.9 0.9];
     f.legendEdgeColor = [0.3 0.3 0.3];
     f.legendLineWidth = 1.0;
-
+    f.legendTextColor = [0.3 0.3 0.3];
+    
     f.axisTickAngle = 0;
     f.axisOffsetFactor = -0.03;
     f.tickDir = 'both';
     f.grid = 'on';
     f.box = 'off';
+
+    if (darkScheme)
+         theBackgroundColor = [33 40 42]/255;
+         theLighterBackgroundColor = [43 50 52]/255;
+         theLabelColor = [0.9 0.9 0.9];
+         f.backgroundColor = theLighterBackgroundColor;
+         f.titleColor = theLabelColor;
+         f.legendBackgroundColor = theBackgroundColor;
+         f.legendTextColor = theLabelColor;
+         f.axisColor = theLabelColor;
+    end
 
 
     switch (panelFormat)
