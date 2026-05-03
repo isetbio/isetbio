@@ -10,14 +10,20 @@ function [theComplexTTF, temporalFrequencySupportHz] = complexValuedTTFfromRespo
         phaseComputationParams, ...
         visualizeSinusoidalFits, ...
         stimulusShape, ...
-        theColor)
+        theColor, theSinudoidalFitColor)
 
 
     theTTFamplitude = zeros(1, numel(temporalFrequenciesExamined));
     theTTFphaseDegs = zeros(1, numel(temporalFrequenciesExamined));
 
     
+    temporalSupport1Msec = cell(1, numel(temporalFrequenciesExamined));
+    validTemporalSupportSeconds = cell(1, numel(temporalFrequenciesExamined));
+    validResponses = cell(1, numel(temporalFrequenciesExamined));
 
+    theFittedResponses = cell(1, numel(temporalFrequenciesExamined));
+    fittedParams = [];
+    meanResponses = zeros(1, numel(temporalFrequenciesExamined));
 
     for iTF = 1:numel(temporalFrequenciesExamined)
 
@@ -48,25 +54,40 @@ function [theComplexTTF, temporalFrequencySupportHz] = complexValuedTTFfromRespo
         assert(isempty(find(isnan(temporalSupportSecondsForThisTF(:)))), 'did not remove all nan part of the response temporal support');
 
         
-        temporalSupport1Msec = 0:1/1000:(temporalSupportSecondsForThisTF(end)+dt);
+        temporalSupport1Msec{iTF} = 0:1/1000:(temporalSupportSecondsForThisTF(end)+dt);
 
-        [theFittedResponse, fittedParams, meanResponse] = RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries(...
+        validTemporalSupportSeconds{iTF} = temporalSupportSecondsForThisTF;
+        validResponses{iTF} = responseForThisTF;
+
+        [theFittedResponses{iTF}, fittedParams(iTF,:), meanResponses(iTF)] = RGCMosaicConstructor.helper.fit.sinusoidToResponseTimeSeries(...
             temporalSupportSecondsForThisTF, ...
             responseForThisTF, ...
             temporalFrequency, ...
-            temporalSupport1Msec, ...
+            temporalSupport1Msec{iTF}, ...
             'allowOffset', allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries);
 
-        theTTFamplitude(iTF) = fittedParams(1);
-        theTTFphaseDegs(iTF) = fittedParams(2);
+        theTTFamplitude(iTF) = fittedParams(iTF,1);
+        theTTFphaseDegs(iTF) = fittedParams(iTF,2);
 
-     
+    end % iTF
 
-        if (visualizeSinusoidalFits)
+    if (visualizeSinusoidalFits)
+
+        for iTF = 1:numel(temporalFrequenciesExamined)
+        
+           
+
             hFig = figure(2); clf;
-            ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+            ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure', ...
+                'darkScheme', true);
+
+
             theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
             ax = theAxes{1,1};
+
+            temporalSupportSecondsForThisTF = validTemporalSupportSeconds{iTF};
+            responseForThisTF = validResponses{iTF};
+            temporalFrequency = temporalFrequenciesExamined(iTF);
 
             if (temporalSupportSecondsForThisTF(end) > 1)
                 dTick = 0.4;
@@ -88,21 +109,31 @@ function [theComplexTTF, temporalFrequencySupportHz] = complexValuedTTFfromRespo
             xTicks = (0:dTick:2.0)*1e3;
             xTickLabels = sprintf('%.0f\n', xTicks);
 
+
+            
+
             XLims = [0 temporalSupportSecondsForThisTF(end)]*1e3;
-            YLims = [-1 1];
+            YLims = 2*[-1 1];
 
             dT = temporalSupportSecondsForThisTF(2)-temporalSupportSecondsForThisTF(1);
             skip = max([1 round(1/temporalFrequency/16/dT)]);
 
-            plot(temporalSupport1Msec*1e3, temporalSupport1Msec*0, 'k-', 'LineWidth', 1.5);
+            plot(temporalSupport1Msec{iTF}*1e3, temporalSupport1Msec{iTF}*0, '-', 'Color', ff.labelColor, 'LineWidth', 1.5);
             hold(ax, 'on')
-            scatter(ax,temporalSupportSecondsForThisTF(1:skip:end)*1e3, responseForThisTF(1:skip:end)-meanResponse, 300, ...
-                'MarkerFaceColor', theColor, 'MarkerEdgeColor', theColor * 0.5, 'MarkerFaceAlpha', 0.5, 'LineWidth', 1.5);
+ 
+
+            % We subtract the mean response, which is stronger at high TFs.
+            % We believe this is so because there is not enough 'warm up' time in the
+            % high TFs to reach zero baseline
+            meanResponse = meanResponses(iTF);
+
+            scatter(ax,temporalSupportSecondsForThisTF(1:skip:end)*1e3, responseForThisTF(1:skip:end)-meanResponse, 18*18, ...
+                'MarkerFaceColor', theSinudoidalFitColor, 'MarkerEdgeColor', theSinudoidalFitColor* 0.5, 'MarkerFaceAlpha', 1.0, 'LineWidth', 1.5);
             
-            plot(ax, temporalSupport1Msec*1e3, theFittedResponse-meanResponse, 'k-', 'LineWidth', 4);
-            plot(ax, temporalSupport1Msec*1e3, theFittedResponse-meanResponse, 'y-', 'LineWidth', 2);
-            yTickLabels = {'-1.0' '' '-.50' '' '0' '' '+.50' '' '+1.0'};
-            set(ax, 'XLim', XLims, 'YLim', YLims, 'XTick', xTicks, 'YTick', -1:0.25:1, 'YTickLabel', yTickLabels, 'XTickLabel', xTickLabels);
+            plot(ax, temporalSupport1Msec{iTF}*1e3, theFittedResponses{iTF}-meanResponse, 'k-', 'LineWidth', 4);
+            plot(ax, temporalSupport1Msec{iTF}*1e3, theFittedResponses{iTF}-meanResponse, 'w-', 'LineWidth', 2);
+            yTickLabels = {'-2' '' '-1' '' '0' '' '+1' '' '+2'};
+            set(ax, 'XLim', XLims, 'YLim', YLims, 'XTick', xTicks, 'YTick', -2:0.5:2, 'YTickLabel', yTickLabels, 'XTickLabel', xTickLabels);
             grid(ax, 'on');
             xlabel(ax,'time (msec)');
             ylabel(ax,'pAmps');
@@ -125,8 +156,9 @@ function [theComplexTTF, temporalFrequencySupportHz] = complexValuedTTFfromRespo
 
             thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
             NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
-        end % visualizeSinusoidalFits
-    end % iTF
+        
+        end % iTF
+    end % visualizeSinusoidalFits
 
 
     % Phase in radians

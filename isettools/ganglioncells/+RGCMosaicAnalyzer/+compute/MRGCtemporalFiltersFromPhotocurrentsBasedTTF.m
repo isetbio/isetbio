@@ -69,6 +69,9 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     else
         theColor = [200 50 100]/255;
     end
+    theColor = theColor/max(theColor);
+    theSinudoidalFitColor = [1 0.5 0];
+    theAlpha = 1.0;
 
     % Compute thePhotocurrentBasedMRGCcellTTF
 
@@ -81,7 +84,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             phaseComputationParams, ...
             visualizeSinusoidalFits, ...
             stimParams.stimulusShape, ...
-            theColor);
+            theColor, theSinudoidalFitColor);
     
 
     % Compute theTargetCascadedFilterTTF from the Benardete&Kaplan work
@@ -127,66 +130,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     theTargetCascadedFilterTTF = theTargetCascadedFilterTTF / max(abs(theTargetCascadedFilterTTF(:)));
     
 
-    % Plot the amplitude spectrum
-    hFig = figure(1001); clf;
-    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
-    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-    ax = theAxes{1,1};
-
-    RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
-           ax, temporalFrequencySupportHz, thePhotocurrentBasedMRGCcellTTF , 'o', ...
-           false, false, theColor, ...
-          '');
-    yTicks = get(ax, 'YTick');
-    yTickLabels = get(ax, 'YTickLabel');
-    PublicationReadyPlotLib.applyFormat(ax,ff);
-    set(ax, 'YTick', yTicks);
-    set(ax, 'YTickLabel', yTickLabels);
-
-    % Export
-    visualizationPDFfileName = sprintf('mRGC_%d_photocurrentsBasedTTFamplitudeSpectrum_%s', theTargetRGCindex, stimParams.stimulusShape);
-    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
-    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
-
-    % Generate the path if we need to
-    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-                pdfExportRootDir, theVisualizationPDFfilename, ...
-                'generateMissingSubDirs', true);
-
-    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
-    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
-
-
-    % Plot the phase spectrum
-    hFig = figure(1002); clf;
-    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
-    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-    ax = theAxes{1,1};
-
-    RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
-           ax, temporalFrequencySupportHz, thePhotocurrentBasedMRGCcellTTF , 'o', ...
-           false, false, theColor, ...
-          '');
-
-    PublicationReadyPlotLib.applyFormat(ax,ff);
-
-    % Export
-    visualizationPDFfileName = sprintf('mRGC_%d_photocurrentsBasedTTFphaseSpectrum_%s', theTargetRGCindex, stimParams.stimulusShape);
-    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
-    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
-
-    % Generate the path if we need to
-    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-                pdfExportRootDir, theVisualizationPDFfilename, ...
-                'generateMissingSubDirs', true);
-
-    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
-    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
-
-
-
 
 
     % ONLY for debuggin purposes
@@ -216,7 +159,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
 
 
-    
 
     % Derive theInnerRetinaTTF based on the theTargetCascadedFilterTTF and thePhotocurrentBasedMRGCcellTTF
     switch (innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod)
@@ -288,7 +230,7 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             error('Unknown temporal filter synthesis method: ''%s''.', innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod);
     end
 
-   
+  
 
     fprintf('Saving derived inner retina filter TTF to %s\n', theAnalyzedTTFsFullFileName);
 
@@ -307,7 +249,198 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         'theMRGCMosaic', 'stimParams', 'TTFparamsStruct', ...
         'innerRetinaFilterDerivationParams', ...
         'innerRetinaFilterDataStruct');
-   
+
+
+%
+% THE PHOTOCURRENTS-BASED TTF
+%
+
+    % Plot the amplitude spectrum of the photocurrents-based synthetic mRGC TTF
+    hFig = figure(1001); clf;
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard tall figure', ...
+        'darkScheme', true);
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
+           ax, temporalFrequencySupportHz, thePhotocurrentBasedMRGCcellTTF , 'o', ...
+           false, false, theColor, theAlpha, ...
+          '');
+    yTicks = get(ax, 'YTick');
+    yTickLabels = get(ax, 'YTickLabel');
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+    set(ax, 'YTick', yTicks);
+    set(ax, 'YTickLabel', yTickLabels);
+
+    % Export
+    visualizationPDFfileName = sprintf('mRGC_%d_photocurrentsBasedTTFamplitudeSpectrum_%s', theTargetRGCindex, stimParams.stimulusShape);
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+    % Plot the phase spectrum of the photocurrents-based synthetic mRGC TTF
+    hFig = figure(1002); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
+           ax, temporalFrequencySupportHz, thePhotocurrentBasedMRGCcellTTF , 'o', ...
+           false, false, theColor, theAlpha, ...
+          '');
+
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+
+    % Export
+    visualizationPDFfileName = sprintf('mRGC_%d_photocurrentsBasedTTFphaseSpectrum_%s', theTargetRGCindex, stimParams.stimulusShape);
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+
+%
+% THE TARGET TTF
+%
+
+    % Plot the amplitude spectrum of the target macaque mRGC TTF
+    hFig = figure(1003); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
+           ax, temporalFrequencySupportHz, theTargetCascadedFilterTTF, 'o', ...
+           false, false, theColor, theAlpha, ...
+          '');
+
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+
+    % Export
+    visualizationPDFfileName = sprintf('targetMacaque_%s_TTFamplitudeSpectrum_%s', targetCellImpulseResponseSource, stimParams.stimulusShape);
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+    % Plot the phase spectrum of the target macaque mRGC TTF
+    hFig = figure(1004); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
+           ax, temporalFrequencySupportHz, theTargetCascadedFilterTTF, 'o', ...
+           false, false, theColor, theAlpha, ...
+          '');
+
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+
+    % Export
+    visualizationPDFfileName = sprintf('targetMacaque_%s_TTFphaseSpectrum_%s', targetCellImpulseResponseSource, stimParams.stimulusShape);
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+
+
+%
+% THE DERIVED INNER RETINA TTF
+%
+
+    % Plot the amplitude spectrum of the target macaque mRGC TTF
+    hFig = figure(1003); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
+           ax, temporalFrequencySupportHz, theInnerRetinaTTF , 'o', ...
+           false, false, theColor, theAlpha, ...
+          '');
+
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+
+    % Export
+    visualizationPDFfileName = sprintf('mRGC_%d_InnerRetina_TTFamplitudeSpectrum_%s_forTargetMacaque_%s_via_%s', theTargetRGCindex,  stimParams.stimulusShape, targetCellImpulseResponseSource, innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod);
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+    % Plot the phase spectrum of the target macaque mRGC TTF
+    hFig = figure(1004); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
+
+    RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
+           ax, temporalFrequencySupportHz, theInnerRetinaTTF  , 'o', ...
+           false, false, theColor, theAlpha, ...
+          '');
+
+    PublicationReadyPlotLib.applyFormat(ax,ff);
+
+    % Export
+    visualizationPDFfileName = sprintf('mRGC_%d_InnerRetina_TTFphaseSpectrum_%s_forTargetMacaque_%s_via_%s', theTargetRGCindex,  stimParams.stimulusShape, targetCellImpulseResponseSource, innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod);
+    
+    exportVisualizationPDFdirectory = 'temporalResponseGenerationPDFs';
+    pdfExportRootDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+    theVisualizationPDFfilename = fullfile(exportVisualizationPDFdirectory, sprintf('%s.pdf', visualizationPDFfileName));
+
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+                pdfExportRootDir, theVisualizationPDFfilename, ...
+                'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportRootDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, 'beVerbose');
+
+
+
+
+
+
+
+
+
 
     hFig = figure(9876); clf;
     set(hFig, 'Position', [10 10 2000 800], 'Name', sprintf('%s - %s', targetCellImpulseResponseSource, stimulusShape))
@@ -317,13 +450,13 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     p1 = RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
         ax, innerRetinaFilterDataStruct.temporalFrequencySupportHz, ...
         innerRetinaFilterDataStruct.targetMacaqueTTF, 'o', ...
-        true, false, [0 0 0], ...
+        true, false, [0 0 0], 1.0, ...
         '');
     hold(ax, 'on');
     p2 = RGCMosaicConstructor.temporalFilterEngine.spectrumMagnitudePlot(...
         ax, innerRetinaFilterDataStruct.temporalFrequencySupportHz, ...
         innerRetinaFilterDataStruct.achievedTargetMRGCcellTTF, '-', ...
-        true, false, [1 0 0], ...
+        true, false, [1 0 0], 1.0, ...
         '');
     plot(ax, innerRetinaFilterDerivationParams.minFrequencyHzWithNonZeroWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
     plot(ax, innerRetinaFilterDerivationParams.maxFrequencyHzWithNonZeroWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
@@ -335,13 +468,13 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     p1 = RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
         ax, innerRetinaFilterDataStruct.temporalFrequencySupportHz, ...
         innerRetinaFilterDataStruct.targetMacaqueTTF, 'o', ...
-        true, false, [0 0 0], ...
+        true, false, [0 0 0], 1.0, ...
         '');
     hold(ax, 'on');
     p2 = RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot(...
         ax, innerRetinaFilterDataStruct.temporalFrequencySupportHz, ...
         innerRetinaFilterDataStruct.achievedTargetMRGCcellTTF, '-', ...
-        true, false, [1 0 0], ...
+        true, false, [1 0 0], 1.0, ...
         '');
     plot(ax, innerRetinaFilterDerivationParams.minFrequencyHzWithNonZeroWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
     plot(ax, innerRetinaFilterDerivationParams.maxFrequencyHzWithNonZeroWeight*[1 1], get(ax, 'YLim'), 'k--', 'LineWidth', 1.5);
@@ -378,7 +511,9 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     p2 = plot(ax, theAchievedTargetMRGCcellImpulseResponseData.temporalSupportSeconds*1e3, theAchievedTargetMRGCcellImpulseResponseData.amplitude, 'r-');
     set(ax, 'XLim', [0 300]);
     legend(ax, [p1 p2], {'target' 'achieved'});
-    pause
+
+
+
 
 
    
@@ -395,11 +530,26 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             theMacaqueImpulseResponseData.amplitude = theMacaqueImpulseResponseData.amplitude/max(abs(theMacaqueImpulseResponseData.amplitude));
     end
 
+
+
+
+    includePhotocurrentsBasedData = true;
+    includeDerivedInnerRetinaData = true;
+    includeTargetData = false;
+    includeAchievedData = false;
+    includeOriginalMacaqueMeasurementsData = false;
+
+    %includePhotocurrentsBasedData = false;
+    %includeDerivedInnerRetinaData = false;
+    %includeTargetData = true;
+    %includeAchievedData = true;
+    %includeOriginalMacaqueMeasurementsData = true;
+
     % Plot the impulse response functions
     % Plot the TTF
     hFig = figure(60); clf;
     
-    % The spectra
+    % The TTFs
     plotComboData(hFig, ...
         temporalFrequencySupportHz, ...
         innerRetinaFilterDataStruct.photocurrentBasedTTF/max(abs(innerRetinaFilterDataStruct.photocurrentBasedTTF)), ...
@@ -409,9 +559,16 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         targetCellImpulseResponseSource, ...
         [0 1.01], [0.3 200], [0.3 1 3 10 30 100], 'log', 'frequency (Hz)', ...
         'TTFs', ...
-        'withMacaqueData', theMacaqueTTFData);
+        'withMacaqueData', theMacaqueTTFData, ...
+        'includePhotocurrentsBasedData', includePhotocurrentsBasedData, ...
+        'includeTargetData', includeTargetData, ...
+        'includeAchievedData', includeAchievedData, ...
+        'includeDerivedInnerRetinaData', includeDerivedInnerRetinaData, ...
+        'includeOriginalMacaqueMeasurementsData', includeOriginalMacaqueMeasurementsData);
 
 
+
+    % The impulse responses
     hFig = figure(61); clf;
     plotComboData(hFig, ...
         thePhotocurrentBasedMRGCcellImpulseResponseData.temporalSupportSeconds*1e3, ...
@@ -420,9 +577,14 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         theAchievedTargetMRGCcellImpulseResponseData.amplitude/max(abs(theAchievedTargetMRGCcellImpulseResponseData.amplitude)), ...
         theDerivedInnerRetinaImpulseResponseData.amplitude/max(abs(theAchievedTargetMRGCcellImpulseResponseData.amplitude)), ...
         targetCellImpulseResponseSource, ...
-        1.01*[-1 1], [0 200], 0:20:200, 'linear', 'time (msec)', ...
+        1.01*[-1 1], [0 200], 0:25:250, 'linear', 'time (msec)', ...
         'IRFs', ...
-        'withMacaqueData', theMacaqueImpulseResponseData);
+        'withMacaqueData', theMacaqueImpulseResponseData, ...
+        'includePhotocurrentsBasedData', includePhotocurrentsBasedData, ...
+        'includeTargetData', includeTargetData, ...
+        'includeAchievedData', includeAchievedData, ...
+        'includeDerivedInnerRetinaData', includeDerivedInnerRetinaData, ...
+        'includeOriginalMacaqueMeasurementsData', includeOriginalMacaqueMeasurementsData);
 end
 
 
@@ -438,11 +600,22 @@ function plotComboData(hFig, ...
 
     p = inputParser;
     p.addParameter('withMacaqueData', [], @(x)(isempty(x) || (isstruct(x))));
+    p.addParameter('includePhotocurrentsBasedData', false, @islogical);
+    p.addParameter('includeTargetData', false, @islogical);
+    p.addParameter('includeAchievedData', false, @islogical);
+    p.addParameter('includeDerivedInnerRetinaData', false, @islogical);
+    p.addParameter('includeOriginalMacaqueMeasurementsData', false, @islogical);
+
     p.parse(varargin{:});
     theMacaqueData = p.Results.withMacaqueData;
-    
+    includePhotocurrentsBasedData = p.Results.includePhotocurrentsBasedData;
+    includeTargetData = p.Results.includeTargetData;
+    includeAchievedData = p.Results.includeAchievedData;
+    includeDerivedInnerRetinaData = p.Results.includeDerivedInnerRetinaData;
+    includeOriginalMacaqueMeasurementsData = p.Results.includeOriginalMacaqueMeasurementsData;
 
-    ff = PublicationReadyPlotLib.figureComponents('1x1 standard very wide figure');
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard tall figure', ...
+        'darkScheme', true);
     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
     ax = theAxes{1,1};
 
@@ -451,94 +624,113 @@ function plotComboData(hFig, ...
 
     hold(ax, 'on');
 
-    % The photocurrents-based Data
-    if (strcmp(pdfFileNamePostFix, 'TTFs'))
-        theAmplitude = abs(thePhotocurrentBasedMRGCcellData);
-    else
-        theAmplitude = thePhotocurrentBasedMRGCcellData;
-    end
-    maxPhotocurrentsBasedAmplitude = max(abs(theAmplitude));
 
-    p1 = plot(ax, theAxisData, theAmplitude/maxPhotocurrentsBasedAmplitude, 'ro-', ...
-            'LineWidth', 1.5, ...
-            'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-    allPlotHandles(numel(allPlotHandles)+1) = p1;
-    allLegends{numel(allLegends)+1} = 'photocurrents-derived';
-
-    if (~isempty(theTargetCascadedFilterData))
-        % The target cascaded filter TTF
+    maxPhotocurrentsBasedAmplitude = [];
+    if (includePhotocurrentsBasedData)
+        % The photocurrents-based Data
         if (strcmp(pdfFileNamePostFix, 'TTFs'))
-            theAmplitude = abs(theTargetCascadedFilterData);
+            theAmplitude = abs(thePhotocurrentBasedMRGCcellData);
         else
-            theAmplitude = theTargetCascadedFilterData;
+            theAmplitude = thePhotocurrentBasedMRGCcellData;
         end
-        maxTargetAmplitude = max(abs(theAmplitude));
+        maxPhotocurrentsBasedAmplitude = max(abs(theAmplitude));
     
-        plot(ax, theAxisData, theAmplitude/maxTargetAmplitude, 'k-', ...
-                 'LineWidth', 4, ...
-                 'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-        p2 = plot(ax,theAxisData, theAmplitude/maxTargetAmplitude, 'c-', ...
-                 'LineWidth', 2, ...
-                 'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
-        allPlotHandles(numel(allPlotHandles)+1) = p2;
-        allLegends{numel(allLegends)+1} = sprintf('%s (fitted model)', targetCellImpulseResponseSource);
-    else
-        maxTargetAmplitude = [];
+        p1 = plot(ax, theAxisData, theAmplitude/maxPhotocurrentsBasedAmplitude, 'ro-', ...
+                'LineWidth', 1.5, ...
+                'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
+        allPlotHandles(numel(allPlotHandles)+1) = p1;
+        allLegends{numel(allLegends)+1} = 'photocurrents-derived';
     end
 
 
-
-    % The achieved cascaded filter TTF
-    if (strcmp(pdfFileNamePostFix, 'TTFs'))
-        theAmplitude = abs(theAchievedCascadedFilterData);
-    else
-        theAmplitude = theAchievedCascadedFilterData;
-    end
-
-    p5 = plot(ax, theAxisData, theAmplitude/maxPhotocurrentsBasedAmplitude, 'k--', ...
-             'LineWidth', 4);
-
-    allPlotHandles(numel(allPlotHandles)+1) = p5;
-    allLegends{numel(allLegends)+1} = 'ISETBio model (photocurrent x inner retina filter cascade)';
-
-
-    % The derived inner retina filter TTF
-    if (strcmp(pdfFileNamePostFix, 'TTFs'))
-        theAmplitude = abs(theInnerRetinaData);
-    else
-        theAmplitude = theInnerRetinaData;
-    end
-    maxAmplitude = max(abs(theAmplitude));
-
-    plot(ax,theAxisData, theAmplitude/maxAmplitude, 'k-', ...
-              'LineWidth', 4, ...
-              'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-    p4 = plot(ax,theAxisData, theAmplitude/maxAmplitude, 'y-', ...
-              'LineWidth', 2, ...
-              'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
-
-    allPlotHandles(numel(allPlotHandles)+1) = p4;
-    allLegends{numel(allLegends)+1} = 'inner retina filter';
-
-
-    if (~isempty(theMacaqueData))
-        if (strcmp(pdfFileNamePostFix, 'TTFs'))
-            theAxisData = [];
-            theAmplitude = [];
-        else
-            theAxisData = theMacaqueData.temporalSupportSeconds * 1e3;
-            theAmplitude = theMacaqueData.amplitude;
-        end
-        if (isempty(maxTargetAmplitude))
+    maxTargetAmplitude = [];
+    if (includeTargetData)
+        if (~isempty(theTargetCascadedFilterData))
+            % The target cascaded filter TTF
+            if (strcmp(pdfFileNamePostFix, 'TTFs'))
+                theAmplitude = abs(theTargetCascadedFilterData);
+            else
+                theAmplitude = theTargetCascadedFilterData;
+            end
             maxTargetAmplitude = max(abs(theAmplitude));
+        
+            plot(ax, theAxisData, theAmplitude/maxTargetAmplitude, 'k-', ...
+                     'LineWidth', 4, ...
+                     'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
+            p2 = plot(ax,theAxisData, theAmplitude/maxTargetAmplitude, 'c-', ...
+                     'LineWidth', 2, ...
+                     'MarkerSize', 14, 'MarkerFaceColor', [1 0.75 0.75]);
+            allPlotHandles(numel(allPlotHandles)+1) = p2;
+            allLegends{numel(allLegends)+1} = sprintf('%s (fitted model)', targetCellImpulseResponseSource);
         end
+    end
 
-        p7 = plot(ax,theAxisData, theAmplitude/maxTargetAmplitude, 'bv', ...
-                  'LineWidth', 2, ...
-                  'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.9]);
     
-        allPlotHandles(numel(allPlotHandles)+1) = p7;
-        allLegends{numel(allLegends)+1} = sprintf('%s (raw data)', targetCellImpulseResponseSource);
+
+    if (includeAchievedData)
+        % The achieved cascaded filter TTF
+        if (strcmp(pdfFileNamePostFix, 'TTFs'))
+            theAmplitude = abs(theAchievedCascadedFilterData);
+        else
+            theAmplitude = theAchievedCascadedFilterData;
+        end
+        maxAmplitude = max(abs(theAmplitude));
+
+        if (~isempty(maxPhotocurrentsBasedAmplitude))
+            p3 = plot(ax, theAxisData, theAmplitude/maxPhotocurrentsBasedAmplitude, 'k--', ...
+                 'LineWidth', 4);
+        else
+            p3 = plot(ax, theAxisData, theAmplitude/maxAmplitude, 'k--', ...
+                 'LineWidth', 4);
+        end
+    
+        allPlotHandles(numel(allPlotHandles)+1) = p3;
+        allLegends{numel(allLegends)+1} = 'ISETBio model (photocurrent x inner retina filter cascade)';
+    end
+
+    
+
+    if (includeDerivedInnerRetinaData)
+        % The derived inner retina filter TTF
+        if (strcmp(pdfFileNamePostFix, 'TTFs'))
+            theAmplitude = abs(theInnerRetinaData);
+        else
+            theAmplitude = theInnerRetinaData;
+        end
+        maxAmplitude = max(abs(theAmplitude));
+    
+        plot(ax,theAxisData, theAmplitude/maxAmplitude, 'k-', ...
+                  'LineWidth', 4, ...
+                  'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
+        p4 = plot(ax,theAxisData, theAmplitude/maxAmplitude, 'y-', ...
+                  'LineWidth', 2, ...
+                  'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]);
+    
+        allPlotHandles(numel(allPlotHandles)+1) = p4;
+        allLegends{numel(allLegends)+1} = 'derived inner retina filter';
+    end
+    
+
+    if (includeOriginalMacaqueMeasurementsData)
+        if (~isempty(theMacaqueData))
+            if (strcmp(pdfFileNamePostFix, 'TTFs'))
+                theAxisData = [];
+                theAmplitude = [];
+            else
+                theAxisData = theMacaqueData.temporalSupportSeconds * 1e3;
+                theAmplitude = theMacaqueData.amplitude;
+            end
+            if (isempty(maxTargetAmplitude))
+                maxTargetAmplitude = max(abs(theAmplitude));
+            end
+    
+            p5 = plot(ax,theAxisData, theAmplitude/maxTargetAmplitude, 'bv', ...
+                      'LineWidth', 2, ...
+                      'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.9]);
+        
+            allPlotHandles(numel(allPlotHandles)+1) = p5;
+            allLegends{numel(allLegends)+1} = sprintf('%s (raw data)', targetCellImpulseResponseSource);
+        end
     end
 
     

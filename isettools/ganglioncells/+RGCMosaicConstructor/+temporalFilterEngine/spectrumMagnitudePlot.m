@@ -3,7 +3,7 @@
 %
 
 function pHandle = spectrumMagnitudePlot(ax, temporalFrequencySupportHz, theTTF, theMarker, ...
-    noXLabel, noYLabel, theColor, theLabel)
+    noXLabel, noYLabel, theColor, theAlpha, theLabel)
 
     theMagnitudeSpectrum = abs(theTTF);
     theMagnitudeSpectrum = theMagnitudeSpectrum / max(theMagnitudeSpectrum(:));
@@ -12,9 +12,9 @@ function pHandle = spectrumMagnitudePlot(ax, temporalFrequencySupportHz, theTTF,
          pHandle = plot(ax, temporalFrequencySupportHz, theMagnitudeSpectrum, '-', ...
              'Color', theColor, 'LineWidth', 1.5);
     else
-        pHandle = scatter(ax, temporalFrequencySupportHz, theMagnitudeSpectrum, 144, ...
-             'Marker', theMarker, 'Color', theColor, 'LineWidth', 1.5, 'MarkerEdgeColor', theColor*0.5, ...
-             'MarkerFaceColor', theColor, 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0.5);
+        pHandle = scatter(ax, temporalFrequencySupportHz, theMagnitudeSpectrum, 16*16, ...
+             'Marker', theMarker, 'Color', theColor, 'LineWidth', 1.5, 'MarkerEdgeColor', [1 1 1], ...
+             'MarkerFaceColor', theColor, 'MarkerFaceAlpha', theAlpha, 'MarkerEdgeAlpha', 0.5);
     end
 
     set(ax, 'XScale', 'log', 'XLim', [0.3 200], 'XTick', [0.1 0.3 1 3 10 30 100]);

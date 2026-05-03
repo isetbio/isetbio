@@ -2,7 +2,7 @@
 % RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot
 %
 
-function pHandle = spectrumPhasePlot(ax, temporalFrequencySupportHz, theTTF, theMarker, noXLabel, noYLabel, theColor, theLabel)
+function pHandle = spectrumPhasePlot(ax, temporalFrequencySupportHz, theTTF, theMarker, noXLabel, noYLabel, theColor, theAlpha, theLabel)
 
     theUnwrappedPhaseRadians = unwrap(angle(theTTF));
 
@@ -14,9 +14,9 @@ function pHandle = spectrumPhasePlot(ax, temporalFrequencySupportHz, theTTF, the
          pHandle = plot(ax, temporalFrequencySupportHz, theUnwrappedPhaseRadians/pi, '-', ...
              'Color', theColor, 'LineWidth', 1.5);
     else
-        pHandle = scatter(ax, temporalFrequencySupportHz, theUnwrappedPhaseRadians/pi, 144, ...
-             'Marker', theMarker, 'Color', theColor, 'LineWidth', 1.5, 'MarkerEdgeColor', theColor*0.5, ...
-             'MarkerFaceColor', theColor, 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0.5);
+        pHandle = scatter(ax, temporalFrequencySupportHz, theUnwrappedPhaseRadians/pi, 16*16, ...
+             'Marker', theMarker, 'Color', theColor, 'LineWidth', 1.5, 'MarkerEdgeColor', [1 1 1], ...
+             'MarkerFaceColor', theColor, 'MarkerFaceAlpha', theAlpha, 'MarkerEdgeAlpha', 0.5);
     end
 
 
