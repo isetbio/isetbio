@@ -3,6 +3,9 @@
 %
 %
 function  [theCenteredWaveform, theDelaySeconds] = centerAndWindowTemporalImpulseResponse(temporalSupportSeconds, theWaveform)
+
+error('Are we using this?')
+
     % Find the time of its peak
     [~, tBinOfMaxResponse] = max(abs(theWaveform(:)));
     

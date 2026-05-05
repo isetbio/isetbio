@@ -4,6 +4,8 @@
 
 function [theTimeWindowedTTF, theOneSidedTimeWindowedTTF] = timeWindowedTTF(theUncroppedUncenteredTTF, temporalFrequencySupportHz, temporalLimitsSeconds)
 
+error('Are we using this?')
+
     % Generate the corresponding temporal impulse response function 
     theTemporalResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
                 theUncroppedUncenteredTTF, temporalFrequencySupportHz, ...

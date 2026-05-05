@@ -180,12 +180,8 @@ function [theFilterTTF, initialValues, lowerBounds, upperBounds, paramNames, the
         sin(phaseDegs/180*pi + 2*pi*(a1*tCausal .* (tCausal+1).^(-a2))) .* ...
         exp(-a3*tCausal);
 
-
-    dampedOscillationTTFtwoSided = fft(dampedOscillationImpulseResponse);
-
-    % Generate one sided TTF
-    dampedOscillationTTFoneSided(1:M) = dampedOscillationTTFtwoSided(1:M);
-    dampedOscillationTTFoneSided(2:M) = 2*dampedOscillationTTFtwoSided(2:M);
+    % Convert IR into one-sided TTF
+    dampedOscillationTTFoneSided = RGCMosaicConstructor.temporalFilterEngine.oneSidedTTFfromTemporalImpulseResponse(dampedOscillationImpulseResponse);
 
     theFilterTTF = 1e3 * gain * theDelayFilterTTF .* dampedOscillationTTFoneSided;
 end
