@@ -6,6 +6,9 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
     p.addParameter('nonLinearitiesList', [], @(x)(isempty(x))||(iscell(x))||(isstruct(x)));
+    p.addParameter('computeResponsesOnlyForCellsWithIndices', [], @isnumeric);
+    p.addParameter('deactivatedCenter', false, @islogical);
+    p.addParameter('deactivatedSurround', false, @islogical);
     p.addParameter('flipLinearResponsePolarityForCellsWithIndices', [], @isnumeric);
     p.addParameter('seed', [], @isnumeric);
     p.addParameter('beVerbose', false, @islogical);
@@ -15,7 +18,10 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     mRGCMosaicNoisyResponseInstancesNum = p.Results.nTrials;
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
     nonLinearitiesList = p.Results.nonLinearitiesList;
+    deactivatedCenter = p.Results.deactivatedCenter;
+    deactivatedSurround = p.Results.deactivatedSurround;
     flipLinearResponsePolarityForCellsWithIndices = p.Results.flipLinearResponsePolarityForCellsWithIndices;
+    computeResponsesOnlyForCellsWithIndices = p.Results.computeResponsesOnlyForCellsWithIndices;
     noiseSeed = p.Results.seed;
     beVerbose = p.Results.beVerbose;
 
@@ -109,11 +115,21 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
 
     % Compute the response of each mRGC
     parfor iRGC = 1:obj.rgcsNum
+
+        if (~ismember(iRGC, computeResponsesOnlyForCellsWithIndices))
+            fprintf('Skipping computation of mRGC #%d response.\n', iRGC);
+            continue;
+        end
+
         % Retrieve the center cone indices & weights
         centerConnectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
         centerConeIndices = find(centerConnectivityVector > mRGCMosaic.minCenterWeightForInclusionInComputing);
         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
         
+        if (deactivatedCenter)
+            centerConeWeights = 0*centerConeWeights;
+        end
+
         % Spatially pool the weighted cone responses to the RF center
         centerSpatiallyIntegratedActivations = sum(bsxfun(@times, theInputConeMosaicResponse(1:nTrials,1:inputTimePoints,centerConeIndices), centerConeWeights),3);
 
@@ -122,6 +138,10 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
             surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConeConnectivityMatrix(:, iRGC)));
             surroundConeIndices = find(surroundConnectivityVector > mRGCMosaic.minSurroundWeightForInclusionInComputing);
             surroundConeWeights = reshape(surroundConnectivityVector(surroundConeIndices), [1 1 numel(surroundConeIndices)]);
+
+            if (deactivatedSurround)
+                surroundConeWeights = 0*surroundConeWeights;
+            end
 
             % Spatially pool the weighted cone responses to the RF surround
             surroundSpatiallyIntegratedActivations = sum(bsxfun(@times, theInputConeMosaicResponse(1:nTrials,1:inputTimePoints, surroundConeIndices), surroundConeWeights),3);
@@ -146,7 +166,19 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         end
 
         % Composite response before any non-linearities are applied
-        noiseFreeLinearMRGCresponses(:,:,iRGC) = obj.responseGains(iRGC) * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
+        theNoiseFreeCompositeLinearResponse = obj.responseGains(iRGC) * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
+
+        % Flip composite response sign if so specified (simulating OFF mosaic)
+        if (~isempty(find(flipLinearResponsePolarityForCellsWithIndices == iRGC)))
+            theNoiseFreeCompositeLinearResponse = -theNoiseFreeCompositeLinearResponse;
+        end
+
+        noiseFreeLinearMRGCresponses(:,:,iRGC) = theNoiseFreeCompositeLinearResponse;
+
+        % 
+
+
+
 
         % Apply any (center/surround) component response nonlinearities
         if (numel(nonLinearitiesList)>0)
