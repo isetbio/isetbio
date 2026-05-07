@@ -162,6 +162,8 @@ p.addParameter('noylabel', false, @islogical);
 p.addParameter('figurehandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('axeshandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('clearaxesbeforedrawing', true, @islogical);
+
+
 p.addParameter('fontsize', 16, @isscalar);
 p.addParameter('fontangle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic'})));
 p.addParameter('colorbarfontsize', 16, @(x)(isempty(x)||(isscalar(x))));
@@ -174,9 +176,11 @@ p.addParameter('plottitlefontweight', 'normal', @ischar);
 p.addParameter('textdisplay', '',@(x)(isempty(x) || ischar(x)));
 p.addParameter('textdisplaycolor', [], @isnumeric);
 
+p.addParameter('withfigureformat', [], @isstruct);
 p.addParameter('verbose',true,@islogical);
 
 p.parse(varargin{:});
+figureFormat = p.Results.withfigureformat;
 domain = p.Results.domain;
 domainVisualizationLimits = p.Results.domainvisualizationlimits;
 domainVisualizationTicks  = p.Results.domainvisualizationticks;
@@ -1062,6 +1066,10 @@ set(axesHandle, 'Color', backgroundColor);
 axis(axesHandle, 'xy');
 axis(axesHandle, 'equal');
 set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontangle);
+
+if (~isempty(figureFormat))
+    PublicationReadyPlotLib.applyFormat(axesHandle,figureFormat);
+end
 
 
 drawnow;

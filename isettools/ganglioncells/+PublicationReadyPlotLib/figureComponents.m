@@ -50,6 +50,13 @@ function f = figureComponents(panelFormat, varargin)
          f.labelColor = theLabelColor;
     end
 
+    f.colorbar.location = 'NorthOutside';
+    f.colorbar.orientation = 'horizontal';
+    f.colorbar.axisLocation = 'out';
+    f.colorbar.fontSize = f.legendFontSize;
+    f.colorbar.fontAngle = 'Normal';
+    f.colorbar.fontColor = f.labelColor;
+
 
     switch (panelFormat)
 
@@ -101,15 +108,15 @@ function f = figureComponents(panelFormat, varargin)
         case '1x2 giant figure'
 
             f.reductionFactor = 0.24;
-            f.figureSize = [1800 900];
+            f.figureSize = [1792 896];
 
             f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                     'rowsNum', 1, ...
                     'colsNum', 2, ...
                     'heightMargin',  0.1, ...
                     'widthMargin',    0.05, ...
-                    'leftMargin',     0.11, ...
-                    'rightMargin',    0.04, ...
+                    'leftMargin',     0.05, ...
+                    'rightMargin',    0.01, ...
                     'bottomMargin',   0.09, ...
                     'topMargin',      0.02);
 
@@ -327,6 +334,7 @@ function f = figureComponents(panelFormat, varargin)
             f.colorbar.axisLocation = 'out';
             f.colorbar.fontSize = 16;
             f.colorbar.fontAngle = 'Normal';
+            f.colorbar.fontColor = f.labelColor;
 
             f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                     'rowsNum', 1, ...

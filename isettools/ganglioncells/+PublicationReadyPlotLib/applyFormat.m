@@ -34,6 +34,7 @@ function applyFormat(ax,ff)
         set(ax.Colorbar, 'AxisLocation', ff.colorbar.axisLocation);
         set(ax.Colorbar, 'FontSize', ff.colorbar.fontSize);
         set(ax.Colorbar,'FontAngle', ff.colorbar.fontAngle);
+        set(ax.Colorbar,'Color', ff.colorbar.fontColor);
     end
 
     % Ticks, grids, box
