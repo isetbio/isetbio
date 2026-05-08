@@ -120,6 +120,39 @@ function f = figureComponents(panelFormat, varargin)
                     'bottomMargin',   0.09, ...
                     'topMargin',      0.02);
 
+        case '1.5x2 giant figure'
+
+            f.reductionFactor = 0.24;
+            f.figureSize = [2240 1408];
+
+            f.tickDir = 'in';
+
+            % left tall plot
+            f.subplotPosVectors(1,1).v(1) = 0.01;
+            f.subplotPosVectors(1,1).v(2) = 0.07;
+            f.subplotPosVectors(1,1).v(3) = 0.5;
+            f.subplotPosVectors(1,1).v(4) = 0.45;
+
+            f.subplotPosVectors(2,1).v(1) = 0.01;
+            f.subplotPosVectors(2,1).v(2) = 0.54;
+            f.subplotPosVectors(2,1).v(3) = 0.5;
+            f.subplotPosVectors(2,1).v(4) = 0.44;
+
+
+            % right top square plot 
+            f.subplotPosVectors(1,2).v(1) = 0.59;
+            f.subplotPosVectors(1,2).v(2) = 0.54;
+            f.subplotPosVectors(1,2).v(3) = 0.4;
+            f.subplotPosVectors(1,2).v(4) = 0.4;
+
+             % right botom square plot
+            f.subplotPosVectors(2,2).v(1) = 0.59;
+            f.subplotPosVectors(2,2).v(2) = 0.07;
+            f.subplotPosVectors(2,2).v(3) = 0.4;
+            f.subplotPosVectors(2,2).v(4) = 0.4;
+
+
+
         case '1x1 double width figure'
 
             f.reductionFactor = 0.24;
