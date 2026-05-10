@@ -141,13 +141,13 @@ function f = figureComponents(panelFormat, varargin)
 
             % right top square plot 
             f.subplotPosVectors(1,2).v(1) = 0.59;
-            f.subplotPosVectors(1,2).v(2) = 0.54;
+            f.subplotPosVectors(1,2).v(2) = 0.545;
             f.subplotPosVectors(1,2).v(3) = 0.4;
             f.subplotPosVectors(1,2).v(4) = 0.4;
 
              % right botom square plot
             f.subplotPosVectors(2,2).v(1) = 0.59;
-            f.subplotPosVectors(2,2).v(2) = 0.07;
+            f.subplotPosVectors(2,2).v(2) = 0.075;
             f.subplotPosVectors(2,2).v(3) = 0.4;
             f.subplotPosVectors(2,2).v(4) = 0.4;
 
