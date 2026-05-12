@@ -138,6 +138,7 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
     % Spectral window 
     win = generateWindow(N, options.window, options.beta, options.alpha);
 
+
     % Build two-sided FFT spectrum
     switch fmt
         case 'onesided'
@@ -223,8 +224,7 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
     theImpulseResponseFunction = real(ifft(upsampledSpectrum));
     
     if (options.causal)
-        [~, idx] = max(abs(theImpulseResponseFunction));
-        theImpulseResponseFunction = circshift(theImpulseResponseFunction, N_up/2 - idx + 1);
+        theImpulseResponseFunction = circshift(theImpulseResponseFunction, N_up/2 + 1);
     end
 
     if (options.normalize)

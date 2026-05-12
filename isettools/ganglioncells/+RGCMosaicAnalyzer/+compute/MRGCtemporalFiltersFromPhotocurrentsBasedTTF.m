@@ -10,16 +10,19 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     theTargetRGCindex, ...
     theMRGCMosaicTTFResponsesFullFileName, ...
     theAnalyzedTTFsFullFileName, ...
-    delayMsecondsForPhaseComputation, ...
     visualizeSinusoidalFits, ...
     onlyVisualizePreviouslySynthesizedFilters, varargin)
 
     p = inputParser;
-    p.addParameter('importSurroundTTFToBackOut', false, @islogical);
+    p.addParameter('importCenterTTFtoBackOut', false, @islogical);
+    p.addParameter('importSurroundTTFtoBackOut', false, @islogical);
+    p.addParameter('visualizeCenterSurroundContributions', true, @islogical);
+
     % Execute the parser
     p.parse(varargin{:});
-    importSurroundTTFToBackOut = p.Results.importSurroundTTFToBackOut;
-
+    importCenterTTFtoBackOut = p.Results.importCenterTTFtoBackOut;
+    importSurroundTTFtoBackOut = p.Results.importSurroundTTFtoBackOut;
+    visualizeCenterSurroundContributions = p.Results.visualizeCenterSurroundContributions;
 
      % Derive theInnerRetinaTTF based on the theTargetCascadedFilterTTF and thePhotocurrentBasedMRGCcellTTF
     switch (innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod)
@@ -27,17 +30,30 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
             theAnalyzedTTFsFullFileName = strrep(theAnalyzedTTFsFullFileName, '???', 'direct');
 
-            if ((importSurroundTTFToBackOut)&&(strcmp(stimulusShape, 'spot')))
-                 theAnnulusAnalyzedTTFsFullFileName = strrep(strrep(theAnalyzedTTFsFullFileName, 'spot', 'annulus'), 'cnt', 'srnd');
+            if ((importSurroundTTFtoBackOut)&&(strcmp(stimulusShape, 'spot')))
+                 theAnnulusAnalyzedTTFsFullFileName = strrep(strrep(theAnalyzedTTFsFullFileName, 'spot', 'annulus'), '_cnt_', '_srnd_');
           
-
                  % Read the theAnalyzedTTFsFullFileName for the annulus
                  d = load(theAnnulusAnalyzedTTFsFullFileName, 'innerRetinaFilterDataStruct');
                  assert(isfield(d.innerRetinaFilterDataStruct, 'surroundTTFtoBackOutInCenterTTFcomputation'), 'The ''annulus'' TTF must be analyzed before the ''spot'' TTF.');
                  importedSurroundTTFtoBackOut = d.innerRetinaFilterDataStruct.surroundTTFtoBackOutInCenterTTFcomputation;
             else
-                importedSurroundTTFtoBackOut = [];
+                 importedSurroundTTFtoBackOut = [];
             end
+
+
+            if ((importCenterTTFtoBackOut)&&(strcmp(stimulusShape, 'annulus')))
+                 theCenterAnalyzedTTFsFullFileName = strrep(strrep(theAnalyzedTTFsFullFileName, 'annulus', 'spot'), '_srnd_', '_cnt_');
+          
+                 % Read the theAnalyzedTTFsFullFileName for the annulus
+                 d = load(theCenterAnalyzedTTFsFullFileName, 'innerRetinaFilterDataStruct');
+                 assert(isfield(d.innerRetinaFilterDataStruct, 'centerTTFtoBackOutInCenterTTFcomputation'), 'The ''spot'' TTF must be analyzed before the ''annulus'' TTF.');
+                 importedCenterTTFtoBackOut = d.innerRetinaFilterDataStruct.centerTTFtoBackOutInSurroundTTFcomputation;
+            else
+                importedCenterTTFtoBackOut = [];
+            end
+
+
 
         case {'differenceOfLowPassFilters', 'dampedOscillationFilter', 'dampedOscillationLowPassCascadeFilter', 'delayLeadLagFilter', 'delayHighPassFilter'}
 
@@ -64,8 +80,9 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     end
 
 
+
     if (onlyVisualizePreviouslySynthesizedFilters)
-        visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName);
+        visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName, visualizeCenterSurroundContributions);
         return;
     end
 
@@ -98,33 +115,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     assert(theTargetRGCindex == computePhotocurrentResponsesOnlyForInputsToSingleRGCwithIndex, ...
         sprintf('Different targetRGCindex specified (%d)than what the one for which the TTFresponses were computed for (%d).\nThis will result in a TTF computed a stimulus not exactly centered on RGC %d\n', ...
         theTargetRGCindex, computePhotocurrentResponsesOnlyForInputsToSingleRGCwithIndex, theTargetRGCindex));
-   
-    % Compute the complex temporal transfer function (TTF) theTargetRGCindex
-    minimumDelaySecondsForEstimationOfBaseline = 800/1000;
-
-    % How to compute the phase of the complex TTF
-    if (isempty(delayMsecondsForPhaseComputation))
-        phaseComputationParams = [];
-    else
-        if ( ...
-                ( contains(targetCellImpulseResponseSource, 'ON') && contains(targetCellImpulseResponseSource, 'surround') ) || ...
-                ( contains(targetCellImpulseResponseSource, 'OFF') && contains(targetCellImpulseResponseSource, 'center')  ) ...
-           )
-            phaseDegsAtZeroHz = 180;
-        elseif( ...
-                ( contains(targetCellImpulseResponseSource, 'OFF') && contains(targetCellImpulseResponseSource, 'surround') ) || ...
-                ( contains(targetCellImpulseResponseSource, 'ON') && contains(targetCellImpulseResponseSource, 'center')  ) ...
-           )
-            phaseDegsAtZeroHz = 0;
-        else
-            error('Dont know how to interpted the targer cell data for phase computation: ''%s''.', targetCellImpulseResponseSource);
-        end
-
-        phaseComputationParams = struct(...
-            'delayMilliSeconds', delayMsecondsForPhaseComputation, ...
-            'phaseDegsAtZeroHz', phaseDegsAtZeroHz ...
-            );
-    end
 
 
     if (strcmp(stimParams.stimulusShape, 'annulus'))
@@ -142,7 +132,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             theMRGCMosaicTemporalSupportSecondsAllConditions, ...
             squeeze(theMRGCMosaicTTFresponsesAllConditions(:,:,theTargetRGCindex)), ...
             allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-            phaseComputationParams, ...
             visualizeSinusoidalFits, ...
             stimParams.stimulusShape, ...
             theColor, theSinudoidalFitColor);
@@ -155,7 +144,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             theMRGCMosaicTemporalSupportSecondsAllConditions, ...
             squeeze(theMRGCMosaicTTFresponsesAllConditionsCenterDeactivated(:,:,theTargetRGCindex)), ...
             allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-            phaseComputationParams, ...
             visualizeSinusoidalFits, ...
             stimParams.stimulusShape, ...
             theColor, theSinudoidalFitColor); 
@@ -171,7 +159,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             theMRGCMosaicTemporalSupportSecondsAllConditions, ...
             squeeze(theMRGCMosaicTTFresponsesAllConditionsSurroundDeactivated(:,:,theTargetRGCindex)), ...
             allowNonZeroBaselineInSineWaveFitsToResponseTimeSeries, ...
-            phaseComputationParams, ...
             visualizeSinusoidalFits, ...
             stimParams.stimulusShape, ...
             theColor, theSinudoidalFitColor); 
@@ -219,33 +206,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
     end
 
 
-    visualizeCenterSurroundContributions = true;
-    if (visualizeCenterSurroundContributions)
-        hFig = figure(888);
-        set(hFig, 'Name', stimulusShape)
-        subplot(1,3,1);
-        p1 = plot(temporalFrequencySupportHz, abs(thePhotocurrentBasedMRGCcellTTFnonNormalized), 'k-', 'LineWidth', 3); hold on
-        p2 = plot(temporalFrequencySupportHz, abs(thePhotocurrentBasedMRGCcellSurroundDeactivatedTTFnonNormalized), 'r-', 'LineWidth', 2);
-        p3 = plot(temporalFrequencySupportHz, abs(thePhotocurrentBasedMRGCcellCenterDeactivatedTTFnonNormalized), 'b-', 'LineWidth', 1);
-        legend([p1 p2 p3], {'center+surround', 'only center', 'only surround'});
-        title(sprintf('photocurrent responses to %s', stimulusShape));
-    
-        subplot(1,3,2);
-        p1 = plot(temporalFrequencySupportHz, abs(thePhotocurrentBasedMRGCcellTTFnonNormalized)/max(abs(thePhotocurrentBasedMRGCcellTTFnonNormalized(:))), 'k-', 'LineWidth', 3); hold on
-        p2 = plot(temporalFrequencySupportHz, abs(thePhotocurrentBasedMRGCcellSurroundDeactivatedTTFnonNormalized)/max(abs(thePhotocurrentBasedMRGCcellSurroundDeactivatedTTFnonNormalized(:))), 'r-', 'LineWidth', 2);
-        p3 = plot(temporalFrequencySupportHz, abs(thePhotocurrentBasedMRGCcellCenterDeactivatedTTFnonNormalized)/max(abs(abs(thePhotocurrentBasedMRGCcellCenterDeactivatedTTFnonNormalized(:)))), 'b-', 'LineWidth', 1);
-        legend([p1 p2 p3], {'center+surround', 'only center', 'only surround'});
-        title(sprintf('photocurrent responses to %s', stimulusShape));
-    
-        subplot(1,3,3);
-        plot(temporalFrequencySupportHz, abs(theTargetCascadedFilterTTF), 'k--');
-        legend(targetCellImpulseResponseSource)
-        pause
-    end
-
-
-
-
     % Normalize the TTFs to unit magnitude
     thePhotocurrentBasedMRGCcellTTF = thePhotocurrentBasedMRGCcellTTFnonNormalized / max(abs(thePhotocurrentBasedMRGCcellTTFnonNormalized(:)));
     theTargetCascadedFilterTTF = theTargetCascadedFilterTTF / max(abs(theTargetCascadedFilterTTF(:)));
@@ -258,11 +218,9 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         theTargetCascadedFilterImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
                     theTargetCascadedFilterTTF, temporalFrequencySupportHz);
 
-
+        
         thePhotocurrentBasedImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
                     thePhotocurrentBasedMRGCcellTTF, temporalFrequencySupportHz);
-
-
         assert(numel(theTargetCascadedFilterImpulseResponseData.temporalSupportSeconds) == numel(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds), ...
             'unequal temporal support lengths');
 
@@ -290,17 +248,19 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             theInnerRetinaTTF = directlyDeconvolve(theTargetCascadedFilterTTF, ...
                 thePhotocurrentBasedMRGCcellTTF, []);
            
-            % Next when the center is deactivated
+           
             if (computeMRGCMosaicResponsesAlsoWithCenterMechanismDeactivated)
-                % Only the surround mechanism is active
-                % Now thePhotocurrentBasedMRGCcellCenterDeactivatedTTFnonNormalized (center-deactivated)
-                % We employ the non-normalized TTF now
+                 % Only the surround mechanism is active
+                
                 theInnerRetinaTTFcenterDeactivated = directlyDeconvolve(theTargetCascadedFilterTTF, ...
                     thePhotocurrentBasedMRGCcellCenterDeactivatedTTFnonNormalized, []);
 
                 if (strcmp(stimParams.stimulusShape, 'annulus'))
                     % See Equation 5 of "VSS2026: Deriving the inner retinal filter TTFs for the center
                     %                             and the surround mechanism"
+                    % THIS IS WRONG. NEEDS UPDATING. Needs to be a
+                    % partially deconvolved version of the macaque TTF 
+                    % BUT BASED ON CONTRIBUTIONS, BETTER NOT TO DO IT.
                     exportedSurroundTTFtoBackOut =  thePhotocurrentBasedMRGCcellSurroundDeactivatedTTFnonNormalized .* theInnerRetinaTTFcenterDeactivated;
                 end
 
@@ -311,10 +271,12 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
             if (computeMRGCMosaicResponsesAlsoWithSurroundMechanismDeactivated)
                 % Only center mechanism is active
+
                 switch stimParams.stimulusShape
                     case 'annulus'
                         theInnerRetinaTTFsurroundDeactivated = directlyDeconvolve(theTargetCascadedFilterTTF, ...
                             thePhotocurrentBasedMRGCcellSurroundDeactivatedTTFnonNormalized, []);
+                        
                     case 'spot'
                          if (isempty(importedSurroundTTFtoBackOut))
                              theInnerRetinaTTFsurroundDeactivated = directlyDeconvolve(theTargetCascadedFilterTTF, ...
@@ -324,9 +286,11 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
                              theInnerRetinaTTFsurroundDeactivated = directlyDeconvolve(theTargetCascadedFilterTTF, ...
                                 thePhotocurrentBasedMRGCcellSurroundDeactivatedTTFnonNormalized, importedSurroundTTFtoBackOut);
                          end
+
                     otherwise
                         error('stimulusShape (''%s'') is incorect. Must be either ''annulus'' or ''spot''.', stimParams.stimulusShape)
                 end % switch
+
             else
                 theInnerRetinaTTFsurroundDeactivated = [];
             end
@@ -359,7 +323,6 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
 
             [theInnerRetinaTTF, modelParams] = RGCMosaicConstructor.temporalFilterEngine.deriveInnerRetinaFilterBetweenPhotocurrentBasedAndTargetTTF(...
                 temporalFrequencySupportHz, theTargetCascadedFilterTTF, thePhotocurrentBasedMRGCcellTTF, theIdealInnerRetinaTTF, ...
-                minimumDelaySecondsForEstimationOfBaseline, ...
                 frequencyWeights, temporalWeightingLimitsSeconds, ...
                 innerRetinaFilterDerivationParams.timeDomainResidualWeighting, ...
                 innerRetinaFilterDerivationParams.residualIsBasedOnTTFofCascadedPhotocurrentInnerRetinaFilter, ...
@@ -373,13 +336,16 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
             error('Unknown temporal filter synthesis method: ''%s''.', innerRetinaFilterDerivationParams.temporalFilterSynthesisMethod);
     end
 
-                    
+            
     % Compute the finite time inner retina filter
     [theInnerRetinaTTFwithFiniteTimeIR, theInnerRetinaFiniteTimeTemporalImpulseResponseData] = ...
         RGCMosaicConstructor.temporalFilterEngine.finiteTimeIRbasedTTF(...
             temporalFrequencySupportHz, ...
             theInnerRetinaTTF, ...
-            innerRetinaFilterDerivationParams.finiteTimeIRdurationSeconds);
+            innerRetinaFilterDerivationParams.finiteTimeIRdurationSeconds, ...
+            innerRetinaFilterDerivationParams.leftFiniteDurationWindowDurationSeconds, ...
+            innerRetinaFilterDerivationParams.rightFiniteDurationWindowDurationSeconds);
+
 
     fprintf('Saving derived inner retina filter TTF to %s\n', theAnalyzedTTFsFullFileName);
 
@@ -392,6 +358,8 @@ function MRGCtemporalFiltersFromPhotocurrentsBasedTTF(...
         'achievedTargetMRGCcellTTFwithFiniteTimeIR', thePhotocurrentBasedMRGCcellTTF .* theInnerRetinaTTFwithFiniteTimeIR, ...
         'photocurrentBasedTTF', thePhotocurrentBasedMRGCcellTTF, ...
         'photocurrentBasedTTFnonNormalized', thePhotocurrentBasedMRGCcellTTFnonNormalized, ...
+        'photocurrentBasedSurroundDeactivatedTTFnonNormalized', thePhotocurrentBasedMRGCcellSurroundDeactivatedTTFnonNormalized, ...
+        'photocurrentBasedCenterDeactivatedTTFnonNormalized', thePhotocurrentBasedMRGCcellCenterDeactivatedTTFnonNormalized, ...
         'derivedInnerRetinaFiniteTimeTemporalImpulseResponseData', theInnerRetinaFiniteTimeTemporalImpulseResponseData, ...
         'derivedInnerRetinaTTF', theInnerRetinaTTF, ...
         'derivedInnerRetinaTTFfiniteTimeIR', theInnerRetinaTTFwithFiniteTimeIR, ...
@@ -502,7 +470,11 @@ function theInnerRetinaTTF = directlyDeconvolve(theMacaqueTTF, thePhotocurrentBa
 end
 
 
-function visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName)
+function visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName, visualizeCenterSurroundContributions)
+
+    targetString = '_MRGCMosaic';
+    idx = strfind(theAnalyzedTTFsFullFileName, targetString);
+    theInnerRetinaFilterFiniteImpulseResponseFileName = sprintf('%s.mat',theAnalyzedTTFsFullFileName(1:idx-1));
 
     load(theAnalyzedTTFsFullFileName, ...
         'theMRGCMosaic', 'theTargetRGCindex', 'targetCellImpulseResponseSource',...
@@ -510,7 +482,24 @@ function visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName
         'innerRetinaFilterDerivationParams', ...
         'innerRetinaFilterDataStruct');
 
+
+    if (visualizeCenterSurroundContributions)
+        hFig = figure(888);
+        set(hFig, 'Name', stimParams.stimulusShape)
+        subplot(1,2,1);
+        p1 = plot(innerRetinaFilterDataStruct.temporalFrequencySupportHz, abs(innerRetinaFilterDataStruct.photocurrentBasedTTFnonNormalized), 'k-', 'LineWidth', 3); hold on
+        p2 = plot(innerRetinaFilterDataStruct.temporalFrequencySupportHz, abs(innerRetinaFilterDataStruct.photocurrentBasedSurroundDeactivatedTTFnonNormalized), 'r-', 'LineWidth', 2);
+        p3 = plot(innerRetinaFilterDataStruct.temporalFrequencySupportHz, abs(innerRetinaFilterDataStruct.photocurrentBasedCenterDeactivatedTTFnonNormalized), 'b-', 'LineWidth', 1);
+        legend([p1 p2 p3], {'center+surround', 'only center', 'only surround'});
+        title(sprintf('photocurrent responses to %s', stimParams.stimulusShape));
     
+        subplot(1,2,2);
+        plot(innerRetinaFilterDataStruct.temporalFrequencySupportHz, abs(innerRetinaFilterDataStruct.targetMacaqueTTF), 'k--');
+        legend(targetCellImpulseResponseSource)
+    end
+
+
+
     if (strcmp(stimParams.stimulusShape, 'annulus'))
         theColor = [50 110 180]/255;
     else
@@ -722,7 +711,7 @@ function visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName
 
 
 
-     % The IRs of the target and the achieved TTFs
+    % The IRs of the target and the achieved TTFs
     theTargetMacaqueIR = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
         innerRetinaFilterDataStruct.targetMacaqueTTF, ...
         innerRetinaFilterDataStruct.temporalFrequencySupportHz, ...
@@ -859,7 +848,6 @@ function visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName
         'includeOriginalMacaqueMeasurementsData', includeOriginalMacaqueMeasurementsData);
 
 
-
     % The impulse responses
     hFig = figure(71); clf;
     plotComboData(hFig, ...
@@ -883,6 +871,24 @@ function visualizeInnerRetinaFilterDerivationResults(theAnalyzedTTFsFullFileName
         'includeOriginalMacaqueMeasurementsData', includeOriginalMacaqueMeasurementsData);
 
 
+
+    % Trim data
+    idx = find(theDerivedInnerRetinaFiniteTimeImpulseResponseData.temporalSupportSeconds <= ...
+        innerRetinaFilterDerivationParams.finiteTimeIRdurationSeconds);
+    theDerivedInnerRetinaFiniteTimeImpulseResponseData.temporalSupportSeconds = ...
+        theDerivedInnerRetinaFiniteTimeImpulseResponseData.temporalSupportSeconds(idx);
+    theDerivedInnerRetinaFiniteTimeImpulseResponseData.amplitude = ...
+        theDerivedInnerRetinaFiniteTimeImpulseResponseData.amplitude(idx);
+    
+    figure(4444);
+    plot(theDerivedInnerRetinaFiniteTimeImpulseResponseData.temporalSupportSeconds, theDerivedInnerRetinaFiniteTimeImpulseResponseData.amplitude, 'ko-');
+
+    save(theInnerRetinaFilterFiniteImpulseResponseFileName, ...
+        'theDerivedInnerRetinaFiniteTimeImpulseResponseData' ...
+        );
+
+    fprintf('\n******** \nDerived inner retina filter for %s saved in %s\n*********\n', ...
+        stimParams.stimulusShape, theInnerRetinaFilterFiniteImpulseResponseFileName);
 end
 
 

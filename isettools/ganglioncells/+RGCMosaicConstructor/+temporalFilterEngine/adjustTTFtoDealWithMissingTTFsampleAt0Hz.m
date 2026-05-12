@@ -23,7 +23,12 @@ function [theTTF,  temporalFrequenciesExamined] = adjustTTFtoDealWithMissingTTFs
     end
 
     % Assume TTF(0) = norm(TTF(1))
+    theDCterm = norm(theTTF(1));
+
+    % Or assume TTF(0) = 0;
+    theDCterm = 0;
+
     temporalFrequenciesExamined = cat(2, 0, temporalFrequenciesExamined);
-    theTTF = cat(2, norm(theTTF(1)), theTTF);
+    theTTF = cat(2, theDCterm, theTTF);
 end
 
