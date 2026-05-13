@@ -22,7 +22,7 @@ function pHandle = spectrumPhasePlot(ax, temporalFrequencySupportHz, theTTF, the
 
     set(ax, 'XScale', 'log', 'XLim', [0.3 200], 'XTick', [0.1 0.3 1 3 10 30 100], 'YLim', [-7 0.5], 'YTick', -10:1:10);
 
-    set(ax, 'FontSize', 16);
+    set(ax, 'FontSize', 24);
     if (~noXLabel)
         xlabel(ax, 'frequency (Hz)')
     end

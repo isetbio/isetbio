@@ -19,7 +19,7 @@ function pHandle = spectrumMagnitudePlot(ax, temporalFrequencySupportHz, theTTF,
 
     set(ax, 'XScale', 'log', 'XLim', [0.3 200], 'XTick', [0.1 0.3 1 3 10 30 100]);
     set(ax, 'YScale', 'log', 'YLim', [0.001 1.0], 'YTick', [0.001 0.01 0.1 1], 'YTickLabel', {'.001' '.01', '.1', '1'})
-    set(ax, 'FontSize', 16);
+    set(ax, 'FontSize', 24);
     
     if (~noXLabel)
         xlabel(ax, 'frequency (Hz)')
