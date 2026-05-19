@@ -684,12 +684,18 @@ classdef cMosaic < handle
         end
         
         % Method to generate an ensemble of OIs for the mosaic
-        [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
+        [oiEnsemble, psfEnsemble, zCoeffs, oiSamplingGridDegs, mergingWeights] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
         
         % Method to compute the mosaic response
         [absorptionsCount, noisyAbsorptionInstances, ...
             photoCurrents, photoCurrentInstances, responseTemporalSupport]  = compute(obj, oi, varargin);
         
+        % Utility method to compute the cone mosaic responses to a variery
+        % of OIs over the scenes spatial extent, and then merge them into a
+        % single cone mosaic activation response. The mergin weights are
+        % computed by oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
+        mergedConeMosaicActivation = computeForOIensemble(obj, oiEnsemble, theMergingWeights, theScene);
+
         % Method for suggesting a minimal pixel size (in degrees) for the input scene
         % depending on the aperture size of the mosaic's cones and whether
         % the computation is done using ecc-dependent blur mode
