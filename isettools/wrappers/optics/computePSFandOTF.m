@@ -38,6 +38,10 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         zcoeffsMicrons(1:3) = 0;
     end
 
+    % Not translating the PSF anymore, instead we zero the first 3 Zernike coefficients (NPC, May 22, 2026)
+    translationVector = [0 0];
+
+
     %% Compute WVF
     theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelength, wavelengthsListToCompute, ...
             measPupilDiamMM, targetPupilDiamMM, umPerDegree, name, ...
