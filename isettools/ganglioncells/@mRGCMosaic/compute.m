@@ -3,19 +3,25 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
             theInputConeMosaicResponse, theInputConeMosaicResponseTemporalSupportSeconds, varargin)
 
     p = inputParser;
+    p.addParameter('withCenterSurroundTemporalFilters', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('nTrials', [], @isscalar);
-    p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
     p.addParameter('nonLinearitiesList', [], @(x)(isempty(x))||(iscell(x))||(isstruct(x)));
+    p.addParameter('computeResponsesOnlyForCellsWithIndices', [], @isnumeric);
+    p.addParameter('deactivatedCenter', false, @islogical);
+    p.addParameter('deactivatedSurround', false, @islogical);
     p.addParameter('flipLinearResponsePolarityForCellsWithIndices', [], @isnumeric);
     p.addParameter('seed', [], @isnumeric);
     p.addParameter('beVerbose', false, @islogical);
 
     % Parse input
     p.parse(varargin{:});
+    centerSurroundTemporalFilters = p.Results.withCenterSurroundTemporalFilters;
     mRGCMosaicNoisyResponseInstancesNum = p.Results.nTrials;
-    timeResolutionSeconds = p.Results.timeResolutionSeconds;
     nonLinearitiesList = p.Results.nonLinearitiesList;
+    deactivatedCenter = p.Results.deactivatedCenter;
+    deactivatedSurround = p.Results.deactivatedSurround;
     flipLinearResponsePolarityForCellsWithIndices = p.Results.flipLinearResponsePolarityForCellsWithIndices;
+    computeResponsesOnlyForCellsWithIndices = p.Results.computeResponsesOnlyForCellsWithIndices;
     noiseSeed = p.Results.seed;
     beVerbose = p.Results.beVerbose;
 
@@ -62,6 +68,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         inputTimeResolutionSeconds = 1.0;
     end
 
+
     % Find out the # of trials to compute
     inputConeMosaicResponseInstancesNum = size(theInputConeMosaicResponse,1);
     if (isempty(mRGCMosaicNoisyResponseInstancesNum))
@@ -82,40 +89,97 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
             theConeMosaicResponse = repmat(theInputConeMosaicResponse, [mRGCMosaicNoisyResponseInstancesNum 1 1]);
         end
     end
-    nTrials = mRGCMosaicNoisyResponseInstancesNum;
+
 
 
     inputTimePoints = numel(theInputConeMosaicResponseTemporalSupportSeconds);
-    if (isempty(timeResolutionSeconds))
-        timeResolutionSeconds = inputTimeResolutionSeconds;
-        responseTemporalSupportSeconds = theInputConeMosaicResponseTemporalSupportSeconds;
-    else
-        responseTemporalSupportSeconds = - inputTimeResolutionSeconds/2 + ...
-                                                (responseTemporalSupportSeconds(1)) : ...
-                                                timeResolutionSeconds : ...
-                                                (responseTemporalSupportSeconds(end)+inputTimeResolutionSeconds/2);
+
+    % If we have centerSurroundTemporalFilters, examine their time base and
+    % interpolate theInputConeMosaicResponse to match that of the filters
+
+    theInterpolatedInputConeMosaicTemporalSupportSeconds = [];
+    if (~isempty(centerSurroundTemporalFilters))
+        
+        % Validate inner retina temporal filter data
+        assert(isstruct(centerSurroundTemporalFilters), ...
+            '''centerSurroundTemporalFilters'' must be a struct');
+
+        assert(isfield(centerSurroundTemporalFilters, 'temporalSupportSeconds'), ...
+            '''centerSurroundTemporalFilters'' must have a ''temporalSupportSeconds'' field');
+
+        assert(isfield(centerSurroundTemporalFilters, 'centerImpulseResponseFunction'), ...
+            '''centerSurroundTemporalFilters'' must have a ''centerImpulseResponseFunction'' field');
+
+        assert(isfield(centerSurroundTemporalFilters, 'surroundImpulseResponseFunction'), ...
+            '''centerSurroundTemporalFilters'' must have a ''surroundImpulseResponseFunction'' field');
+
+        assert(numel(centerSurroundTemporalFilters.centerImpulseResponseFunction) == numel(centerSurroundTemporalFilters.temporalSupportSeconds), ...
+            '''centerSurroundTemporalFilters'' centerImpulseResponseFunction must have the same length as its temporal support');
+
+        assert(numel(centerSurroundTemporalFilters.surroundImpulseResponseFunction) == numel(centerSurroundTemporalFilters.temporalSupportSeconds), ...
+            '''centerSurroundTemporalFilters'' surroundImpulseResponseFunction must have the same length as its temporal support');
+        
+        % Ensure center and surround temporal filters have unit volume
+        theVolume = sum(abs(centerSurroundTemporalFilters.centerImpulseResponseFunction(:)));
+        centerSurroundTemporalFilters.centerImpulseResponseFunction = centerSurroundTemporalFilters.centerImpulseResponseFunction / theVolume;
+        theVolume = sum(abs(centerSurroundTemporalFilters.surroundImpulseResponseFunction(:)));
+        centerSurroundTemporalFilters.surroundImpulseResponseFunction = centerSurroundTemporalFilters.surroundImpulseResponseFunction / theVolume;
+
+        % New timebase for interpolated input responses
+        if (numel(theInputConeMosaicResponseTemporalSupportSeconds)>1)
+            dTinnerRetina = centerSurroundTemporalFilters.temporalSupportSeconds(2)-centerSurroundTemporalFilters.temporalSupportSeconds(1);
+            dtInput = theInputConeMosaicResponseTemporalSupportSeconds(2)-theInputConeMosaicResponseTemporalSupportSeconds(1);
+            if (abs(dTinnerRetina-dtInput)*1e3 > 10*eps)
+                fprintf('Will interpolate inputs to new time base with dT = %2.1f msec (from dT = %2.1f msec)\n', dTinnerRetina*1e3, dtInput*1e3);
+                theInterpolatedInputConeMosaicTemporalSupportSeconds = ...
+                    theInputConeMosaicResponseTemporalSupportSeconds(1):dTinnerRetina:theInputConeMosaicResponseTemporalSupportSeconds(end);
+            end
+        end
+
     end
 
-   
+
+    % Compute the output response temporal support
+    responseTemporalSupportSeconds = theInputConeMosaicResponseTemporalSupportSeconds;
+
+    dtRaw = [];
+    dtInterpolated = [];
+
+    if (~isempty(centerSurroundTemporalFilters))
+        if (~isempty(theInterpolatedInputConeMosaicTemporalSupportSeconds))
+           temporallyFilteredActivationsLength = numel(theInterpolatedInputConeMosaicTemporalSupportSeconds) + numel(centerSurroundTemporalFilters.temporalSupportSeconds)-1;
+           dtRaw = theInputConeMosaicResponseTemporalSupportSeconds(2)-theInputConeMosaicResponseTemporalSupportSeconds(1);
+           dtInterpolated = theInterpolatedInputConeMosaicTemporalSupportSeconds(2)-theInterpolatedInputConeMosaicTemporalSupportSeconds(1);
+           responseTemporalSupportSeconds = (0:1:(temporallyFilteredActivationsLength-1)) * dtInterpolated;
+        end
+    end
+    
+
     % Allocate memory for the computed responses
-    noiseFreeMRGCresponses = zeros(nTrials, numel(responseTemporalSupportSeconds), obj.rgcsNum);
-    noiseFreeLinearMRGCresponses = zeros(nTrials, numel(responseTemporalSupportSeconds), obj.rgcsNum);
-
-
-    % Delta function center impulse response with a length of 200 mseconds
-    theImpulseResponseTemporalSupport = 0:timeResolutionSeconds:0.2;
-    theRFcenterImpulseResponse = generateCenterTemporalImpulseResponse(theImpulseResponseTemporalSupport);
-    theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
+    noiseFreeMRGCresponses = zeros(mRGCMosaicNoisyResponseInstancesNum, numel(responseTemporalSupportSeconds), obj.rgcsNum);
+    noiseFreeLinearMRGCresponses = zeros(mRGCMosaicNoisyResponseInstancesNum, numel(responseTemporalSupportSeconds), obj.rgcsNum);
 
     % Compute the response of each mRGC
     parfor iRGC = 1:obj.rgcsNum
+
+        if (~isempty(computeResponsesOnlyForCellsWithIndices))
+            if (~ismember(iRGC, computeResponsesOnlyForCellsWithIndices))
+                fprintf('Skipping computation of mRGC #%d response.\n', iRGC);
+                continue;
+            end
+        end
+
         % Retrieve the center cone indices & weights
         centerConnectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
         centerConeIndices = find(centerConnectivityVector > mRGCMosaic.minCenterWeightForInclusionInComputing);
         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
         
+        if (deactivatedCenter)
+            centerConeWeights = 0*centerConeWeights;
+        end
+
         % Spatially pool the weighted cone responses to the RF center
-        centerSpatiallyIntegratedActivations = sum(bsxfun(@times, theInputConeMosaicResponse(1:nTrials,1:inputTimePoints,centerConeIndices), centerConeWeights),3);
+        centerSpatiallyIntegratedActivations = sum(bsxfun(@times, theInputConeMosaicResponse(:,1:inputTimePoints,centerConeIndices), centerConeWeights),3);
 
         if (~isempty(obj.rgcRFsurroundConeConnectivityMatrix))
             % Retrieve the surround cone indices & weights
@@ -123,30 +187,67 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
             surroundConeIndices = find(surroundConnectivityVector > mRGCMosaic.minSurroundWeightForInclusionInComputing);
             surroundConeWeights = reshape(surroundConnectivityVector(surroundConeIndices), [1 1 numel(surroundConeIndices)]);
 
+            if (deactivatedSurround)
+                surroundConeWeights = 0*surroundConeWeights;
+            end
+
             % Spatially pool the weighted cone responses to the RF surround
-            surroundSpatiallyIntegratedActivations = sum(bsxfun(@times, theInputConeMosaicResponse(1:nTrials,1:inputTimePoints, surroundConeIndices), surroundConeWeights),3);
+            surroundSpatiallyIntegratedActivations = sum(bsxfun(@times, theInputConeMosaicResponse(:,1:inputTimePoints, surroundConeIndices), surroundConeWeights),3);
         else
             surroundSpatiallyIntegratedActivations = centerSpatiallyIntegratedActivations * 0;
         end
 
-        if (numel(theInputConeMosaicResponseTemporalSupportSeconds)>1)
-            % Temporally filter the center responses
-            centerSpatiallyIntegratedActivations = temporalFilter(centerSpatiallyIntegratedActivations, ...
-                theInputConeMosaicResponseTemporalSupportSeconds, ...
-                responseTemporalSupportSeconds, ...
-                theRFcenterImpulseResponse);
-    
-            if (~isempty(obj.rgcRFsurroundConeConnectivityMatrix))
-                % Temporally filter the surround responses
-                surroundSpatiallyIntegratedActivations = temporalFilter(surroundSpatiallyIntegratedActivations, ...
-                    theInputConeMosaicResponseTemporalSupportSeconds, ...
-                    responseTemporalSupportSeconds, ...
-                    theRFsurroundImpulseResponse);
+
+        % Apply inner retina tempora filters to the spatially integrated
+        % center/surround responses
+        if (~isempty(centerSurroundTemporalFilters))
+
+            % Interpolate responses
+            if (~isempty(theInterpolatedInputConeMosaicTemporalSupportSeconds))
+                
+                nTrials = size(centerSpatiallyIntegratedActivations,1);
+                
+                temporallyFilteredActivationsLength = numel(theInterpolatedInputConeMosaicTemporalSupportSeconds) + numel(centerSurroundTemporalFilters.temporalSupportSeconds)-1;
+                centerSpatiallyIntegratedTemporallyFilteredActivations = zeros(nTrials, temporallyFilteredActivationsLength);
+                surroundSpatiallyIntegratedTemporallyFilteredActivations = zeros(nTrials, temporallyFilteredActivationsLength);
+
+                for iTrial = 1:nTrials
+
+                    centerSpatiallyIntegratedTemporallyFilteredActivations(iTrial,:) = applyTemporalFilter(...
+                        theInputConeMosaicResponseTemporalSupportSeconds, ...
+                        squeeze(centerSpatiallyIntegratedActivations(iTrial,:)), ...
+                        theInterpolatedInputConeMosaicTemporalSupportSeconds, ...
+                        centerSurroundTemporalFilters.centerImpulseResponseFunction, ...
+                        dtInterpolated/dtRaw);
+
+                    surroundSpatiallyIntegratedTemporallyFilteredActivations(iTrial,:) = applyTemporalFilter(...
+                        theInputConeMosaicResponseTemporalSupportSeconds, ...
+                        squeeze(surroundSpatiallyIntegratedActivations(iTrial,:)), ...
+                        theInterpolatedInputConeMosaicTemporalSupportSeconds, ...
+                        centerSurroundTemporalFilters.surroundImpulseResponseFunction, ...
+                        dtInterpolated/dtRaw);
+                end
+
+                % Replace unfiltered with filtered responses 
+                centerSpatiallyIntegratedActivations = centerSpatiallyIntegratedTemporallyFilteredActivations;
+                surroundSpatiallyIntegratedActivations =  surroundSpatiallyIntegratedTemporallyFilteredActivations;
+                
             end
         end
 
+
+
+
         % Composite response before any non-linearities are applied
-        noiseFreeLinearMRGCresponses(:,:,iRGC) = obj.responseGains(iRGC) * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
+        theNoiseFreeCompositeLinearResponse = obj.responseGains(iRGC) * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
+
+        % Flip composite response sign if so specified (simulating OFF mosaic)
+        if (~isempty(find(flipLinearResponsePolarityForCellsWithIndices == iRGC)))
+            theNoiseFreeCompositeLinearResponse = -theNoiseFreeCompositeLinearResponse;
+        end
+
+        noiseFreeLinearMRGCresponses(:,:,iRGC) = theNoiseFreeCompositeLinearResponse;
+
 
         % Apply any (center/surround) component response nonlinearities
         if (numel(nonLinearitiesList)>0)
@@ -255,66 +356,13 @@ function theNonLinearResponse = applyNonLinearity(theLinearResponse, nlParamsStr
 end
 
 
-function theResponses = temporalFilter(theInputResponses, ...
-                theInputResponsesTemporalSupportSeconds, ...
-                theOutputResponsesTemporalSupportSeconds, ...
-                theImpulseResponse)
+function theFilteredResponse = applyTemporalFilter(theResponseTemporalSupportSeconds, theResponse, ...
+              theInterpolatedResponseTemporalSupportSeconds, theFilterImpulseResponseFunction, ...
+              theScalingFactor)
 
-    [nTrials, nInputTimePoints] = size(theInputResponses);
-    nOutputPoints = numel(theOutputResponsesTemporalSupportSeconds);
-
-    % Allocate memory
-    theResponses = zeros(nTrials, nOutputPoints);
-    
-    % Scaling factor to account for difference in binwidth
-    theOutputResponseResolution = theOutputResponsesTemporalSupportSeconds(2)-theOutputResponsesTemporalSupportSeconds(1);
-    theInputResponseResolution = theInputResponsesTemporalSupportSeconds(2)-theInputResponsesTemporalSupportSeconds(1);
-    theScalingFactor = theOutputResponseResolution/theInputResponseResolution;
-
-
-    for iTrial = 1:nTrials
-        theInputResponse = theInputResponses(iTrial,:);
-
-        % Interpolation of input response to same timescale as the impulse
-        % response
-        theInterpolatedInputResponse = theScalingFactor * interp1(...
-            theInputResponsesTemporalSupportSeconds, ...
-            theInputResponse, ...
-            theOutputResponsesTemporalSupportSeconds, 'nearest', 'extrap');
-
-        % Temporal filter
-        theResponse = conv(theInterpolatedInputResponse, theImpulseResponse);
-
-        % Decimate to the # of output time points
-        theResponses(iTrial,:) = theResponse(1:nOutputPoints);
-
-        debugFilter = ~true;
-        if (debugFilter)
-            figure(1); clf;
-            
-            theImpulseResponseTemporalSupportSeconds = theOutputResponsesTemporalSupportSeconds(1) + (0:(numel(theImpulseResponse)-1))*theOutputResponseResolution;
-            plot(theInputResponsesTemporalSupportSeconds, theInputResponse, 'gs', 'MarkerSize', 20);
-            hold on;
-            plot(theOutputResponsesTemporalSupportSeconds, theInterpolatedInputResponse, 'k.-', 'MarkerSize', 12, 'MarkerFaceColor', [0 0 0]);
-            plot(theOutputResponsesTemporalSupportSeconds, theResponses(iTrial,:), 'b-');
-            plot(theImpulseResponseTemporalSupportSeconds, theImpulseResponse, 'r.', 'LineWidth', 1.5);
-            drawnow
-        end
-    end
-end
-
-
-function theImpulseResponse = generateCenterTemporalImpulseResponse(temporalSupport)
-    theImpulseResponse = zeros(1,numel(temporalSupport));
-    theImpulseResponse(1:1) = 1;
-    %theImpulseResponse(4:8) = -0.2;
-end
-
-function theImpulseResponse = generateSurroundTemporalImpulseResponse(temporalSupport)
-    % Just a delay for now
-    theImpulseResponse = zeros(1,numel(temporalSupport));
-    theImpulseResponse(1:1) = 1;
-
-    %theImpulseResponse(3+(1:2)) = 1;
-    %theImpulseResponse(3+(4:8)) = -0.2;
+    % Interpolate to desired timebase, but keep same volume
+    theResponse = interp1(theResponseTemporalSupportSeconds, theResponse, theInterpolatedResponseTemporalSupportSeconds);
+                    
+    % Filter center integrated response
+    theFilteredResponse = theScalingFactor * conv(theResponse, theFilterImpulseResponseFunction);
 end

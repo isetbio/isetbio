@@ -1,4 +1,10 @@
-function f = figureComponents(panelFormat)
+function f = figureComponents(panelFormat, varargin)
+
+    p = inputParser;
+    p.addParameter('darkScheme', false, @islogical);
+    % Execute the parser
+    p.parse(varargin{:});
+    darkScheme = p.Results.darkScheme;
 
     
     f.markerSize = 16;
@@ -23,12 +29,33 @@ function f = figureComponents(panelFormat)
     f.legendBackgroundColor = [0.9 0.9 0.9];
     f.legendEdgeColor = [0.3 0.3 0.3];
     f.legendLineWidth = 1.0;
-
+    f.labelColor = [0.1 0.1 0.1];
+    f.legendTextColor = [0.3 0.3 0.3];
+    
     f.axisTickAngle = 0;
     f.axisOffsetFactor = -0.03;
     f.tickDir = 'both';
     f.grid = 'on';
     f.box = 'off';
+
+    if (darkScheme)
+         theBackgroundColor = [33 40 42]/255;
+         theLighterBackgroundColor = [43 50 52]/255;
+         theLabelColor = [0.9 0.9 0.9];
+         f.backgroundColor = theLighterBackgroundColor;
+         f.titleColor = theLabelColor;
+         f.legendBackgroundColor = theBackgroundColor;
+         f.legendTextColor = theLabelColor;
+         f.axisColor = theLabelColor;
+         f.labelColor = theLabelColor;
+    end
+
+    f.colorbar.location = 'NorthOutside';
+    f.colorbar.orientation = 'horizontal';
+    f.colorbar.axisLocation = 'out';
+    f.colorbar.fontSize = f.legendFontSize;
+    f.colorbar.fontAngle = 'Normal';
+    f.colorbar.fontColor = f.labelColor;
 
 
     switch (panelFormat)
@@ -81,17 +108,50 @@ function f = figureComponents(panelFormat)
         case '1x2 giant figure'
 
             f.reductionFactor = 0.24;
-            f.figureSize = [1800 900];
+            f.figureSize = [1792 896];
 
             f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                     'rowsNum', 1, ...
                     'colsNum', 2, ...
                     'heightMargin',  0.1, ...
                     'widthMargin',    0.05, ...
-                    'leftMargin',     0.11, ...
-                    'rightMargin',    0.04, ...
+                    'leftMargin',     0.05, ...
+                    'rightMargin',    0.01, ...
                     'bottomMargin',   0.09, ...
                     'topMargin',      0.02);
+
+        case '1.5x2 giant figure'
+
+            f.reductionFactor = 0.24;
+            f.figureSize = [2240 1408];
+
+            f.tickDir = 'in';
+
+            % left tall plot
+            f.subplotPosVectors(1,1).v(1) = 0.01;
+            f.subplotPosVectors(1,1).v(2) = 0.07;
+            f.subplotPosVectors(1,1).v(3) = 0.5;
+            f.subplotPosVectors(1,1).v(4) = 0.45;
+
+            f.subplotPosVectors(2,1).v(1) = 0.01;
+            f.subplotPosVectors(2,1).v(2) = 0.54;
+            f.subplotPosVectors(2,1).v(3) = 0.5;
+            f.subplotPosVectors(2,1).v(4) = 0.44;
+
+
+            % right top square plot 
+            f.subplotPosVectors(1,2).v(1) = 0.59;
+            f.subplotPosVectors(1,2).v(2) = 0.545;
+            f.subplotPosVectors(1,2).v(3) = 0.4;
+            f.subplotPosVectors(1,2).v(4) = 0.4;
+
+             % right botom square plot
+            f.subplotPosVectors(2,2).v(1) = 0.59;
+            f.subplotPosVectors(2,2).v(2) = 0.075;
+            f.subplotPosVectors(2,2).v(3) = 0.4;
+            f.subplotPosVectors(2,2).v(4) = 0.4;
+
+
 
         case '1x1 double width figure'
 
@@ -156,6 +216,20 @@ function f = figureComponents(panelFormat)
                     'topMargin',      0.02);
 
         
+        case '1x1 standard tall2 figure'
+
+            f.reductionFactor = 0.24;
+            f.figureSize = [800 900];
+
+            f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                    'rowsNum', 1, ...
+                    'colsNum', 1, ...
+                    'heightMargin',  0.00, ...
+                    'widthMargin',    0.00, ...
+                    'leftMargin',     0.15, ...
+                    'rightMargin',    0.03, ...
+                    'bottomMargin',   0.11, ...
+                    'topMargin',      0.02);
 
         case '1x1 standard very wide figure'
 
@@ -167,9 +241,9 @@ function f = figureComponents(panelFormat)
                     'colsNum', 1, ...
                     'heightMargin',  0.00, ...
                     'widthMargin',    0.00, ...
-                    'leftMargin',     0.15, ...
+                    'leftMargin',     0.1, ...
                     'rightMargin',    0.03, ...
-                    'bottomMargin',   0.09, ...
+                    'bottomMargin',   0.125, ...
                     'topMargin',      0.02);
 
         case '1x1 standard very tall figure'
@@ -261,8 +335,57 @@ function f = figureComponents(panelFormat)
                     'colsNum', 1, ...
                     'heightMargin',  0.05, ...
                     'widthMargin',    0.00, ...
-                    'leftMargin',     0.1, ...
-                    'rightMargin',    0.02, ...
+                    'leftMargin',     0.05, ...
+                    'rightMargin',    0.01, ...
+                    'bottomMargin',   0.09, ...
+                    'topMargin',      0.03);
+
+        case '1x1 giant rectangular-wide2 mosaic'
+           
+            f.reductionFactor = 0.24;
+            f.figureSize = [1880 1030];
+            f.tickDir = 'in';
+
+            f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                    'rowsNum', 1, ...
+                    'colsNum', 1, ...
+                    'heightMargin',  0.05, ...
+                    'widthMargin',    0.00, ...
+                    'leftMargin',     0.025, ...
+                    'rightMargin',    0.005, ...
+                    'bottomMargin',   0.09, ...
+                    'topMargin',      0.03);
+
+
+        case '1x1 giant rectangular-double wide mosaic'
+           
+            f.reductionFactor = 0.24;
+            f.figureSize = [2500 900];
+            f.tickDir = 'in';
+
+            f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                    'rowsNum', 1, ...
+                    'colsNum', 1, ...
+                    'heightMargin',  0.05, ...
+                    'widthMargin',    0.00, ...
+                    'leftMargin',     0.025, ...
+                    'rightMargin',    0.005, ...
+                    'bottomMargin',   0.09, ...
+                    'topMargin',      0.03);
+
+        case '1x1 giant rectangular-double wide, double height mosaic'
+           
+            f.reductionFactor = 0.24;
+            f.figureSize = [2500 1550];
+            f.tickDir = 'in';
+
+            f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                    'rowsNum', 1, ...
+                    'colsNum', 1, ...
+                    'heightMargin',  0.05, ...
+                    'widthMargin',    0.00, ...
+                    'leftMargin',     0.025, ...
+                    'rightMargin',    0.005, ...
                     'bottomMargin',   0.09, ...
                     'topMargin',      0.03);
 
@@ -291,6 +414,7 @@ function f = figureComponents(panelFormat)
             f.colorbar.axisLocation = 'out';
             f.colorbar.fontSize = 16;
             f.colorbar.fontAngle = 'Normal';
+            f.colorbar.fontColor = f.labelColor;
 
             f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                     'rowsNum', 1, ...

@@ -2,7 +2,7 @@ function visualizeScene(scene, varargin)
     p = inputParser;
     p.addParameter('presentationDisplay', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('displayContrastProfiles', false, @islogical);
-    p.addParameter('displayRadianceMaps', true, @islogical);
+    p.addParameter('displayRadianceMaps', ~true, @islogical);
     p.addParameter('spatialSupportInDegs', false, @islogical);
     p.addParameter('avoidAutomaticRGBscaling', false, @islogical);
     p.addParameter('showSRGBimages', true, @islogical);

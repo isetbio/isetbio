@@ -2,19 +2,33 @@
 % RGCMosaicConstructor.temporalFilterEngine.spectrumPhasePlot
 %
 
-function spectrumPhasePlot(ax, temporalFrequencySupportHz, theTTF, theMarker, noXLabel, noYLabel, theColor, theLabel)
+function pHandle = spectrumPhasePlot(ax, temporalFrequencySupportHz, theTTF, theMarker, noXLabel, noYLabel, theColor, theAlpha, theLabel)
 
-    plot(ax, temporalFrequencySupportHz, unwrap(angle(theTTF))/pi*180, theMarker, ...
-        'Color', theColor, 'LineWidth', 1.5, 'MarkerEdgeColor', theColor, 'MarkerFaceColor', 0.5*theColor + 0.5*[1 1 1]);
-    set(ax, 'XScale', 'log', 'XLim', [0.3 300], 'XTick', [0.1 0.3 1 3 10 30 100]);
+    theUnwrappedPhaseRadians = unwrap(angle(theTTF));
 
-    set(ax, 'FontSize', 16);
+    while (theUnwrappedPhaseRadians(1) > 0.5*pi)
+        theUnwrappedPhaseRadians = theUnwrappedPhaseRadians - 2*pi;
+    end
+
+    if (strcmp(theMarker, '-'))
+         pHandle = plot(ax, temporalFrequencySupportHz, theUnwrappedPhaseRadians/pi, '-', ...
+             'Color', theColor, 'LineWidth', 1.5);
+    else
+        pHandle = scatter(ax, temporalFrequencySupportHz, theUnwrappedPhaseRadians/pi, 16*16, ...
+             'Marker', theMarker, 'Color', theColor, 'LineWidth', 1.5, 'MarkerEdgeColor', [1 1 1], ...
+             'MarkerFaceColor', theColor, 'MarkerFaceAlpha', theAlpha, 'MarkerEdgeAlpha', 0.5);
+    end
+
+
+    set(ax, 'XScale', 'log', 'XLim', [0.3 200], 'XTick', [0.1 0.3 1 3 10 30 100], 'YLim', [-7 0.5], 'YTick', -10:1:10);
+
+    set(ax, 'FontSize', 24);
     if (~noXLabel)
         xlabel(ax, 'frequency (Hz)')
     end
 
      if (~noYLabel)
-        ylabel(ax, 'phase (degs)')
+        ylabel(ax, 'phase (pi radians)')
      end
     
     if (~isempty(theLabel))

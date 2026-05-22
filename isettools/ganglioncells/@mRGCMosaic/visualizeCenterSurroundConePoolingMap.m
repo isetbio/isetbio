@@ -7,9 +7,19 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     p.addParameter('minConeWeightForVisualizingRFcenterPooling', 0.01, @isscalar);
     p.addParameter('minConeWeightForVisualizingRFsurroundPooling', 0.001, @isscalar);
     p.addParameter('minSurroundConeWeightRelativity', 'center', @(x)(ismember(x, {'center', 'surround'})));
+    p.addParameter('identifiedConeAperture', 'lightCollectingArea4sigma');
+    p.addParameter('identifyPooledCones', true, @islogical);
+    p.addParameter('identifyInputCones', true, @islogical);
+
+    p.addParameter('plottedRFoutlineLineWidth', 1.5, @isscalar);
+    p.addParameter('plottedRFoutlineEdgeColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('plottedRFoutlineFaceColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('plottedRFoutlineFaceAlpha', 1.0, @isscalar);
+    p.addParameter('inputConesAlpha', 1.0, @isscalar);
     p.addParameter('spatialSupportCenterDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('spatialSupportTickSeparationArcMin', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('withLineWeightingFunctions', false, @islogical);
+    p.addParameter('spatialSupportSamplesNumForLineWeightingFunctions', 300, @isscalar);
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('domainVisualizationLimits', [], @(x)(isempty(x)||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
@@ -40,6 +50,16 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
     minConeWeightForVisualizingRFsurroundPooling = p.Results.minConeWeightForVisualizingRFsurroundPooling;
     minSurroundConeWeightRelativity = p.Results.minSurroundConeWeightRelativity;
 
+    identifiedConeAperture = p.Results.identifiedConeAperture;
+    identifyPooledCones = p.Results.identifyPooledCones;
+    identifyInputCones = p.Results.identifyInputCones;
+
+    plottedRFoutlineLineWidth = p.Results.plottedRFoutlineLineWidth;
+    plottedRFoutlineEdgeColor = p.Results.plottedRFoutlineEdgeColor;
+    plottedRFoutlineFaceColor = p.Results.plottedRFoutlineFaceColor;
+    plottedRFoutlineFaceAlpha= p.Results.plottedRFoutlineFaceAlpha;
+    inputConesAlpha = p.Results.inputConesAlpha;
+
     spatialSupportCenterDegs = p.Results.spatialSupportCenterDegs;
     spatialSupportTickSeparationArcMin = p.Results.spatialSupportTickSeparationArcMin;
 
@@ -52,6 +72,8 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
 
     backgroundColor = p.Results.backgroundColor;
     plotLineWeightingFunctions = p.Results.withLineWeightingFunctions;
+    spatialSupportSamplesNumForLineWeightingFunctions = p.Results.spatialSupportSamplesNumForLineWeightingFunctions;
+
     gridless = p.Results.gridless;
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
@@ -162,6 +184,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
         1.0, spatialSupportCenterDegs, spatialSupportTickSeparationArcMin, ...
         scaleBarDegs, gridless, noXLabel, noYLabel, ...
         'computeLineWeightingFunctionsAndReturn', true, ...
+        'spatialSupportSamplesNum', spatialSupportSamplesNumForLineWeightingFunctions, ...
         'doNotLabelScaleBar', doNotLabelScaleBar);
 
     % Center line weighting functions  (using all cones, not just those above minConeWeightForVisualizingRFcenterPooling)
@@ -172,6 +195,7 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
         1.0, spatialSupportCenterDegs, spatialSupportTickSeparationArcMin, ...
         scaleBarDegs, gridless, noXLabel, noYLabel, ...
         'computeLineWeightingFunctionsAndReturn', true, ...
+        'spatialSupportSamplesNum', spatialSupportSamplesNumForLineWeightingFunctions, ...
         'doNotLabelScaleBar', doNotLabelScaleBar);
 
 
@@ -303,11 +327,9 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
         %PSFvisualizationOffset = [0 0]; % [mean(domainVisualizationLimits(1:2)) mean(domainVisualizationLimits(3:4))]obj.rgcRFpositionsDegs(theRGCindex,:) - [mean(domainVisualizationLimits(1:2)) mean(domainVisualizationLimits(3:4))] - obj.eccentricityDegs;
         visualizedPSFData.data = RGCMosaicAnalyzer.compute.vLambdaWeightedPSF(theSuperimposedPSF);
         visualizedPSFData.supportXdegs = theSuperimposedPSF.supportX/60 - PSFvisualizationOffset(1);
-        visualizedPSFData.supportYdegs = theSuperimposedPSF.supportY/60 - PSFvisualizationOffset(2);
-        plottedRFoutlineLineWidth = 1.5;
+        visualizedPSFData.supportYdegs = theSuperimposedPSF.supportY/60 - PSFvisualizationOffset(2);   
     else
         visualizedPSFData = [];
-        plottedRFoutlineLineWidth = 1.5;
     end
 
 
@@ -318,12 +340,14 @@ function [hFig, ax, centerLineWeightingFunctions, surroundLineWeightingFunctions
         'visualizedRGCindices', theRGCindex, ...
         'pooledConesLineWidth', [], ...
         'plottedRFoutlineLineWidth', plottedRFoutlineLineWidth, ...
-        'plottedRFoutlineFaceAlpha', 0.5, ...
-        'identifyPooledCones', true, ...
-        'identifyInputCones', true, ...
-        'inputConesAlpha', 1.0, ...
+        'plottedRFoutlineEdgeColor', plottedRFoutlineEdgeColor, ...
+        'plottedRFoutlineFaceColor', plottedRFoutlineFaceColor, ...
+        'plottedRFoutlineFaceAlpha', plottedRFoutlineFaceAlpha, ...
+        'identifyPooledCones', identifyPooledCones, ...
+        'identifyInputCones', identifyInputCones, ...
+        'inputConesAlpha', inputConesAlpha, ...
         'identifiedConeApertureThetaSamples', 40, ...
-        'identifiedConeAperture', 'lightCollectingArea4sigma', ...
+        'identifiedConeAperture', identifiedConeAperture, ...
         'identifiedInputConeIndices', identifiedInputConeIndices, ...                 % which cones to identity with their type
         'identifiedInputConeIndicesContour', true, ...
         'minConeWeightVisualized', minConeWeightForVisualizingRFcenterPooling, ...    % where to draw the center profile

@@ -3,7 +3,7 @@
 %
 
 function [theTTF,  temporalFrequenciesExamined] = adjustTTFtoDealWithMissingTTFsampleAt0Hz(...
-    theTTF,  temporalFrequenciesExamined, minimumDelaySecondsForEstimationOfBaseline)
+    theTTF,  temporalFrequenciesExamined)
 
     if (temporalFrequenciesExamined(1) == 0)
         fprintf(2, 'There is a 0 Hz point in the temporal frequency support. No adjustment of TTF is needed. \n');
@@ -23,22 +23,12 @@ function [theTTF,  temporalFrequenciesExamined] = adjustTTFtoDealWithMissingTTFs
     end
 
     % Assume TTF(0) = norm(TTF(1))
+    theDCterm = norm(theTTF(1));
+
+    % Or assume TTF(0) = 0;
+    theDCterm = 0;
+
     temporalFrequenciesExamined = cat(2, 0, temporalFrequenciesExamined);
-    theTTF = cat(2, norm(theTTF(1)), theTTF);
-
-
-    % This introduces a DC term. Estimate it from the impulse response
-    thePhotocurrentBasedImpulseResponseData = RGCMosaicConstructor.temporalFilterEngine.sampledTTFtoTemporalImpulseFunction(...
-                theTTF , temporalFrequenciesExamined, ...
-                'window', 'hamming', ...
-                'causal', false);
-
-    % We estimate the baseline from time bins > 0.8 minimumDelaySecondsForEstimationOfBaselin
-    idx = find(abs(thePhotocurrentBasedImpulseResponseData.temporalSupportSeconds)>=minimumDelaySecondsForEstimationOfBaseline);
-    baselineOffset = mean(thePhotocurrentBasedImpulseResponseData.amplitude(idx));
-
-    % Correction for the thePhotocurrentBasedMRGCcellTTF(1) 
-    dcCorrection = baselineOffset * numel(theTTF)*2;
-    theTTF(1) = theTTF(1) - dcCorrection;
+    theTTF = cat(2, theDCterm, theTTF);
 end
 

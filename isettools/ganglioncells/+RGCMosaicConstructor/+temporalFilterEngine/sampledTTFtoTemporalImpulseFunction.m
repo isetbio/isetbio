@@ -88,7 +88,7 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
     theTTF = theTTF(:);
     theFrequencySupportHz = theFrequencySupportHz(:);
     M = length(theTTF);
-    assert(length(theFrequencySupportHz)==M,'theTTF and theFrequencySupportHz must have the same length.');
+    assert(length(theFrequencySupportHz)==M, 'TheTTF and theFrequencySupportHz have different lengths (%d vs %d).', length(theFrequencySupportHz), M);
 
     % Data format
     fmt = options.format;
@@ -101,6 +101,7 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
             fmt = 'twosided';
         end
     end
+
 
     % Sample rate
     switch fmt
@@ -137,6 +138,7 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
     % Spectral window 
     win = generateWindow(N, options.window, options.beta, options.alpha);
 
+
     % Build two-sided FFT spectrum
     switch fmt
         case 'onesided'
@@ -167,13 +169,14 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
 
     if (options.plot)
         figure(33)
-        subplot(2,1,1);
+        subplot(1,2,1);
         plot(f_std, abs(theTTF_std), 'ko');
 
-        subplot(2,1,2)
+        subplot(1,2,2)
         plot(abs(theTTF_herm), 'ko');
         hold on;
-        plot(win, 'k-')
+        plot(win, 'r-')
+        legend({'herm', 'win'})
         pause
     end
 
@@ -212,61 +215,34 @@ function theImpulseResponseFunctionStruct = sampledTTFtoTemporalImpulseFunction(
         h_interp  = h_interp(1:N_up);        % trim to exact length
         upsampledSpectrum = fft(h_interp);
     else
-        upsampledSpectrum      = windowedSpectrum;                   % no upsampling
+        upsampledSpectrum = windowedSpectrum;                   % no upsampling
         N_up  = N;
-        fs_up = fs;
+        fs_up = samplingFrequency;
     end
 
     % IFFT -> impulse response at upsampled rate 
     theImpulseResponseFunction = real(ifft(upsampledSpectrum));
     
-    if (~options.causal)
-        [~, idx] = max(abs(theImpulseResponseFunction));
-        theImpulseResponseFunction = circshift(theImpulseResponseFunction, N_up/2 - idx + 1);
+    if (options.causal)
+        theImpulseResponseFunction = circshift(theImpulseResponseFunction, N_up/2 + 1);
     end
 
     if (options.normalize)
         theImpulseResponseFunction = theImpulseResponseFunction / max(abs(theImpulseResponseFunction));
     end
+
     
-    if (options.causal)
+    if (~options.causal)
         temporalSupportSeconds = (0:N_up-1)' / fs_up;
     else
         temporalSupportSeconds = (-N_up/2 : N_up/2-1)' / fs_up;
     end
 
-    % ZEROPAD: time-domain zero-padding -> finer frequency axis
-    % This operates on the NATIVE (pre-upsample) impulse response for
-    % spectral inspection; does not affect output.
-    
-    h_native_zp = real(ifft(windowedSpectrum));        % native rate, for zeropad branch
-    if (~options.causal)
-        [~, idx]    = max(abs(h_native_zp));
-        h_native_zp = circshift(h_native_zp, N/2 - idx + 1);
-    end
-
-    N_pad   = N * options.zeropad;
-    df_hi   = samplingFrequency / N_pad;
-
-    if (options.zeropad) > 1
-        if (options.causal)
-            n_zeros  = N * (options.zeropad - 1);
-            h_pad    = [h_native_zp(1:N/2); zeros(n_zeros,1); h_native_zp(N/2+1:end)];
-        else
-            h_pad    = [h_native_zp; zeros(N*(options.zeropad-1), 1)];
-        end
-        theTTF_hires  = fft(h_pad);
-        f_hires  = (0 : N_pad/2)' * df_hi;
-        theTTF_hires  = theTTF_hires(1:N_pad/2+1);
-    else
-        theTTF_hires  = theTTF_herm(1:N/2+1);
-        f_hires  = (0:N/2)' * df;
-        df_hi    = df;
-    end
 
     % Trim
     theImpulseResponseEnvelope = abs(hilbert(theImpulseResponseFunction));
     [pk, ip] = max(theImpulseResponseEnvelope);
+
 
     if (options.trim)
         mask = theImpulseResponseEnvelope >= options.trim_thr * pk;

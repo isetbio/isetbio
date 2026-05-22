@@ -17,10 +17,15 @@ function applyFormat(ax,ff)
     % Legend
     set(ax.Legend, 'BackgroundAlpha', ff.legendBackgroundAlpha);
     set(ax.Legend, 'Color', ff.legendBackgroundColor);
+    set(ax.Legend, 'TextColor', ff.legendTextColor);
     set(ax.Legend, 'EdgeColor', ff.legendEdgeColor);
     set(ax.Legend, 'LineWidth', ff.legendLineWidth);
     set(ax.Legend, 'FontSize', ff.legendFontSize);
     set(ax.Legend, 'Box', ff.legendBox);
+
+    % Axes labels
+    ax.XLabel.Color = ff.labelColor;
+    ax.YLabel.Color = ff.labelColor;
 
     % Colorbar
     if (isfield(ff, 'colorbar'))
@@ -29,6 +34,7 @@ function applyFormat(ax,ff)
         set(ax.Colorbar, 'AxisLocation', ff.colorbar.axisLocation);
         set(ax.Colorbar, 'FontSize', ff.colorbar.fontSize);
         set(ax.Colorbar,'FontAngle', ff.colorbar.fontAngle);
+        set(ax.Colorbar,'Color', ff.colorbar.fontColor);
     end
 
     % Ticks, grids, box
@@ -37,6 +43,14 @@ function applyFormat(ax,ff)
     grid(ax, ff.grid);
     set(ax, 'box', ff.box);
     
+
+    try
+        hFig = ancestor(ax, 'figure');
+        set(hFig, 'Color', ff.backgroundColor)
+    catch
+        fprintf('PublicationReadeyPlotLib.applyFormat(): Unable to retrieve the parent figure handle from passed axes\n');
+    end
+
 
     drawnow;
 end
