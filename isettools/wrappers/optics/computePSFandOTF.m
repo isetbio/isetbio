@@ -28,6 +28,16 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     noLCA = p.Results.noLCA;
     name = p.Results.name;
     
+
+    % If we are zero-centering the PSF, zero the first 3 Zernike coeffs.
+    if (~doNotZeroCenterPSF)
+        % Zero the first 3 Zernike coefficients: 
+        % piston (1), 
+        % vertical tilt (2), and 
+        % horizontal tilt (3)
+        zcoeffsMicrons(1:3) = 0;
+    end
+
     %% Compute WVF
     theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelength, wavelengthsListToCompute, ...
             measPupilDiamMM, targetPupilDiamMM, umPerDegree, name, ...
@@ -42,28 +52,6 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     [xSfGridCyclesDegGrid,ySfGridCyclesDegGrid] = meshgrid(xSfCyclesDeg, ySfCyclesDeg);
     
 
-    if (doNotZeroCenterPSF)
-        translationVector = [0 0];
-    else
-        if (~isempty(measWavelength))
-            % Retrieve OTF closest to the measurement wavelength]
-            theWavelengthSupport = wvfGet(theWVF, 'wave');
-            [~,idx] = min(abs(theWavelengthSupport-measWavelength));
-
-            % 04/02/24, DHB: Remove ifftshift to match change to wvfGet (where
-            % the ifftshift went back in)
-            theCenteringOTF = wvfGet(theWVF, 'otf', theWavelengthSupport(idx));
-            theCenteringPSF = wvfGet(theWVF, 'psf', theWavelengthSupport(idx));
-            translationVector = []; showTranslation = false;
-            [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
-                theCenteringOTF, theCenteringPSF, ...
-                translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, ...
-                showTranslation);
-        else
-            translationVector = [0 0];
-        end
-    end
-    
     for wIndex = 1:numel(wavelengthsListToCompute)
         % 04/02/24, DHB: Remove ifftshift to match change to wvfGet (where
         % the ifftshift went back in)
