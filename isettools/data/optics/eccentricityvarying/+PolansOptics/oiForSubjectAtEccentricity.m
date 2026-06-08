@@ -13,6 +13,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('wavefrontSpatialSamples', 801, @isscalar)
     p.addParameter('subtractCentralRefraction', true, @islogical);
     p.addParameter('zeroCenterPSF', false, @islogical);
+    p.addParameter('withZeroedPistonAndTiltZernikeCoefficients', false, @islogical);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
     p.addParameter('noLCA', false, @islogical);
@@ -31,6 +32,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
     zeroCenterPSF = p.Results.zeroCenterPSF;
+    withZeroedPistonAndTiltZernikeCoefficients = p.Results.withZeroedPistonAndTiltZernikeCoefficients;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     upsampleFactor = p.Results.upsampleFactor;
     noLCA = p.Results.noLCA;
@@ -61,6 +63,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
              measurementPupilDiameterMM, ...
              pupilDiamMM, inFocusWavelength, false, ...
              'doNotZeroCenterPSF', ~zeroCenterPSF, ...
+             'withZeroedPistonAndTiltZernikeCoefficients', withZeroedPistonAndTiltZernikeCoefficients, ...
              'micronsPerDegree', micronsPerDegree, ...
              'flipPSFUpsideDown', flipPSFUpsideDown, ...
              'upsampleFactor', upsampleFactor, ...

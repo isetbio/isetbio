@@ -13,6 +13,7 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
 
     p = inputParser;
     p.addParameter('doNotZeroCenterPSF', false, @islogical);
+    p.addParameter('withZeroedPistonAndTiltZernikeCoefficients', false, @islogical);
     p.addParameter('micronsPerDegree', 300, @isscalar);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('rotatePSF90degs', false, @islogical);
@@ -20,6 +21,7 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     p.addParameter('noLCA',false,@islogical);  % This should become human lca
     p.addParameter('name', 'noname', @ischar);
     p.parse(varargin{:});
+    withZeroedPistonAndTiltZernikeCoefficients = p.Results.withZeroedPistonAndTiltZernikeCoefficients;
     doNotZeroCenterPSF = p.Results.doNotZeroCenterPSF;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     rotatePSF90degs = p.Results.rotatePSF90degs;
@@ -28,6 +30,34 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     noLCA = p.Results.noLCA;
     name = p.Results.name;
     
+
+    % Zero the first 3 Zernike coeffs, and set the  doNotZeroCenterPSF to false
+    if (withZeroedPistonAndTiltZernikeCoefficients)
+        % Zero the first 3 Zernike coefficients: 
+        % piston (1), 
+        % vertical tilt (2), and 
+        % horizontal tilt (3)
+        zcoeffsMicrons(1:3) = 0;
+        if (doNotZeroCenterPSF)
+            % User has passed ''doNotZeroCenterPSF'' = true, and
+            % ''withZeroedPistonAndTiltZernikeCoefficients'' = true
+            % Notify the user that we are overriding the value of '''doNotZeroCenterPSF''
+            fprintf('\n\ncomputePSFandOTF(): overiding the passed value ''doNotZeroCenterPSF'' from true to false, because the passed ''withZeroedPistonAndTiltZernikeCoefficients'' is set to true.\n\n');
+            doNotZeroCenterPSF = false;
+        end
+    else
+        if (doNotZeroCenterPSF == false)
+            % User wants zero-centered PSF. Suggest switching to setting 
+            % ''withZeroedPistonAndTiltZernikeCoefficients'' to true
+            % instead.
+            fprintf('\n\ncomputePSFandOTF(): the passed value ''doNotZeroCenterPSF'' is set to false and ''withZeroedPistonAndTiltZernikeCoefficients'' is also false.\n Consider setting ''withZeroedPistonAndTiltZernikeCoefficients'' to true instead.\n\n');
+        else
+            % Old behavior. Notidy user that
+            % ''withZeroedPistonAndTiltZernikeCoefficients''  will default to true in the future.
+            fprintf('\n\ncomputePSFandOTF(): ''withZeroedPistonAndTiltZernikeCoefficients'' still defaults to false, but soon will default to true.\n\n');
+        end
+    end
+
     %% Compute WVF
     theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelength, wavelengthsListToCompute, ...
             measPupilDiamMM, targetPupilDiamMM, umPerDegree, name, ...
