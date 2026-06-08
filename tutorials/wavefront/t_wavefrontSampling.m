@@ -217,27 +217,33 @@ subplotPosVectors = NicePlot.getSubPlotPosVectors('rowsNum', 2, ...
 psfRange = 15;   % arc min
 otfRange = 400;  % cycles/deg
 
-for iWave = 1:numel(wavelengths)
+nWaves = numel(wavelengths);
+t = tiledlayout(2, nWaves, 'TileSpacing', 'compact', 'Padding', 'compact');
+
+for iWave = 1:nWaves
     targetWavelength = wavelengths(iWave);
     psf = wvfGet(theWVF, 'psf', targetWavelength);
     otf = wvfGet(theWVF, 'otf', targetWavelength);
-    psfSupport = wvfGet(theWVF, 'psf angular samples', ...
-        'min', targetWavelength);
+    psfSupport = wvfGet(theWVF, 'psf angular samples', 'min', targetWavelength);
     otfSupport = wvfGet(theWVF, 'otf support', 'um', targetWavelength) ...
         * wvfGet(theWVF, 'um per degree');
 
-    subplot('Position', subplotPosVectors(1, iWave).v);
-    hold on
+    % Top row: PSF
+    ax1 = nexttile(iWave);        % tiles 1..nWaves are the first row
+    axes(ax1); hold on;
     plotPSF(psf, psfSupport, psfRange, plotView, ...
         targetWavelength, iWave, legendsToUse, ...
         squeeze(colors(plotID, :)), markerSizes(plotID));
 
-    subplot('Position', subplotPosVectors(2, iWave).v);
-    hold on
+    % Bottom row: OTF
+    ax2 = nexttile(iWave + nWaves);% tiles nWaves+1..2*nWaves are the second row
+    axes(ax2); hold on;
     plotOTF(otf, otfSupport, otfRange, plotView, ...
         targetWavelength, iWave, legendsToUse, ...
         squeeze(colors(plotID, :)), markerSizes(plotID));
 end
+
+
 end
 
 %% Method to plot the PSF
