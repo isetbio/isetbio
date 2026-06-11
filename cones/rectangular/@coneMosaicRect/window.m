@@ -1,14 +1,11 @@
 function window(obj, varargin)
-% Open a cone mosaic window GUI (older GUIDE style for now).
-%
-% TODO:  Update to appdesigner
+% Open the App Designer rectangular cone mosaic window.
 %
 % Syntax:
 %   window(obj, [varargin])
 %
 % Description:
-%    Oopens a cone mosaic rect window GUI via the coneMosaicWindow
-%    function. 
+%    Opens a rectangular cone mosaic GUI via coneRectWindow.
 %
 % Inputs:
 %    obj - The rectangular cone mosaic object.
@@ -17,10 +14,10 @@ function window(obj, varargin)
 %   None.
 %
 % Optional key/value pairs:
-%   'show' - 'mean absorptions', 'cone mosaic', 'mean photocurrent'
+%   'plot type' - 'mean absorptions', 'cone mosaic', 'mean photocurrent'
 %
 %  See Also:
-%    coneMosaicWindow
+%    coneRectWindow, coneRectWindow_App
 
 
 %% 

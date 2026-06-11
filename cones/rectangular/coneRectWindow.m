@@ -2,7 +2,7 @@ function coneRectW = coneRectWindow(cones,varargin)
 % Wrapper that replaces the GUIDE coneMosaicWindow
 %
 % Synopsis
-%   coneRectW = coneRectWindow(sensor,varargin)
+%   coneRectW = coneRectWindow(cones,varargin)
 %
 % Brief description
 %   Opens a coneRectWindow interface based on the coneRectWindow_App.
@@ -11,18 +11,16 @@ function coneRectW = coneRectWindow(cones,varargin)
 %   cones:  The coneMosaicRect you want in the window.
 %
 % Outputs
-%   coneRectW:  An coneMosaicWindow_App object.
+%   coneRectW:  A coneRectWindow_App object.
 %
-% Description
+% Optional key/value pairs
+%   'plot type':  Initial display. Default is 'mean absorptions'.
 %
 % See also
 %    sceneWindow_App, oiWindow_App
 %
 
 % Examples
-%{
-   coneRectWindow;
-%}
 %{
    cm = coneMosaicRect;
    coneRectWindow(cm);   
@@ -33,7 +31,7 @@ varargin = ieParamFormat(varargin);
 
 p = inputParser;
 p.addRequired('cones',@(x)(isa(x,'coneMosaicRect')));
-p.addParameter('plottype',true,@ischar);
+p.addParameter('plottype','meanabsorptions',@ischar);
 
 p.parse(cones,varargin{:});
 
