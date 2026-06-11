@@ -6,7 +6,11 @@ Gemini, and other AI coding assistants working in this repository.
 ## Repository Context
 
 - MATLAB is the primary runtime.
-- The main repository is `isetbio`; the functions in this repository rely on ../isetcam; many of the key isetbio functions call isetcam functions
+- The main repository is `isetbio`. ISETCam (`../isetcam`) is a required
+  dependency and is always expected to be on the MATLAB path when ISETBio is
+  used or tested.
+- ISETBio code and tests may directly use ISETCam utilities, including
+  `ieTestReport`. Do not duplicate utilities already supplied by ISETCam.
 - related local repositories may include `isetvalidate`, and `tools/UnitTestToolbox`.
 - For VS Code MATLAB setup, see `.vscode/matlab-setup.md`.
 - For MATLAB Command Window path setup, use `.github/matlab-paths.md`.
@@ -107,7 +111,13 @@ plotting.
 - Local and repository-wide runners must close figures created during testing
   while preserving figures that were open before the test run.
 - Run the full ISETBio unit-test suite with `isetbioUnitTests` and render or
-  summarize its output with `ieTestReport`.
+  summarize its output with ISETCam's `ieTestReport`. `isetbioUnitTests` is
+  the ISETBio master runner; `ieUnitTests` remains the ISETCam master runner.
+- When converting legacy `isetvalidate` scripts into built-in unit tests,
+  place each test with the ISETBio subsystem or behavior it protects rather
+  than copying the legacy validation directory layout. Do not duplicate a
+  test already maintained by ISETCam merely because the validation script
+  historically lived under an ISETBio validation directory.
 - Treat `isetvalidate` as the broader system/regression validation suite when
   relevant to a change.
 - MATLAB is available through the VS Code MATLAB extension.
