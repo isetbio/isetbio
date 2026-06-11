@@ -1,0 +1,19 @@
+# Normalize text files across platforms.
+* text=auto
+
+# MATLAB source files are text and should use MATLAB-aware diffs.
+*.m text diff=matlab
+
+# Common repository data and document formats are binary.
+*.fig binary
+*.key binary
+*.mat binary
+*.mlapp binary
+*.mlx binary
+*.p binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.slx binary
+*.xlsx binary
