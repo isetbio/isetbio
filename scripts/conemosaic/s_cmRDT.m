@@ -28,7 +28,6 @@ sceneFOV = 0.4;
 sc = 3*(sceneFOV/0.35);   % If you do not multiply by a scalar, offset is 6 arc sec
 
 s_EIParameters;
-params.em.emFlag = [0 0 0]';
 
 % Make the bar length a little less than the scene size
 params.vernier.barLength = params.vernier.sceneSz(1)-1;
@@ -54,12 +53,10 @@ cMosaic.noiseFlag = 'random';
 cMosaic.pattern = 4*ones(size(cMosaic.pattern));
 %% For aligned or offset
 
-% Turn off eye movements for a moment
-
-
+% Generate the expected path shape, then turn off eye movements.
 disp('Computing cone mosaic eye movements');
-emPaths  = cMosaic.emGenSequence(tSamples, 'nTrials', nTrials, ...
-    'em', params.em);
+emPaths = cMosaic.emGenSequence(tSamples, 'nTrials', nTrials);
+emPaths = zeros(size(emPaths));
 
 % compute absorptions for aligned and offset
 disp('Computing cone mosaic current');
@@ -115,4 +112,3 @@ version1 = '1';
 rdt.publishArtifact(faceFile, 'version', version1);
 
 %%
-

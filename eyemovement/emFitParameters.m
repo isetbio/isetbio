@@ -1,12 +1,12 @@
 function [mu, Sigma] = emFitParameters(fileName)
-% Analyze Winawerb's eye movement data
+% Analyze Winawer's eye movement data
 %
 % Syntax:
 %   [mu, sigma] = emFitParameters(fileName)
 %
 % Description:
 %    This function is used to analyze the eye movement data obtained from
-%    Jonathan Winawerb.
+%    Jonathan Winawer.
 %
 %    In this script, we will fit a Bronian motion model with bounce back.
 %
