@@ -4,6 +4,39 @@ This document records repository changes that affect public APIs, compatibility,
 or major implementation paths. It also lists significant deprecations that are
 under consideration.
 
+## 2026-06: RemoteDataToolbox References Retired
+
+RemoteDataToolbox is deprecated. ISETBio no longer includes its RDT
+configuration file or the obsolete cone-mosaic artifact-publishing examples.
+The ToolboxToolbox local-hook template remains supported and configures local
+validation data. It retains inert RemoteDataToolbox preference fields required
+by the current UnitTestToolbox, with remote access disabled.
+
+Some external repositories still use legacy RDT-related names or calls. ISETBio
+retains compatibility references to current isetvalidate directory and listing
+names while collaborators migrate their independently maintained repositories.
+External repositories and deployment branches were intentionally left
+unchanged.
+
+## 2026-06: Bundled Data Directory Consolidated
+
+The former top-level `dataiset/` tree and `data/datafiles/` tree have been
+merged into one canonical bundled-data directory:
+
+`data/datafiles/`
+
+Use `isetbioDataPath` to construct paths to ISETBio-owned data. The helper now
+returns the canonical directory above. Code that reads ISETCam-owned data, such
+as Stockman-Sharpe fundamentals and CIE color matching functions, uses
+`isetRootPath` instead.
+
+The source-tree promotion also required correcting `isetbioRootPath`, which had
+continued to walk up the directory hierarchy using its former location.
+
+Data-path tests verify representative file locations and spot-check golden
+values from cone-density, wavefront, RGC, tree-shrew, and precomputed cone-mosaic
+data.
+
 ## 2026-06: Legacy Eye-Movement Struct API Removed
 
 The legacy eye-movement struct API has been removed:
@@ -61,4 +94,3 @@ Repository code no longer directly calls `coneMosaicWindow`; rectangular mosaic
 windows route through `coneRectWindow_App`. Before removing the GUIDE files,
 confirm that the App Designer window covers the required workflows and migrate
 or document any remaining external callers.
-

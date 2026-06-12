@@ -100,7 +100,7 @@ ieNewGraphWin;
 plot(w,TL1, 'o',w,TL2,'x');
 
 data = [TL1(:), TL2(:), TYoung(:)];
-fname = fullfile(isetbioRootPath,'data','datafiles','human','lens','lensPokornySmith.mat');
+fname = fullfile(isetbioDataPath,'human','lens','lensPokornySmith.mat');
 fullpathname = ieSaveSpectralFile(w, data, 'Model from Pokorny, Smith, Lutze, Table I',fname);
 
 %% Check

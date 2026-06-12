@@ -8,12 +8,9 @@ function isetbioLocalHookTemplate
 %    Generally, this function should be edited for your website and then
 %    run once.
 %
-%    You should be able just to use this template version without editing
-%    for both full and fast validations -- it pulls its data off a server
-%    we have set up via the RemoteDataToolbox facility.
-%
-%    Note that you still want to have the remoteDataToolboxConfig set up
-%    even if you aren't using the RemoteDataToolbox for validations.
+%    You should be able to use this template version without editing for
+%    both full and fast validations when the validation data are available
+%    in the configured local directory.
 %
 %    If you are using the ToolboxToolbox, the copy this file to your local
 %    hooks folder and delete "Template" from the filename.  The TbTb will
@@ -43,12 +40,6 @@ function isetbioLocalHookTemplate
 %                             location. Specify '' to use the default
 %                             location, i.e., $validationRootDir/data/full.
 %                             Default ''.
-% 'useRemoteDataToolbox'    - Boolean. If true use the Remote Data Toolbox
-%                             to fetch full validation data on demand.
-%                             Default false.
-% 'remoteDataToolboxConfig' - String. The struct, file path, or project
-%                             name with Remote Data Toolbox configuration.
-%                             Default 'isetbio'.
 % 'githubRepoURL'           - String. The Github URL for the project. This
 %                             is only used for publishing tutorials.
 %                             Default 'http://isetbio.github.io/isetbio'.
@@ -108,6 +99,8 @@ else
 end
 
 if (exist('isetvalidateRootPath','file'))
+    % Preserve the external isetvalidate repository's legacy directory and
+    % listing-script names until that repository migrates them.
     validationRootDir = fullfile(isetvalidateRootPath, 'isetbioRDT');
     listingScript = 'ieValidateRDTListAllValidationDirs';
 else
@@ -115,13 +108,15 @@ else
     listingScript = 'ieValidateListAllValidationDirs';
 end
 
+% UnitTestToolbox currently reads the two disabled RemoteDataToolbox fields
+% unconditionally, so retain them as inert compatibility preferences.
 p = struct(...
     'projectName', 'isetbio', ...
     'validationRootDir', validationRootDir, ...
     'alternateFastDataDir', '', ...
     'alternateFullDataDir', fullfile(dropboxValidationRootDirPath, 'ISETBioValidationFiles/gradleFiles/validationFull'), ...
-    'useRemoteDataToolbox', ~true, ...
-    'remoteDataToolboxConfig', 'isetbio', ...
+    'useRemoteDataToolbox', false, ...
+    'remoteDataToolboxConfig', '', ...
     'githubRepoURL', 'http://isetbio.github.io/isetbio', ...
     'rgcResources', struct('method', 'localFile', 'URLpath', rgcDropboxURLpath), ...
     'generateGroundTruthDataIfNotFound', true, ...

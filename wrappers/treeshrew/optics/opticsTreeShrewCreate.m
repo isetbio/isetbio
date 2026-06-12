@@ -141,7 +141,7 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, ...
     %
     % Tag on a leading zero because the file does not contain the first
     % (piston) Zernike coefficient, but ISETBio expects it.
-    zCoeffsFile = fullfile(isetbioRootPath,'data','datafiles','treeshrew','SajdakEtAlTreeShrewZernikes.xlsx');
+    zCoeffsFile = fullfile(isetbioDataPath,'treeshrew','SajdakEtAlTreeShrewZernikes.xlsx');
     zCoeffsAll = cell2mat(readcell(zCoeffsFile,'Range','B2:L66'));
     zCoeffs_TreeShrew = [0 ; zCoeffsAll(:,whichShrew)];
    
@@ -188,4 +188,3 @@ function lcaDiopters = treeShrewLCAOLD(measuredWavelength, thisWavelength)
     lcaDiopters = 1.8859 - constant - (0.63346 ./ (0.001 * thisWavelength - 0.2141));
     lcaDiopters = 5.15 * lcaDiopters;
 end
-

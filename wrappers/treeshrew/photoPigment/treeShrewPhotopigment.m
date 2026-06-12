@@ -1,6 +1,7 @@
 function thePhotopigment = treeShrewPhotopigment() 
 % Load the threeshrew L and S-cone absorbance spectra
-load('treeshrewConeAbsorbanceSpectra.mat', 'wavelength', 'data');
+dataFile = fullfile(isetbioDataPath, 'treeshrew', 'treeshrewConeAbsorbanceSpectra.mat');
+load(dataFile, 'wavelength', 'data');
 
 % Max values of optical densities
 peakOpticalDensitiesLS = max(data,[],1);

@@ -111,7 +111,7 @@ thisM.window;
 
 %% Now add a cone mask overlay.
 
-coneMaskFile = (fullfile(isetbioRootPath,'data','datafiles','human','bloodvessels','coneMask_bloodvessels.png'));
+coneMaskFile = fullfile(isetbioDataPath,'human','bloodvessels','coneMask_bloodvessels.png');
 bv = imread(coneMaskFile);
 
 bv = double(sum(bv,3));

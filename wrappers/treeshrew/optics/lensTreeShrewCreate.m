@@ -33,7 +33,8 @@ function theLens = lensTreeShrewCreate(varargin)
     %% parse input
     p = inputParser;
     p.addParameter('wave', [], @isnumeric);
-    p.addParameter('lensAbsorbanceFile', 'treeshrewLensAbsorbance.mat', @ischar);
+    p.addParameter('lensAbsorbanceFile', ...
+        fullfile(isetbioDataPath, 'treeshrew', 'treeshrewLensAbsorbance.mat'), @ischar);
     p.parse(varargin{:});
     
     lensAbsorbanceFile = p.Results.lensAbsorbanceFile;

@@ -67,7 +67,9 @@ thisM.window;
 
 %% Change to another mask image
 
-coneMask.img = double(imread('coneMask_bloodvessels.png'));
+coneMaskFile = fullfile(isetbioDataPath, 'human', 'bloodvessels', ...
+    'coneMask_bloodvessels.png');
+coneMask.img = double(imread(coneMaskFile));
 thisM.coneMask = coneMask;
 thisM.compute(oi);
 thisM.window;

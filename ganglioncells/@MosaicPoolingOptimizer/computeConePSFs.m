@@ -33,7 +33,8 @@ function [theLconePSF, theMconePSF, theSconePSF, spatialSupportDegs] = ...
     
     else
         wavelengthSupport = theConeMosaic.wave;
-        coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
+        coneFundamentals = ieReadSpectra(...
+            fullfile(isetRootPath, 'data', 'human', 'stockman'), displayWavelengths);
     end
 
     theLconePSF = [];

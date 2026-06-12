@@ -51,18 +51,16 @@
 %
 
 
-%% If you can't find the data on your path, here they are.
+%% Load the data
 
-% chdir(fullfile(isetbioRootPath,'data','datafiles','human','aguilarstiles'));
-
-%%
-load("asSubjectA.mat",'asSubjectA');
+dataDir = fullfile(isetbioDataPath, 'human', 'aguilarstiles');
+load(fullfile(dataDir, "asSubjectA.mat"), 'asSubjectA');
 % I missed one point at negative infinity
 asSubjectA = [-6 -4; asSubjectA];
 
-load("asSubjectB.mat",'asSubjectB');
-load("asSubjectC.mat",'asSubjectC');
-load("asSubjectD.mat",'asSubjectD');
+load(fullfile(dataDir, "asSubjectB.mat"), 'asSubjectB');
+load(fullfile(dataDir, "asSubjectC.mat"), 'asSubjectC');
+load(fullfile(dataDir, "asSubjectD.mat"), 'asSubjectD');
 
 contrastA =  100* 10.^(asSubjectA(2:end,2) - asSubjectA(2:end,1));
 contrastB =  100* 10.^(asSubjectB(2:end,2) - asSubjectB(2:end,1) - 0.5);

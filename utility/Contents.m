@@ -23,7 +23,7 @@
 %   ieUncompressData     - Deprecated.
 %   ieUnitScaleFactor    - Return scale factor that converts from meters or seconds to other scales
 %   ieWave2Index         - Convert a wavelength to an index into the wave list.
-%   isetbioDataPath      - Return path to oldstyle directory containing data bundled with isetbio
+%   isetbioDataPath      - Return path to data files bundled with ISETBio
 %   isetbioRootPath      - Return the path to the root isetbio directory
 %   isetRootPath         - Return the path to the isetbio isettools directory
 %   isodd                - Always nice to know if there is something odd going on ;).
@@ -127,5 +127,4 @@
 %   statistics/iePrctile              - Measures the percentiles of the sample in X.
 %   statistics/lorentzSum             - Compute sum of Lorentzian components
 %
-
 

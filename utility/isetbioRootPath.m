@@ -9,11 +9,8 @@ function rootPath = isetbioRootPath()
 %
 %    Examples are included within the code.
 %
-%    This function works by using the function mfilename to find itself,
-%    and then walks back up the result to the top level of
-%    isetbio. Thus, you can't move this function within the isetbio tree
-%    without also adjusting the number of levels in the walk to match
-%    where you move it to.
+%    This function works by using mfilename to find itself and then walks
+%    up from the utility directory to the top level of ISETBio.
 %
 % Inputs:
 %    None.
@@ -34,6 +31,7 @@ function rootPath = isetbioRootPath()
 %                   broke if the root directory was not called 'isetbio'.
 %    11/21/17  jnm  Formatting
 %    01/16/18  jnm  Formatting update to match Wiki
+%    06/12/26  bw   Update walk after promoting utility to the repository root.
 
 % Examples:
 %{
@@ -44,7 +42,7 @@ function rootPath = isetbioRootPath()
 pathToMe = mfilename('fullpath');
 
 %% Walk back up the chain
-rootPath = fileparts(fileparts(fileparts(pathToMe)));
+rootPath = fileparts(fileparts(pathToMe));
 
 %% Older less robust method
 % This is an older way of doing it, which breaks when isetbio is not

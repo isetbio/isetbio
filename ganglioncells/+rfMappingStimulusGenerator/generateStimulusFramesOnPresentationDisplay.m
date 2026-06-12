@@ -240,7 +240,9 @@ end
 function compareCustomConeFundamentalsToDefaultSS2(customConeFundamentals)
     % Normalize
     coneFundamentals = customConeFundamentals.quantalExcitationSpectra/max(customConeFundamentals.quantalExcitationSpectra(:));
-    StockmanSharpe2DegConeFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), customConeFundamentals.wavelengthSupport);
+    StockmanSharpe2DegConeFundamentals = ieReadSpectra(...
+        fullfile(isetRootPath, 'data', 'human', 'stockman'), ...
+        customConeFundamentals.wavelengthSupport);
 
     hFig = figure(223); clf;
     subplot(2,2,1);

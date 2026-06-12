@@ -27,9 +27,7 @@ function theData = rawDataReadData(dataName,varargin)
 %                            'ptbmatfileonpath' (default). The data can be obtained as theData = load(dataName), because
 %                                                          the data is in a .mat file on the Matlab path. The data are
 %                                                          in the PTB tree included with ISETBio.
-%                            'isetbiomatfileonpath'        The data can be obtained as theData = load(dataName), because
-%                                                          the data are in a .mat file on the Matlab path.  The data
-%                                                          are in the datafile tree included with ISETBio.
+%                            'isetbiomatfileonpath'        Load a .mat file from the canonical ISETBio data directory.
 % See also:
 
 % 08/10/17  dhb  Drafted.
@@ -41,10 +39,19 @@ p.parse(varargin{:});
 
 %% Handle choices
 switch (p.Results.datatype)
-    case {'ptbmatfileonpath','isetbiomatfileonpath'}
+    case 'ptbmatfileonpath'
         theData = load(dataName);
-        
+
+    case 'isetbiomatfileonpath'
+        [~, ~, extension] = fileparts(dataName);
+        if isempty(extension), dataName = [dataName '.mat']; end
+        dataFile = which(dataName);
+        if isempty(dataFile) || ~startsWith(dataFile, [isetbioDataPath filesep])
+            error('ISETBio data file ''%s'' was not found under %s.', ...
+                dataName, isetbioDataPath);
+        end
+        theData = load(dataFile);
+
     otherwise
         error('Unsupported datatype specified');
 end
-        

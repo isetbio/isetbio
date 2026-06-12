@@ -12,6 +12,11 @@ Gemini, and other AI coding assistants working in this repository.
 - ISETBio code and tests may directly use ISETCam utilities, including
   `ieTestReport`. Do not duplicate utilities already supplied by ISETCam.
 - related local repositories may include `isetvalidate`, and `tools/UnitTestToolbox`.
+- Many independently maintained repositories depend on ISETBio. Before removing
+  or changing public APIs, paths, data locations, setup behavior, or integration
+  hooks, search for likely external usage and prefer staged deprecation when an
+  immediate change could disrupt collaborators. Allow time for dependent
+  repositories to migrate unless coordinated cleanup is explicitly requested.
 - For VS Code MATLAB setup, see `.vscode/matlab-setup.md`.
 - For MATLAB Command Window path setup, use `.github/matlab-paths.md`.
 

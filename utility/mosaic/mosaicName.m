@@ -7,8 +7,7 @@ function fname = mosaicName(sizeDegs,positionDegs)
 %
 %   cmosaic_1.0-1.0_0.0-0.0.mat
 %
-% The cmosaics are stored in a small library in isettools/data/cones
-% (isetbioDataPath)
+% The cmosaics are stored in the cones directory under isetbioDataPath.
 %
 % See also
 %   mosaicLoad
