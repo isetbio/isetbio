@@ -1,313 +1,385 @@
-function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
-% Plot methods for the cMosaic
+function [uData, hdl] = plot(cmosaic, plotType, allE, varargin)
+% Plot common cMosaic views using a simple interface.
 %
-% TODO:  Should we make a cMosaicPlot(cMosaic,varargin) function?
-%        Analogous to coneRectPlot()?  Or is visualize already that
-%        function?  Anyway, simplify the interface for users because
-%        visualize is complex.
-%
-%        Also, we should have cMosaic.get commands that make it easy
-%        to extract the data used in this or the visualize function.
-%        When we call this function, a window will always appear.  If
-%        you just want the data, call the cMosaic.get function.
-%
-% Syopsis
-%    [uData, hdl] = plot(cmosaic, plotType, allE, varargin)
+% Syntax
+%   cmosaic.plot('mosaic')
+%   cmosaic.plot('excitations', excitations)
+%   cmosaic.plot('eye movement path')
+%   cmosaic.plot('excitations and eye movements', excitations)
 %
 % Inputs
-%    cmosaic   - cMosaic class
-%    plotType  - See below.  Many.
-%    
-% Optional key/val pairs
-%    roi 
-%    cone type
-%    hdl - Use this figure handle (matlab.ui.Figure).  Used for overlaying
-%           curves. 
+%   cmosaic  - A cMosaic object.
+%   plotType - Named view to generate.
+%   allE     - Cone excitations. May be a cone vector or a
+%              trials-by-time-points-by-cones response array.
 %
-% Output
-%    uData - Struct with the plot data including the ROI
-%    hdl   - Plot figure handle.  Use get(hdl,'CurrentAxes') for axis
+% Optional key/value pairs
+%   trial         - Trial to display. Default is 1.
+%   time point    - Time point to display, or 'last'. Default is 1.
+%   roi           - regionOfInterest used by ROI views.
+%   cone type     - Cone type or cell array of cone types.
+%   xdeg, ydeg    - Position of vertical or horizontal response profiles.
+%   thickness     - Profile ROI thickness in degrees.
+%   figure handle - Figure in which to draw.
+%   axes handle   - Axes in which to draw.
+%   plot title    - Plot title.
+%   label cones   - Label cone types in an excitation map.
+%   data only     - Return plot data without drawing. Default is false.
 %
-% Plot types
+% Outputs
+%   uData - Struct containing selected and plotted data, including the axes.
+%   hdl   - Figure handle, or empty when 'data only' is true.
 %
-%    excitations - pull out excitations of various types
-%       cmosaic.plot('excitations',allE) 
-%       cmosaic.plot('excitations horizontal line',allE,'ydeg',0)
-%       cmosaic.plot('excitations vertical line',allE,'ydeg',0)
-%       cmosaic.plot('excitations roi',allE,'cone type',conetype)
-%
-%    roi - show the ROI superimposed on the excitation image
-%        cmosaic.plot('roi',allE,'roi',regionOfInterest)
-%
-%    plot title - Logical.  Show the title or not.
+% Description
+%   This method provides common scientific views with sensible defaults.
+%   Use cMosaic.visualize directly for specialized rendering controls.
 %
 % See also
-%   t_cMosaicBasic
-%
+%   cMosaic.visualize, cMosaic.excitations
 
-%% Input parser
-
-if ~exist('allE','var'), allE = []; end
+if ~exist('allE', 'var'), allE = []; end
 
 varargin = ieParamFormat(varargin);
+plotType = ieParamFormat(plotType);
 
 p = inputParser;
-p.addRequired('cmosaic',@(x)(isa(x,'cMosaic')));
-p.addRequired('plotType',@ischar);
-p.addRequired('allE',@isnumeric);
+p.addRequired('cmosaic', @(x)isa(x, 'cMosaic'));
+p.addRequired('plotType', @ischar);
+p.addRequired('allE', @isnumeric);
+p.addParameter('conetype', {'l', 'm', 's'}, @(x)ischar(x) || iscell(x));
+p.addParameter('roi', [], @(x)isempty(x) || isa(x, 'regionOfInterest'));
+p.addParameter('plottitle', '', @(x)ischar(x) || islogical(x) || iscell(x));
+p.addParameter('dataonly', false, @islogical);
+p.addParameter('labelcones', false, @islogical);
+p.addParameter('lens', [], @(x)isempty(x) || isa(x, 'Lens'));
+p.addParameter('trial', 1, @(x)isnumeric(x) && isscalar(x) && x >= 1);
+p.addParameter('timepoint', 1, @(x)(isnumeric(x) && isscalar(x) && x >= 1) || ...
+    (ischar(x) && strcmpi(x, 'last')));
+p.addParameter('xdeg', 0, @isnumeric);
+p.addParameter('ydeg', 0, @isnumeric);
+p.addParameter('thickness', 0.1, @isnumeric);
+p.addParameter('figurehandle', [], @(x)isempty(x) || isgraphics(x, 'figure'));
+p.addParameter('axeshandle', [], @(x)isempty(x) || isgraphics(x, 'axes'));
+% Backward-compatible figure-handle alias.
+p.addParameter('hdl', [], @(x)isempty(x) || isgraphics(x, 'figure'));
+p.parse(cmosaic, plotType, allE, varargin{:});
 
-% Excitations if precomputed
-p.addParameter('conetype',{'l','m','s'},@(x)(ischar(x) || iscell(x)));
-p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
-p.addParameter('plottitle','',@ischar);
-p.addParameter('dataonly',false,@islogical);   % NYI
-p.addParameter('labelcones',false,@islogical)  % for excitations, show cones colored by type
-p.addParameter('lens',[],@(x)(isa(x,'Lens')));
+figureHandle = p.Results.figurehandle;
+if isempty(figureHandle), figureHandle = p.Results.hdl; end
+axesHandle = p.Results.axeshandle;
+if ~isempty(axesHandle), figureHandle = ancestor(axesHandle, 'figure'); end
 
-% Horizontal line key val pairs
-p.addParameter('xdeg',0,@isnumeric);
-p.addParameter('ydeg',0,@isnumeric);
-p.addParameter('thickness',0.1,@isnumeric);
-p.addParameter('hdl',[],@(x)(isa(x,'matlab.ui.Figure') || isempty(x)));
-
-p.parse(cmosaic,plotType,allE,varargin{:});
-
-hdl    = p.Results.hdl;
-pTitle = p.Results.plottitle;
-
-% Force cone type to a cell array
 conetype = p.Results.conetype;
-if ischar(conetype), conetype = {conetype}; 
-end
+if ischar(conetype), conetype = {conetype}; end
 
-%% Different types of plots
+uData = struct('plotType', plotType, 'figureHandle', figureHandle, ...
+    'axesHandle', axesHandle);
+hdl = figureHandle;
 
-switch ieParamFormat(plotType)
-    case {'conemosaic','mosaic'}
-        % We should enable passing in params
-        cmosaic.visualize;
-    case {'excitations','activations'}
-        % Show the activations in an image
-        % We should choose one - excitations or activations - for
-        % consistency. 
+switch plotType
+    case {'conemosaic', 'mosaic'}
+        if ~p.Results.dataonly
+            [uData, hdl] = localVisualize(cmosaic, [], p, false, ...
+                figureHandle, axesHandle, uData);
+        end
 
-        % Maybe we want to select out by conetype also?
-        
-        params = cmosaic.visualize('params');
-        params.activation = allE;
-        params.plotTitle = pTitle;
-        params.verticalActivationColorBar = true;
-        params.figureHandle = hdl;
-        params.labelconesinactivationmap = p.Results.labelcones;
+    case {'excitations', 'activations'}
+        [selectedE, trial, timePoint] = localSelectExcitations(...
+            cmosaic, allE, p.Results.trial, p.Results.timepoint);
+        uData.excitations = selectedE;
+        uData.trial = trial;
+        uData.timePoint = timePoint;
+        if ~p.Results.dataonly
+            [uData, hdl] = localVisualize(cmosaic, selectedE, p, false, ...
+                figureHandle, axesHandle, uData);
+        end
 
-        % Return
-        tmp = cmosaic.visualize(params);
-        hdl = tmp.figureHandle;
-        uData.allE = allE;
-        
-    case 'excitationshorizontalline'
-        % Plot the excitations along an entire horizontal line in the
-        % excitations
-        %
-        % You can select a single cone type.  Otherwise all three
-        % are plotted in RGB colors.
-        xminDeg = cmosaic.eccentricityDegs(1) - cmosaic.sizeDegs(1)/2;
-        xmaxDeg = cmosaic.eccentricityDegs(1) + cmosaic.sizeDegs(1)/2;
-        yDeg = p.Results.ydeg;
-        
-        if isempty(p.Results.roi)
-            roi = regionOfInterest('shape', 'line', ...
-                'from', [xminDeg,yDeg], 'to', [xmaxDeg,yDeg], ...
-                'thickness', p.Results.thickness);
+    case {'eyemovementpath'}
+        [trial, timePoints, currentEMposition] = localEyeMovementSelection(...
+            cmosaic, p.Results.trial, p.Results.timepoint);
+        uData.trial = trial;
+        uData.timePoints = timePoints;
+        uData.currentEMposition = currentEMposition;
+        if ~p.Results.dataonly
+            [uData, hdl] = localVisualize(cmosaic, [], p, true, ...
+                figureHandle, axesHandle, uData);
+        end
+
+    case {'excitationsandeyemovements'}
+        [selectedE, trial, timePoint] = localSelectExcitations(...
+            cmosaic, allE, p.Results.trial, p.Results.timepoint);
+        [~, timePoints, currentEMposition] = localEyeMovementSelection(...
+            cmosaic, trial, timePoint);
+        uData.excitations = selectedE;
+        uData.trial = trial;
+        uData.timePoint = timePoint;
+        uData.timePoints = timePoints;
+        uData.currentEMposition = currentEMposition;
+        if ~p.Results.dataonly
+            [uData, hdl] = localVisualize(cmosaic, selectedE, p, true, ...
+                figureHandle, axesHandle, uData);
+        end
+
+    case {'excitationshorizontalline', 'excitationsverticalline'}
+        [selectedE, trial, timePoint] = localSelectExcitations(...
+            cmosaic, allE, p.Results.trial, p.Results.timepoint);
+        if strcmp(plotType, 'excitationshorizontalline')
+            limits = cmosaic.eccentricityDegs(1) + cmosaic.sizeDegs(1)/2*[-1 1];
+            roi = localProfileROI(p.Results.roi, [limits(1) p.Results.ydeg], ...
+                [limits(2) p.Results.ydeg], p.Results.thickness);
+            positionDimension = 1;
+            axisLabel = 'Horizontal position (deg)';
         else
-            roi = p.Results.roi;
+            limits = cmosaic.eccentricityDegs(2) + cmosaic.sizeDegs(2)/2*[-1 1];
+            roi = localProfileROI(p.Results.roi, [p.Results.xdeg limits(1)], ...
+                [p.Results.xdeg limits(2)], p.Results.thickness);
+            positionDimension = 2;
+            axisLabel = 'Vertical position (deg)';
         end
-        
-        hdl = ieNewGraphWin;
-        roiE = cell(numel(conetype),1);
-        roiIdx = cell(numel(conetype),1);
-        for ii = 1:numel(conetype)
-            [roiE{ii}, roiIdx{ii}] = cmosaic.excitations('roi',roi,...
-                'conetype',conetype{ii},...
-                'all excitations',allE);
-            
-            % The positions of the cones in the ROI
-            pos = cmosaic.coneRFpositionsDegs(roiIdx{ii},:);
-            hold on;
-            thisP = plot(pos(:,1),squeeze(roiE{ii}),[coneColor(conetype{ii}),'o']);
-            set(thisP,'MarkerFaceColor',coneColor(conetype{ii}));
-        end
-        
-        hold off; grid on
-        str = sprintf('Excitations (%.1f ms)',cmosaic.integrationTime*1e3);
-        xlabel('Horizontal position (deg)'); ylabel(str); 
-        if ~isempty(pTitle), title(pTitle); end
-        
-        % See how to get pos and roiE from above.
-        for ii=1:numel(conetype)
-            uData.pos{ii} = cmosaic.coneRFpositionsDegs(roiIdx{ii});
-        end
-        uData.roi = roi;
-        uData.roiE = roiE;
-        uData.roiIdx = roiIdx;
-        
-    case {'excitationsverticalline'}
-        % Plot the excitations along an entire vertical line in the
-        % excitations
-        %
-        % You can select a single cone type.  Otherwise all three
-        % are plotted in RGB colors.
-        yminDeg = cmosaic.eccentricityDegs(2) - cmosaic.sizeDegs(2)/2;
-        ymaxDeg = cmosaic.eccentricityDegs(2) + cmosaic.sizeDegs(2)/2;
-        xDeg = p.Results.xdeg;
-        
-        if isempty(p.Results.roi)
-            roi = regionOfInterest('shape', 'line', ...
-                'from', [xDeg,yminDeg], 'to', [xDeg,ymaxDeg], ...
-                'thickness', p.Results.thickness);
-        else
-            roi = p.Results.roi;
-        end
-        
-        hdl = ieNewGraphWin;
-        roiE = cell(numel(conetype),1);
-        roiIdx = cell(numel(conetype),1);
-        for ii = 1:numel(conetype)
-            [roiE{ii}, roiIdx{ii}] = cmosaic.excitations('roi',roi,...
-                'conetype',conetype{ii},...
-                'all excitations',allE);
-            
-            % The positions of the cones in the ROI
-            pos = cmosaic.coneRFpositionsDegs(roiIdx{ii},:);
-            hold on;
-            thisP = plot(pos(:,2),squeeze(roiE{ii}),[coneColor(conetype{ii}),'o']);
-            set(thisP,'MarkerFaceColor',coneColor(conetype{ii}));
-        end
-        
-        hold off; grid on
-        str = sprintf('Excitations (%.1f ms)',cmosaic.integrationTime*1e3);
-        xlabel('Vertical position (deg)'); ylabel(str); 
-        if ~isempty(pTitle), title(pTitle); end
 
-        % See how to get pos and roiE from above.
-        for ii=1:3
-            uData.pos{ii} = cmosaic.coneRFpositionsDegs(roiIdx{ii});
+        [uData, figureHandle, axesHandle] = localProfileData(cmosaic, ...
+            selectedE, roi, conetype, positionDimension, p.Results.dataonly, ...
+            figureHandle, axesHandle);
+        uData.plotType = plotType;
+        uData.trial = trial;
+        uData.timePoint = timePoint;
+        if ~p.Results.dataonly
+            xlabel(axesHandle, axisLabel);
+            ylabel(axesHandle, sprintf('Excitations (%.1f ms)', cmosaic.integrationTime*1e3));
+            if ~isempty(p.Results.plottitle), title(axesHandle, p.Results.plottitle); end
         end
-        uData.roi = roi;
-        uData.roiE = roiE;
-        uData.roiIdx = roiIdx;
-        
+        hdl = figureHandle;
+
     case {'roi'}
-        % Draw the ROI superimposed on the excitations
-        fillColor = [0.2 0.3 1];
+        localRequireROI(p.Results.roi);
+        [selectedE, trial, timePoint] = localSelectExcitations(...
+            cmosaic, allE, p.Results.trial, p.Results.timepoint);
+        uData.excitations = selectedE;
+        uData.roi = p.Results.roi;
+        uData.trial = trial;
+        uData.timePoint = timePoint;
+        if ~p.Results.dataonly
+            [uData, hdl] = localVisualize(cmosaic, selectedE, p, false, ...
+                figureHandle, axesHandle, uData);
+            roiOutline = p.Results.roi.outline();
+            hold(uData.axesHandle, 'on');
+            patch(uData.axesHandle, roiOutline.x, roiOutline.y, [0.2 0.3 1], ...
+                'FaceAlpha', 0.5, 'EdgeColor', [0.1 0.15 0.5], 'LineWidth', 1);
+            hold(uData.axesHandle, 'off');
+        end
 
-        % Excitations
-        [~,hdl] = cmosaic.plot('excitations',allE);
-        axesHandle = get(hdl,'CurrentAxes');
-        
-        roi = p.Results.roi;
-        % Show the ROI as a horizontal line on the activations
-        roiOutline = roi.outline();
-        
-        % Draw it but keeping the activations image
-        hold(axesHandle, 'on');
-        
-        patch(axesHandle, roiOutline.x, roiOutline.y, ...
-            fillColor, 'FaceAlpha', 0.5, 'EdgeColor', fillColor*0.5, 'LineWidth', 1.0);                        
-        
-        uData.excitations = allE;
-        uData.roi = roi;
     case {'excitationsroi'}
-        % Make a plot of the excitations in an ROI
-        roi = p.Results.roi;
-        switch roi.shape
-            case 'rect'
-                disp('Rect NYI')
-            case 'ellipse'
-                hdl = ieNewGraphWin;
-                for ii=1:numel(conetype)
-                    roiE = cmosaic.excitations('roi',roi,...
-                        'conetype',conetype{ii},...
-                        'all excitations',allE);
-                    histogram(roiE,'FaceColor',coneColor(conetype{ii}),...
-                        'EdgeColor',coneColor(conetype{ii}), ...
-                        'NumBins',20);
-                    hold on;
-                end
-                xlabel('Excitations'); ylabel('Number of cones'); 
-                grid on;
-                
-            case 'line'
-                hdl = ieNewGraphWin;
+        localRequireROI(p.Results.roi);
+        [selectedE, trial, timePoint] = localSelectExcitations(...
+            cmosaic, allE, p.Results.trial, p.Results.timepoint);
+        [uData, figureHandle, ~] = localROIData(cmosaic, selectedE, ...
+            p.Results.roi, conetype, p.Results.dataonly, figureHandle, axesHandle);
+        uData.plotType = plotType;
+        uData.trial = trial;
+        uData.timePoint = timePoint;
+        hdl = figureHandle;
 
-                % Plot excitations along the line measured from 'from'                
-                for ii = 1:numel(conetype)
-                    [roiE, roiIdx] = cmosaic.excitations('roi',roi,...
-                        'conetype',conetype{ii},...
-                        'all excitations',allE);
-                    pos = cmosaic.coneRFpositionsDegs(roiIdx,:);
-                    linePosition = pos - roi.from;
-                    lineDistance = sqrt(linePosition(:,1).^2 + linePosition(:,2).^2);
-                    
-                    % Set the color and collapse data w.r.t. the x-axis
-                    hold on;
-                    plot(lineDistance,squeeze(roiE),[coneColor(conetype{ii}),'o']);
-                    
-                    uData.lineDistance{ii} = lineDistance;
-                    uData.roiE{ii} = roiE;
-                end
-                xlabel('Line position (deg - from)');
-                ylabel(sprintf('Excitations %.1f',cmosaic.integrationTime));
-                grid on;
-
-            otherwise
-                error('Unknown roi shape %s\n',roi.shape);
-        end
-        
     case {'spectralqe'}
-        % The cMosaic does not ordinarily have a lens.  If the user
-        % does not send in a lens, we use the default human lens.
-        if isempty(hdl), hdl = ieNewGraphWin;
-        else, figure(hdl);
-        end
-
         if isempty(p.Results.lens)
-            thisLens = Lens('wave',cmosaic.wave);
+            thisLens = Lens('wave', cmosaic.wave);
         else
             thisLens = p.Results.lens;
             thisLens.wave = cmosaic.wave;
         end
-        lensT = thisLens.transmittance;
-        
-        % The qe incorporates the macular pigment density
-        uData = diag(lensT)*cmosaic.qe;
-        plot(cmosaic.wave,uData,'LineWidth',2);
-        xlabel('Wavelength (nm)'); ylabel('Spectral quantum efficiency');
-        if ~isempty(pTitle), title(pTitle); end
+        uData.spectralQE = diag(thisLens.transmittance)*cmosaic.qe;
+        if ~p.Results.dataonly
+            [figureHandle, axesHandle] = localAxes(figureHandle, axesHandle);
+            plot(axesHandle, cmosaic.wave, uData.spectralQE, 'LineWidth', 2);
+            xlabel(axesHandle, 'Wavelength (nm)');
+            ylabel(axesHandle, 'Spectral quantum efficiency');
+            grid(axesHandle, 'on');
+            if ~isempty(p.Results.plottitle), title(axesHandle, p.Results.plottitle); end
+        end
+        uData.figureHandle = figureHandle;
+        uData.axesHandle = axesHandle;
+        hdl = figureHandle;
 
-        grid on;
-        
     case {'pigmentquantalefficiency'}
-        hdl = ieNewGraphWin;
-        plot(cmosaic.wave,cmosaic.pigment.quantalEfficiency,'LineWidth',2);
-        xlabel('Wavelength (nm)'); ylabel('Quantal efficiency');
-        if ~isempty(pTitle), title(pTitle); end
+        uData.quantalEfficiency = cmosaic.pigment.quantalEfficiency;
+        if ~p.Results.dataonly
+            [figureHandle, axesHandle] = localAxes(figureHandle, axesHandle);
+            plot(axesHandle, cmosaic.wave, uData.quantalEfficiency, 'LineWidth', 2);
+            xlabel(axesHandle, 'Wavelength (nm)');
+            ylabel(axesHandle, 'Quantal efficiency');
+            if ~isempty(p.Results.plottitle), title(axesHandle, p.Results.plottitle); end
+        end
+        uData.figureHandle = figureHandle;
+        uData.axesHandle = axesHandle;
+        hdl = figureHandle;
 
     otherwise
-        error('Unknown plot type %s\n',plotType);
+        error('cMosaic:UnknownPlotType', 'Unknown plot type ''%s''.', plotType);
 end
 
+if p.Results.dataonly, hdl = []; end
 
 end
 
-function str = coneColor(conetype)
-% Make this a routine
+function [uData, figureHandle] = localVisualize(cmosaic, activation, p, ...
+    showEyeMovements, figureHandle, axesHandle, uData)
+args = {'figureHandle', figureHandle, 'axesHandle', axesHandle, ...
+    'plotTitle', p.Results.plottitle};
+if ~isempty(activation)
+    args = [args {'activation', activation, 'verticalActivationColorBar', true, ...
+        'labelConesInActivationMap', p.Results.labelcones}];
+end
+if showEyeMovements
+    args = [args {'currentEMposition', uData.currentEMposition, ...
+        'displayedEyeMovementData', struct('trial', uData.trial, ...
+        'timePoints', uData.timePoints)}];
+end
+params = cmosaic.visualize(args{:});
+figureHandle = params.figureHandle;
+uData.figureHandle = params.figureHandle;
+uData.axesHandle = params.axesHandle;
+end
+
+function [selectedE, trial, timePoint] = localSelectExcitations(cmosaic, allE, trial, timePoint)
+if isempty(allE)
+    error('cMosaic:MissingExcitations', 'This plot type requires cone excitations.');
+end
+if isvector(allE)
+    selectedE = allE(:);
+    trial = 1;
+    timePoint = 1;
+else
+    if size(allE, 3) ~= cmosaic.conesNum
+        error('cMosaic:ExcitationSizeMismatch', ...
+            'The third excitation dimension must equal the number of cones (%d).', cmosaic.conesNum);
+    end
+    if ischar(timePoint), timePoint = size(allE, 2); end
+    if trial > size(allE, 1) || timePoint > size(allE, 2)
+        error('cMosaic:ExcitationIndexOutOfRange', ...
+            'Requested trial %d and time point %d exceed the excitation dimensions.', trial, timePoint);
+    end
+    selectedE = squeeze(allE(trial, timePoint, :));
+end
+if numel(selectedE) ~= cmosaic.conesNum
+    error('cMosaic:ExcitationSizeMismatch', ...
+        'Excitations must contain one value for each of the %d cones.', cmosaic.conesNum);
+end
+end
+
+function [trial, timePoints, currentEMposition] = localEyeMovementSelection(cmosaic, trial, timePoint)
+if isempty(cmosaic.fixEMobj)
+    error('cMosaic:MissingEyeMovements', ...
+        'Generate eye movements with cMosaic.emGenSequence before plotting them.');
+end
+nTrials = size(cmosaic.fixEMobj.emPosArcMin, 1);
+nTimePoints = size(cmosaic.fixEMobj.emPosArcMin, 2);
+if ischar(timePoint), timePoint = nTimePoints; end
+if trial > nTrials || timePoint > nTimePoints
+    error('cMosaic:EyeMovementIndexOutOfRange', ...
+        'Requested trial %d and time point %d exceed the eye-movement dimensions.', trial, timePoint);
+end
+timePoints = 1:timePoint;
+currentEMposition = squeeze(cmosaic.fixEMobj.emPosArcMin(trial, timePoint, :))/60;
+end
+
+function roi = localProfileROI(roi, from, to, thickness)
+if isempty(roi)
+    roi = regionOfInterest('shape', 'line', 'from', from, 'to', to, ...
+        'thickness', thickness);
+end
+end
+
+function localRequireROI(roi)
+if isempty(roi)
+    error('cMosaic:MissingROI', 'This plot type requires a regionOfInterest.');
+end
+end
+
+function [uData, figureHandle, axesHandle] = localProfileData(cmosaic, allE, roi, ...
+    conetype, positionDimension, dataOnly, figureHandle, axesHandle)
+uData = struct('roi', roi, 'positions', {cell(numel(conetype), 1)}, ...
+    'roiExcitations', {cell(numel(conetype), 1)}, 'roiIndices', {cell(numel(conetype), 1)});
+if ~dataOnly, [figureHandle, axesHandle] = localAxes(figureHandle, axesHandle); end
+for ii = 1:numel(conetype)
+    [roiE, roiIdx] = cmosaic.excitations('roi', roi, ...
+        'conetype', conetype{ii}, 'all excitations', allE);
+    positions = cmosaic.coneRFpositionsDegs(roiIdx, :);
+    uData.positions{ii} = positions;
+    uData.roiExcitations{ii} = roiE;
+    uData.roiIndices{ii} = roiIdx;
+    if ~dataOnly
+        hold(axesHandle, 'on');
+        thisPlot = plot(axesHandle, positions(:, positionDimension), squeeze(roiE), ...
+            [localConeColor(conetype{ii}) 'o']);
+        set(thisPlot, 'MarkerFaceColor', localConeColor(conetype{ii}));
+    end
+end
+if ~dataOnly
+    hold(axesHandle, 'off');
+    grid(axesHandle, 'on');
+end
+uData.figureHandle = figureHandle;
+uData.axesHandle = axesHandle;
+end
+
+function [uData, figureHandle, axesHandle] = localROIData(cmosaic, allE, roi, ...
+    conetype, dataOnly, figureHandle, axesHandle)
+uData = struct('roi', roi, 'roiExcitations', {cell(numel(conetype), 1)}, ...
+    'roiIndices', {cell(numel(conetype), 1)});
+if ~dataOnly, [figureHandle, axesHandle] = localAxes(figureHandle, axesHandle); end
+for ii = 1:numel(conetype)
+    [roiE, roiIdx] = cmosaic.excitations('roi', roi, ...
+        'conetype', conetype{ii}, 'all excitations', allE);
+    uData.roiExcitations{ii} = roiE;
+    uData.roiIndices{ii} = roiIdx;
+    if strcmp(roi.shape, 'line')
+        positions = cmosaic.coneRFpositionsDegs(roiIdx, :);
+        linePosition = positions - roi.from;
+        uData.lineDistance{ii} = sqrt(sum(linePosition.^2, 2));
+    end
+    if ~dataOnly
+        hold(axesHandle, 'on');
+        if strcmp(roi.shape, 'line')
+            plot(axesHandle, uData.lineDistance{ii}, squeeze(roiE), ...
+                [localConeColor(conetype{ii}) 'o']);
+        else
+            histogram(axesHandle, roiE, 'FaceColor', localConeColor(conetype{ii}), ...
+                'EdgeColor', localConeColor(conetype{ii}), 'NumBins', 20);
+        end
+    end
+end
+if ~dataOnly
+    hold(axesHandle, 'off');
+    grid(axesHandle, 'on');
+    if strcmp(roi.shape, 'line')
+        xlabel(axesHandle, 'Line position (deg from start)');
+    else
+        xlabel(axesHandle, 'Excitations');
+    end
+    ylabel(axesHandle, 'Excitations');
+end
+uData.figureHandle = figureHandle;
+uData.axesHandle = axesHandle;
+end
+
+function [figureHandle, axesHandle] = localAxes(figureHandle, axesHandle)
+if isempty(axesHandle)
+    if isempty(figureHandle), figureHandle = ieFigure; end
+    axesHandle = axes('Parent', figureHandle);
+else
+    figureHandle = ancestor(axesHandle, 'figure');
+    cla(axesHandle);
+end
+end
+
+function color = localConeColor(conetype)
 switch lower(conetype)
     case 'l'
-        str = 'r';
+        color = 'r';
     case 'm'
-        str = 'g';
+        color = 'g';
     case 's'
-        str = 'b';
+        color = 'b';
+    otherwise
+        error('cMosaic:UnknownConeType', 'Unknown cone type ''%s''.', conetype);
 end
 end

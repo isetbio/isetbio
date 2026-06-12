@@ -1,5 +1,5 @@
 % s_coneEccentricities
-% 
+%
 % Estimate the cone apertures as a function of eccentricity.
 % Uses the cMosaic
 %
@@ -11,15 +11,15 @@ rodIntrusion = true;
 
 % Generate a 80x1 deg @cMosaic
 c = cMosaic(...
-  'sourceLatticeSizeDegs', 64, ...
-  'positionDegs', [0 0], ...
-  'sizeDegs', [80 1.0], ...
-  'rodIntrusionAdjustedConeAperture', rodIntrusion);
+   'sourceLatticeSizeDegs', 64, ...
+   'positionDegs', [0 0], ...
+   'sizeDegs', [80 1.0], ...
+   'rodIntrusionAdjustedConeAperture', rodIntrusion);
 
 coneEccentricity = sqrt(sum(c.coneRFpositionsDegs.^2,2)) .* sign(c.coneRFpositionsDegs(:,1));
 
 %% Setup figure
-ieNewGraphWin([],'tall');
+ieFigure([],'tall');
 tiledlayout(3,1);
 
 % Plot the variation in cone spacing with eccentricity
@@ -47,7 +47,7 @@ set(gca, 'FontSize', 20);
 %% Cone aperture area (um^2) assuming circular aperture (pi r2)
 
 % nexttile;
-ieNewGraphWin;
+ieFigure;
 coneApertureArea = pi*(apertureMicrons/2).^2;
 p = plot(coneEccentricity, coneApertureArea, 'r.');
 set(gca, 'XTick', -40:10:40, 'XLim', 40*[-1 1], 'YLim', [0 50], 'YTick', 0:10:50);

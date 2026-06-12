@@ -6,7 +6,7 @@
 %    cropping.  More specifically, this stores positions and other related
 %    information so that the actual mosaic object at a patch can be
 %    computed quickly.  The data are stored in:
-%        isetbio/isettools/ganglioncells/data/lattices
+%        isetbio/data/datafiles/rgc/lattices
 %
 %    This takes a very long time to run, and I'm not sure we want to write
 %    out mosaics by default.  The UTTBSkip comment below prevents this from

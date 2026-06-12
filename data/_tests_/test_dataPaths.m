@@ -32,6 +32,19 @@ mosaicFile = mosaicName([1 1], [0 0]);
 testCase.verifyTrue(startsWith(mosaicFile, [isetbioDataPath filesep]));
 testCase.verifyTrue(isfile(mosaicFile));
 
+coneLatticeParams = retinalattice.configure(64, 'cones', 'right eye');
+testCase.verifyEqual(coneLatticeParams.latticeGalleryDir, ...
+    fullfile(isetbioDataPath, 'cones', 'lattices'));
+testCase.verifyTrue(isfile(fullfile(coneLatticeParams.latticeGalleryDir, ...
+    [coneLatticeParams.patchFinalPositionsSaveFileName '.mat'])));
+
+mRGCLatticeParams = retinalattice.configure(60, ...
+    'midget ganglion cells', 'right eye');
+testCase.verifyEqual(mRGCLatticeParams.latticeGalleryDir, ...
+    fullfile(isetbioDataPath, 'rgc', 'lattices'));
+testCase.verifyTrue(isfile(fullfile(mRGCLatticeParams.latticeGalleryDir, ...
+    [mRGCLatticeParams.patchFinalPositionsSaveFileName '.mat'])));
+
 coneDensity = rawDataReadData('coneDensityCurcio1990', ...
     'datatype', 'isetbiomatfileonpath');
 testCase.verifyNotEmpty(fieldnames(coneDensity));
