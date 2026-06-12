@@ -54,3 +54,19 @@ testCase.verifyEqual(macular.unitDensity, expectedUnitDensity, ...
 testCase.verifyEqual(macular.transmittance, expectedTransmittance, ...
     'AbsTol', spectralTolerance);
 end
+
+function testWavelengthAndDensitySetters(testCase)
+macular = Macular();
+newWave = [450 525 600 675]';
+
+macular.wave = newWave;
+macular.density = 0.5;
+
+testCase.verifyEqual(macular.wave, newWave);
+testCase.verifySize(macular.unitDensity, size(newWave));
+testCase.verifyTrue(all(isfinite(macular.transmittance)));
+testCase.verifyEqual(macular.spectralDensity, ...
+    0.5*macular.unitDensity, 'AbsTol', 1e-12);
+testCase.verifyEqual(macular.absorptance + macular.transmittance, ...
+    ones(size(newWave)), 'AbsTol', 1e-12);
+end

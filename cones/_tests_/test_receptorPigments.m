@@ -50,3 +50,59 @@ testCase.verifyEqual(pigment.absorbance, expectedAbsorbance, ...
 testCase.verifyEqual(pigment.quantalEfficiency, expectedQuantalEfficiency, ...
     'AbsTol', spectralTolerance);
 end
+
+function testWavelengthSetterResamplesSpectra(testCase)
+classes = {@cPhotoPigment, @photoPigment};
+newWave = [450 525 600 675]';
+
+for ii = 1:numel(classes)
+    pigment = classes{ii}();
+    pigment.wave = newWave;
+
+    testCase.verifyEqual(pigment.wave, newWave);
+    testCase.verifySize(pigment.absorbance, [numel(newWave) 3]);
+    testCase.verifySize(pigment.quantalEfficiency, [numel(newWave) 3]);
+    testCase.verifyTrue(all(isfinite(pigment.quantalEfficiency(:))));
+end
+end
+
+function testOpticalDensitySetterUpdatesAbsorptance(testCase)
+wave = (500:10:540)';
+absorbance = repmat([0.2 0.5 0.8], numel(wave), 1);
+pigment = cPhotoPigment('wave', wave, ...
+    'absorbance', absorbance, ...
+    'opticalDensity', [0.2 0.2 0.2]);
+lowDensityAbsorptance = pigment.absorptance;
+
+pigment.opticalDensity = [0.4 0.4 0.4];
+
+testCase.verifyGreaterThan(pigment.absorptance, lowDensityAbsorptance);
+testCase.verifyEqual(pigment.absorptance, ...
+    1-10.^(-absorbance*diag(pigment.opticalDensity)), ...
+    'AbsTol', 1e-12);
+end
+
+function testRejectsInconsistentSpectralDimensions(testCase)
+localVerifyErrorContains(testCase, ...
+    @() cPhotoPigment('wave', [500 510], ...
+    'absorbance', ones(2, 2), ...
+    'opticalDensity', [0.5 0.5 0.4]), ...
+    'optical density dimensionality does not match that of absorbance');
+
+localVerifyErrorContains(testCase, ...
+    @() cPhotoPigment('opticalDensity', [0.5 0.5 0.4], ...
+    'peakEfficiency', [0.5 0.5]), ...
+    'optical density dimensionality does not match that of peak efficiency');
+end
+
+function localVerifyErrorContains(testCase, functionHandle, expectedText)
+didError = false;
+try
+    functionHandle();
+catch err
+    didError = true;
+    testCase.verifySubstring(err.message, expectedText);
+end
+testCase.verifyTrue(didError, ...
+    sprintf('Expected an error containing: %s', expectedText));
+end
