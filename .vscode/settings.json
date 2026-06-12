@@ -7,6 +7,7 @@
       "strings": "on"
     }
   },
+  "MATLAB.matlabConnectionTiming": "onDemand",
   "chat.tools.terminal.autoApprove": {
     "/Applications/MATLAB_R2025b.app/bin/matlab": true
   }
