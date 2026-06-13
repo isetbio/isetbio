@@ -52,7 +52,17 @@ for ii=1:numel(timeAxis)
         obj.plot('excitations',signal(p.Results.sample,ii,:),'hdl',hdl);
     end
     drawnow;
+
+    % Force the figure to be a fixed size so writeVideo never breaks
+    if ii == 1
+        set(hdl, 'Position', [100 100 800 600]);
+        drawnow;
+        frameSize = size(getframe(gcf).cdata);
+    end
     thisImg = getframe(gcf);
+    if sum(abs(size(thisImg.cdata) - frameSize)) > 0
+        thisImg.cdata = imresize(thisImg.cdata, frameSize(1:2));
+    end
     writeVideo(vidfile,thisImg);
 end
 

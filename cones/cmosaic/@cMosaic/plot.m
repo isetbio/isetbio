@@ -62,6 +62,10 @@ p.addParameter('figurehandle', [], @(x)isempty(x) || isgraphics(x, 'figure'));
 p.addParameter('axeshandle', [], @(x)isempty(x) || isgraphics(x, 'axes'));
 % Backward-compatible figure-handle alias.
 p.addParameter('hdl', [], @(x)isempty(x) || isgraphics(x, 'figure'));
+
+% Time series parameters
+p.addParameter('timeaxis', [], @isnumeric);
+p.addParameter('coneindices', [], @isnumeric);
 p.parse(cmosaic, plotType, allE, varargin{:});
 
 figureHandle = p.Results.figurehandle;
@@ -119,6 +123,66 @@ switch plotType
             [uData, hdl] = localVisualize(cmosaic, selectedE, p, true, ...
                 figureHandle, axesHandle, uData);
         end
+
+    case {'timeseries', 'excitationstimeseries'}
+        if isempty(allE)
+            error('cMosaic:MissingExcitations', 'This plot type requires cone excitations.');
+        end
+        if isempty(p.Results.coneindices)
+            if numel(size(allE)) == 3
+                [~, maxIdx] = max(mean(allE, [1 2]));
+            else
+                [~, maxIdx] = max(mean(allE, 1));
+            end
+            [~,~,coneIndices] = ind2sub(size(allE), maxIdx);
+            coneIndices = coneIndices(:)';
+        else
+            coneIndices = p.Results.coneindices(:)';
+        end
+        
+        if ismatrix(allE)
+            allE = reshape(allE, [1, size(allE,1), size(allE,2)]);
+        end
+
+        if isempty(p.Results.timeaxis)
+            timeAxis = 1:size(allE, 2);
+        else
+            timeAxis = p.Results.timeaxis(:)';
+        end
+
+        uData.timeAxis = timeAxis;
+        uData.excitations = allE(:, :, coneIndices);
+        uData.coneIndices = coneIndices;
+
+        if ~p.Results.dataonly
+            [figureHandle, axesHandle] = localAxes(figureHandle, axesHandle);
+            hold(axesHandle, 'on');
+            
+            for cc = 1:length(coneIndices)
+                cIdx = coneIndices(cc);
+                if size(allE,1) > 1
+                    timeSeries = squeeze(allE(:,:,cIdx));
+                    if isvector(timeSeries), timeSeries = timeSeries(:)'; end
+                    plot(axesHandle, timeAxis, timeSeries, 'b--', 'LineWidth', 0.5);
+                end
+                
+                meanSeries = squeeze(mean(allE(:,:,cIdx),1));
+                if isvector(meanSeries), meanSeries = meanSeries(:)'; end
+                plot(axesHandle, timeAxis, meanSeries, 'k-', 'LineWidth', 2.0);
+            end
+
+            xlabel(axesHandle, 'Time');
+            ylabel(axesHandle, 'Excitations');
+            if ~isempty(p.Results.plottitle) && ischar(p.Results.plottitle)
+                title(axesHandle, p.Results.plottitle);
+            else
+                title(axesHandle, 'Excitation Time Series');
+            end
+            grid(axesHandle, 'on');
+            hold(axesHandle, 'off');
+            hdl = figureHandle;
+        end
+
 
     case {'excitationshorizontalline', 'excitationsverticalline'}
         [selectedE, trial, timePoint] = localSelectExcitations(...
@@ -363,8 +427,12 @@ end
 
 function [figureHandle, axesHandle] = localAxes(figureHandle, axesHandle)
 if isempty(axesHandle)
-    if isempty(figureHandle), figureHandle = ieFigure; end
-    axesHandle = axes('Parent', figureHandle);
+    if isempty(figureHandle)
+        figureHandle = ieFigure;
+        axesHandle = gca;
+    else
+        axesHandle = axes('Parent', figureHandle);
+    end
 else
     figureHandle = ancestor(axesHandle, 'figure');
     cla(axesHandle);

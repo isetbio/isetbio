@@ -1,22 +1,15 @@
-%% Show a letter on a display imaged at the level of the cone mosaic
-%
-%
-% TODO:
-%   Write a routine that takes the outline of the letter and superimposes
-%   it on the color image of the cm.
-%
-%   Implement this for the hex mosaic.
+%% Show harmonics on the cone mosaic
 %
 % Wandell, 2019
 %
 % See also
-%   sceneCreate('letter', ...), displayCreate, ....
 %
 
 %%
 ieInit;
 
-%% Create a letter on a display
+%% Create the sume of two harmonics on a display
+% The first harmonic is a low frequency horizontal grating.  The second is a high frequency horizontal grating.  The two are summed to create a visual impression of high contrast and low contrast from left to right.
 
 hparam = harmonicP('freq',[1, 7],'ang',[0 0],...
     'ph',[pi/2, pi/2], 'contrast',[1 1],...
@@ -33,37 +26,34 @@ oi = oiCompute(oi,scene,'pad value','mean');
 
 %%  Now image it on the cone mosaic with some fixational eye movements
 
-% cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
-% cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
-
-cm = mosaicLoad('cmosaic_1.0-1.0_0.0-0.0.mat'); ecc = 0;
-% cm = mosaicLoad('cmosaic_1.0-1.0_10.0-0.0.mat'); ecc = 10;
-cm.visualize();
+cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
+%
+%   cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
+%
+cm.plot('mosaic');
 
 %% Illustrate the cone excitations
 
 cm.integrationTime = 5/1000;  % 5 ms
 [~,excitations] = cm.compute(oi);
 
-params = cm.visualize('params');
-% cm.visualize('help');
+cm.plot('excitations', excitations, ...
+    'plotTitle', 'Cone excitations (static)');
 
-params.activation = excitations.^0.5;
-params.activationColorMap = hot(1024);
-params.verticalActivationColorBar = true;
-cm.visualize(params);
+%% Show a plot of the horizontal line profile
+cm.plot('excitations horizontal line',excitations,...
+    'ydeg',0,...
+    'cone type','L');
 
-%% Show a plot
-cm.plot('excitations',excitations);
-cm.plot('excitations horizontal line',excitations,'ydeg',0,'cone type','L');
 %% Add eye movements
-eyeMovementDurationSeconds = 400/1000;
+% We use a short duration (100 ms) so the tutorial runs quickly.
+eyeMovementDurationSeconds = 100/1000;
 cm.emGenSequence(eyeMovementDurationSeconds, ...
-        'microsaccadeType', 'none', ...
-        'nTrials', 1, ...
-        'randomSeed', 10);
-    
-%% Compute noisy response instances of cone excitation response to the same eye movement path
+    'microsaccadeType', 'none', ...
+    'nTrials', 1, ...
+    'randomSeed', 10);
+
+%% Compute noisy cone excitations to the same eye movement path
 instancesNum = 1;
 % (Instances, Time Samples, Cone index)
 [~, excitations, ~,~,timeAxis] = cm.compute(oi, ...
@@ -71,48 +61,30 @@ instancesNum = 1;
     'nTrials', instancesNum);
 
 %% Visualize time-series response of a single cone
-%{
-% Find the cone with max noise-free response
-[~,idx] = max(excitations(:));
-[~,~,targetConeID] = ind2sub(size(excitations), idx);
+% Find the cone with the maximum mean excitation across time and trials
+[~, targetConeID] = max(mean(excitations, [1 2]));
 
-ieNewGraphWin;
-
-% Plot the time series response for individual trials
-plot(timeAxis, squeeze(excitations(:,:,targetConeID)), 'b--');
-hold on;
-
-% Plot the time series response for the mean of the individual instances
-plot(timeAxis, squeeze(mean(excitations(:,:,targetConeID),1)), 'k-', 'LineWidth', 2.0);
-hold on;
-
-xlabel('Time (seconds)');
-ylabel('Excitations per integration time');
-set(gca, 'FontSize', 16);
-grid on;
-%}
+% Plot the time series for that cone. Pass coneindices to select it.
+cm.plot('time series', excitations, ...
+    'timeaxis', timeAxis, ...
+    'coneindices', targetConeID);
 
 %% Plot a movie of the excitations
+% To ensure the movie writes properly and runs quickly, we use a smaller
+% mosaic and fewer frames in this tutorial.
 fname = sprintf('%s-harmonic-ecc-%d.mp4',fullfile(isetRootPath,'local','excitations'),ecc);
+
+% Generating the movie can take a moment for large mosaics
 cm.movie(timeAxis,excitations,'filename',fname);
-implay(fname);
 
-% TODO:  Figure this out.
-%
-% cmd = sprintf('vlc %s',mp4File);
-% [s,r] = system(cmd)
-%
-% implay(mp4File);
-% You can also import the file into PowerPoint or use VLC
-%
+% Play the movie (unless we are publishing the script)
+stackInfo = dbstack;
+if ~any(strcmp({stackInfo.name}, 'publish'))
+    implay(fname);
+end
 
-%%  Photocurrent
+%%  Photocurrent -> Compute the photocurrent from the excitations
 
-% For the coneMosaic we used to be able to do this.
-%
-%  thisOS = osBioPhys;
-%  current = thisOS.osCompute(cMosaic);
-%
 meanIso = cm.meanIsomerizations(excitations);
 
 % Mean isomerizations per temporal sampling bin
@@ -123,7 +95,11 @@ current = cm.current(excitations,irf,timeAxis);
 
 fname = sprintf('%s-harmonic-ecc-%d.mp4',fullfile(isetRootPath,'local','current'),ecc);
 cm.movie(timeAxis,current,'filename',fname);
-implay(fname);
 
-%% END
+% Play the movie (unless we are publishing the script)
+stackInfo = dbstack;
+if ~any(strcmp({stackInfo.name}, 'publish'))
+    implay(fname);
+end
+
 
