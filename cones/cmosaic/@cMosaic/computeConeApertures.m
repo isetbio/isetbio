@@ -22,7 +22,7 @@ function computeConeApertures(obj, lowOpticalImageResolutionWarning)
 % See also
 %   cMosaic
 %   Includes two methods: coneZonesFromApertureSizeAndOIresolution and
-%                         cachedConePartitionIsValid 
+%                         cachedConePartitionIsValid
 
 %% Compute unsmoothed spacings from positions
 [obj.coneRFspacingsMicrons, nearbyConeIndices] = RGCmodels.Watson.convert.positionsToSpacings(obj.coneRFpositionsMicrons);
@@ -173,7 +173,7 @@ if (cachedConePartitionIsValid(obj))
     return;
 end
 
-fprintf('Cache is not valid. Recomputing cone aperture zones.\n');
+fprintf('Recomputing cone aperture zones.\n');
 
 % Discritize cone apertures range in zones with minimum
 % separation equal to coneApertureMicronsStepSize

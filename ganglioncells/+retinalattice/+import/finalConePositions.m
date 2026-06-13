@@ -1,5 +1,5 @@
 function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye, overlappingConeFractionForElimination)
-% Starting with a large cone lattice, extract new cone positions 
+% Starting with a large cone lattice, extract new cone positions
 %
 % Brief
 %   It appears (BW) that we start with a large lattice and some parameters.
@@ -8,7 +8,7 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
 % Syntax
 %   rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, ...
 %          eccDegs,sizeDegs, whichEye, ...
-%          overlappingConeFractionForElimination) 
+%          overlappingConeFractionForElimination)
 %
 % Inputs
 %   sourceLatticeSizeDegs - The original lattice
@@ -37,7 +37,8 @@ sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDe
 % Load cone positions
 p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
 theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
-fprintf('Loading cone mosaic data from %s.\n', theMosaicFileName);
+[~, mosaicName, mosaicExt] = fileparts(theMosaicFileName);
+fprintf('Loading cone mosaic lattice: %s%s\n', mosaicName, mosaicExt);
 load(theMosaicFileName, 'rfPositions');
 
 % Reverse the polarity
@@ -102,7 +103,8 @@ function rfPosMicrons = finalConePositions(srcLatSizeDegs, eccDegs, sizeDegs, ey
 
     p = retinalattice.configure(srcLatSizeDegs, 'cones', eye);
     mosaicFile = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
-    fprintf('Loading cone mosaic data from %s.\n', mosaicFile);
+    [~, mosaicName, mosaicExt] = fileparts(mosaicFile);
+    fprintf('Loading cone mosaic lattice: %s%s\n', mosaicName, mosaicExt);
     load(mosaicFile, 'rfPos');
 
     rfPos = -rfPos;
@@ -112,23 +114,23 @@ function rfPosMicrons = finalConePositions(srcLatSizeDegs, eccDegs, sizeDegs, ey
     if (~isempty(overlapConeFracForElim))
         maxSepForOverlap = overlapConeFracForElim;
         fprintf('Will check and eliminate overlapping cones (threshold: %2.2f)\n', maxSepForOverlap);
-           
+
         maxPasses = 4;
         pass = 0;
         rfsKeep = [];
         prevRFsNum = size(rfPosMicrons, 1);
-        
+
         while (pass < maxPasses) && (numel(rfsKeep) < prevRFsNum)
             pass = pass + 1;
             fprintf('Checking for overlapping elements within a population of %2.0f elements (PASS #%d)...\n', ...
                 size(rfPosMicrons, 1), pass);
             tic
-    
+
             rfSpaceMicrons = RGCmodels.Watson.convert.positionsToSpacings(rfPosMicrons);
-            
+
             [rfsKeep, rfsToElim, overlapingRFidx] = cMosaic.identifyOverlappingRFs(0, 0, ...
                 rfPosMicrons, rfSpaceMicrons, maxSepForOverlap);
-    
+
             for k = 1:numel(rfsToElim)
                 iRF = rfsToElim(k);
                 pos1 = rfPosMicrons(iRF,:);
@@ -136,7 +138,7 @@ function rfPosMicrons = finalConePositions(srcLatSizeDegs, eccDegs, sizeDegs, ey
                 pos2 = rfPosMicrons(overlappingRF,:);
                 rfPosMicrons(overlappingRF,:) = 0.5 * (pos1 + pos2);
             end
-        
+
             prevRFsNum = size(rfPosMicrons, 1);
             rfPosMicrons = rfPosMicrons(rfsKeep,:);
             fprintf('Overlapping element detection took %2.1f seconds\n', toc);

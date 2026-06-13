@@ -52,7 +52,9 @@ applied workflow, analysis, or deeper exploration, place it in `examples/`.
 
 You can convert these tutorials and examples into HTML documentation by running
 the `s_publishTutorials` and `s_publishExamples` utilities (provided by ISETCam)
-from the MATLAB command window.
+from the MATLAB command window. To publish a single file, use the underlying 
+utility `iePublish('filename.m')` which applies the correct HTML
+formatting and embedded figure styles needed for the tutorials site.
 
 For student contributors, prioritize clarity, reproducibility, and instructional
 value: use clear comments, stable outputs, and explicit links to related wiki
