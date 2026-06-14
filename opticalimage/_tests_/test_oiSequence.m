@@ -109,7 +109,9 @@ end
 
 function [seq, nWave] = localBuildSequence(composition, weights)
 % Create a 3×3 oiSequence with fixed photons=1 and modulated photons=3.
-nWave = oiGet(oiCreate, 'nwave');
+% Use an explicit count: oiGet(oiCreate,'nwave') returns 0 for a fresh OI
+% that has no photons, making all arithmetic produce empty arrays.
+nWave = 3;
 oi1 = oiCreate;
 oi1 = oiSet(oi1, 'photons', ones(3, 3, nWave));
 oi2 = oiCreate;

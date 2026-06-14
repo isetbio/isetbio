@@ -19,7 +19,8 @@ ois = oisCreate('harmonic', 'blend', stimWeights, ...
 testCase.verifyClass(ois, 'oiSequence');
 testCase.verifyEqual(ois.length, numel(stimWeights));
 frame = ois.frameAtIndex(1);
-testCase.verifyTrue(all(isfinite(oiGet(frame, 'photons')(:))));
+photons = oiGet(frame, 'photons');
+testCase.verifyTrue(all(isfinite(photons(:))));
 end
 
 function testImpulseOisCreate(testCase)
@@ -33,7 +34,8 @@ ois = oisCreate('impulse', 'add', stimWeights, 'sceneParameters', sparams);
 testCase.verifyClass(ois, 'oiSequence');
 testCase.verifyEqual(ois.length, numel(stimWeights));
 frame = ois.frameAtIndex(1);
-testCase.verifyTrue(all(isfinite(oiGet(frame, 'photons')(:))));
+photons = oiGet(frame, 'photons');
+testCase.verifyTrue(all(isfinite(photons(:))));
 end
 
 function testVernierOisCreate(testCase)
