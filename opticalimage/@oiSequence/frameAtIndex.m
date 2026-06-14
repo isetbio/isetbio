@@ -28,15 +28,17 @@ function oiFrame = frameAtIndex(obj, index)
 if ~isempty(obj.photonsFixed)
     fixedPhotons = obj.photonsFixed;
 else
-    fixedPhotons = oiGet(obj.oiFixed, 'photons');
-    obj.photonsFixed = fixedPhotons;
+    fixedPhotons        = oiGet(obj.oiFixed, 'photons');
+    obj.photonsFixed    = fixedPhotons;
+    obj.oiFixed         = oiSet(obj.oiFixed, 'photons', []);
 end
 
 if ~isempty(obj.photonsModulated)
     modulatedPhotons = obj.photonsModulated;
 else
-    modulatedPhotons = oiGet(obj.oiModulated, 'photons');
-    obj.photonsModulated = modulatedPhotons;
+    modulatedPhotons      = oiGet(obj.oiModulated, 'photons');
+    obj.photonsModulated  = modulatedPhotons;
+    obj.oiModulated       = oiSet(obj.oiModulated, 'photons', []);
 end
 
 if strcmp(obj.composition, 'add')
@@ -57,7 +59,11 @@ end
 
 if ~isnan(obj.modulationRegion.radiusInMicrons)
     % modulate a subregion only
-    pos = oiGet(obj.oiModulated, 'spatial support', 'microns');
+    % obj.oiModulated.photons may have been cleared to free memory after
+    % the photon cache was warmed; restore photons temporarily so that
+    % oiGet can derive the correct row/col dimensions for the support grid.
+    tempOI = oiSet(obj.oiModulated, 'photons', modulatedPhotons);
+    pos = oiGet(tempOI, 'spatial support', 'microns');
     ecc = sqrt(sum(pos .^ 2, 3));
     mask = ecc < obj.modulationRegion.radiusInMicrons;
 

@@ -123,7 +123,7 @@ switch parm
     case 'coneweighting'
         % Check size and normalize.
         if (length(val) ~= ...
-                size(conePsfInfo.spectralSensivities, 1))
+                size(conePsfInfo.spectralSensitivities, 1))
             error(['Specified cone weighting', ...
                 ' not consistent with number of cone classes']);
         end

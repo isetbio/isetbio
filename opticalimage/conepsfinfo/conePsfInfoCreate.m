@@ -86,7 +86,7 @@ if (~isempty(p.Results.spectralWeighting))
         error(['Specified spectral weighting', ...
               ' not consistent with specified wavelength sampling']);
     end
-    conePsfInfo.spectralWeigting = p.Results.spectralWeighting;
+    conePsfInfo.spectralWeighting = p.Results.spectralWeighting;
 else
     conePsfInfo.spectralWeighting = ones(size(conePsfInfo.wavelengths));
     conePsfInfo.spectralWeighting = ...
@@ -96,7 +96,7 @@ end
 % Weighting spectrum
 if (~isempty(p.Results.coneWeighting))
     if (length(p.Results.coneWeighting) ~= ...
-            size(conePsfInfo.spectralSensivities, 1))
+            size(conePsfInfo.spectralSensitivities, 1))
         error(['Specified cone weighting', ...
               ' not consistent with number of cone classes']);
     end

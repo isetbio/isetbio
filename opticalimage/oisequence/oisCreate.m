@@ -122,147 +122,99 @@ p.parse(oisType, composition, modulation, varargin{:});
 
 oi = p.Results.oi;
 if isempty(oi)
-    oi = oiCreate('wvf human'); 
+    oi = oiCreate('wvf human');
     oi = oiSet(oi,'compute method','opticsotf');
     disp('Creating for opticsOTF method.')
 end
 
 oisType = ieParamFormat(oisType);
 
-sampleTimes = p.Results.sampleTimes;  % User defined sample times
+sampleTimes = p.Results.sampleTimes;
 if isempty(sampleTimes)
-    % By default, the sample times are spaced 1ms apart and last for
-    % the whole temporal modulation.
+    % By default, sample times are spaced 1 ms apart over the modulation.
     sampleTimes = 0.001 * ((1:length(modulation)) - 1);
 end
 
-% Many of the types have a params structure that we will pass along
-% Test stimulus parameters (two structs needed)
+% Test stimulus parameters (two structs needed for harmonic/vernier)
 tparams = p.Results.testParameters;
-% Scene parameters, only one set.
+% Scene parameters applied to both scenes (fov, luminance, etc.)
 sparams = p.Results.sceneParameters;
 
 %%
 switch oisType
     case 'harmonic'
-        % oisCreate('harmonic', ...);
         if length(tparams) ~= 2
             error('Specify two harmonic param sets.');
         end
         scene = cell(1, 2);
-        OIs = cell(1, 2);
+        OIs   = cell(1, 2);
 
         % Color case requires specification of wave for SPDs
         if isfield(tparams(1), 'wave'), wave = tparams(1).wave;
         else, wave = 400:10:700;
         end
 
-        % Create basic harmonics
         for ii = 1:2
             scene{ii} = sceneCreate('harmonic', tparams(ii), wave);
             sname = sprintf('F %d C %.2f', tparams(ii).freq, ...
                 tparams(ii).contrast);
             scene{ii} = sceneSet(scene{ii}, 'name', sname);
         end
+        scene = localApplySparams(scene, sparams);
 
-        % Adjust both scenes based on sparams.
-        fields = fieldnames(sparams);
-        if ~isempty(fields)
-            for ii = 1:length(fields)
-                for jj = 1:2
-                    val = sparams.(fields{ii});
-                    scene{jj} = sceneSet(scene{jj}, fields{ii}, val);
-                end
-            end
+        for ii = 1:2
+            OIs{ii} = oiCompute(oi, scene{ii}, 'pad value', 'mean');
         end
-        % ieAddObject(scene{1});
-        % ieAddObject(scene{2});
-        % sceneWindow;
-
-        % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
-        % ieAddObject(OIs{1});
-        % ieAddObject(OIs{2});
-        % oiWindow;
-
-        %% Build the oiSequence
-        % The weights define some amount of the constant background and
-        % some amount of the line on the same constant background
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize('movie illuminance');
 
     case 'vernier'
-        % oisCreate('vernier', ...);
         if length(tparams) ~= 2
             error('Specify two vernier param sets.');
         end
         scene = cell(1, 2);
-        OIs = cell(1, 2);
+        OIs   = cell(1, 2);
 
-        % Create vernier stimulus and background
         for ii = 1:2
             scene{ii} = sceneVernier('vernier', 'display', tparams(ii));
             scene{ii} = sceneSet(scene{ii}, 'name', tparams(ii).name);
         end
+        scene = localApplySparams(scene, sparams);
 
-        % Adjust both scenes based on sparams.
-        fields = fieldnames(sparams);
-        if ~isempty(fields)
-            for ii = 1:length(fields)
-                for jj = 1:2
-                    val = sparams.(fields{ii});
-                    scene{jj} = sceneSet(scene{jj}, fields{ii}, val);
-                end
-            end
+        for ii = 1:2
+            OIs{ii} = oiCompute(oi, scene{ii}, 'pad value', 'mean');
         end
-        % ieAddObject(scene{1});
-        % ieAddObject(scene{2});
-        % sceneWindow;
-
-        % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
-        % ieAddObject(OIs{1});
-        % ieAddObject(OIs{2});
-        % oiWindow;
-
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize('movie illuminance');
 
     case 'impulse'
-        % oisCreate('impulse', 'add', weights, 'sparams', sparams);
         scene = cell(1, 2);
-        OIs = cell(1, 2);
+        OIs   = cell(1, 2);
 
         for ii = 1:2, scene{ii} = sceneCreate('uniform ee'); end
+        scene = localApplySparams(scene, sparams);
 
-        % Adjust both scenes based on sparams.
-        if ~isempty(sparams)
-            fields = fieldnames(sparams);
-            if ~isempty(fields)
-                for ii = 1:length(fields)
-                    for jj = 1:2
-                        val = sparams.(fields{ii});
-                        scene{jj} = sceneSet(scene{jj}, fields{ii}, val);
-                    end
-                end
-            end
+        for ii = 1:2
+            OIs{ii} = oiCompute(oi, scene{ii}, 'pad value', 'mean');
         end
-        % ieAddObject(scene{1});
-        % ieAddObject(scene{2});
-        % sceneWindow;
-
-        % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
-        % ieAddObject(OIs{1});
-        % ieAddObject(OIs{2});
-        % oiWindow;
-
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize('movie illuminance');
 
     otherwise
         error('Unknown type %s\n', oisType);
+end
+
+end
+
+% -------------------------------------------------------------------------
+
+function scenes = localApplySparams(scenes, sparams)
+% Apply fields of sparams struct to every scene in the cell array.
+if isempty(sparams), return; end
+fields = fieldnames(sparams);
+for ii = 1:numel(fields)
+    for jj = 1:numel(scenes)
+        scenes{jj} = sceneSet(scenes{jj}, fields{ii}, sparams.(fields{ii}));
+    end
+end
 end

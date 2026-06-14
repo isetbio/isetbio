@@ -90,64 +90,46 @@ switch ieParamFormat(plotType)
         % Show the oi as an illuminance movie
         wgts = obj.modulationFunction;
         nFrames = length(wgts);
-        illFixed = oiGet(obj.oiFixed, 'illuminance');
-        illMod = oiGet(obj.oiModulated, 'illuminance');
+        illFixed = oiGet(localEnsurePhotons(obj.oiFixed,    obj.photonsFixed),    'illuminance');
+        illMod   = oiGet(localEnsurePhotons(obj.oiModulated, obj.photonsModulated), 'illuminance');
         name = oiGet(obj.oiModulated, 'name');
 
-        % This code is general, and it could become an obj.get.movie;
-        % Or obj.get.illuminanceMovie
-        % The algorithm for mixing these is problematic because we
-        % calculate the max between the two scenes. This normalization can
-        % lead to unwanted problems (as it did for vernier coding). I need
-        % to have the data come here in real physical units and deal with
-        % it appropriately.
         mx1 = max(illFixed(:));
         mx2 = max(illMod(:));
-        mx = max(mx1, mx2);
-        d = zeros([size(illFixed), length(obj.timeAxis)]);
-
-        % Monochrome image function, below, seems to need 0 256 by default?
+        mx  = max(mx1, mx2);
         illFixed = 256 * illFixed / mx;
-        illMod = 256 * illMod / mx;
+        illMod   = 256 * illMod   / mx;
 
+        % Determine colormap scale without materializing the full movie.
         switch obj.composition
-            case 'blend'
-                for ii = 1:nFrames
-                    d(:, :, ii) = illFixed * (1 - wgts(ii)) + ...
-                        illMod * wgts(ii);
-                end
-            case 'add'
-                for ii = 1:nFrames
-                    d(:, :, ii) = illFixed + illMod * wgts(ii);
-                end
-            otherwise
-                error('Unknown composition method: %s\n', obj.composition);
+            case 'blend',  cmapMax = 256;
+            case 'add',    cmapMax = ceil(256 * (1 + max(abs(wgts))));
+            otherwise,     cmapMax = 256;
         end
 
-        %  Show the movie data. 20Hz Frame rate.
-        h = vcNewGraphWin;
-        colormap(gray(max(d(:))));
-        axis image;
-        axis off;
+        if save, d = zeros([size(illFixed) nFrames]); end
+
+        h = ieFigure;
+        colormap(gray(cmapMax));
+        axis image; axis off;
         for ii = 1:nFrames
-            image(d(:, :, ii));
-            axis image;
-            title(name);
-            drawnow;
-            pause(0.05);
+            switch obj.composition
+                case 'blend'
+                    frame = illFixed * (1 - wgts(ii)) + illMod * wgts(ii);
+                case 'add'
+                    frame = illFixed + illMod * wgts(ii);
+                otherwise
+                    error('Unknown composition method: %s\n', obj.composition);
+            end
+            if save, d(:, :, ii) = frame; end
+            image(frame); axis image; title(name); drawnow; pause(0.05);
         end
         delete(h);
 
-        uData.movie = d;
-
-        % Write the video object if save is true
         if save
-            %disp('Saving video ...')
-            [~, vObj] = ieMovie(uData.movie, ...
-                'vname', vname, ...
-                'FrameRate', FrameRate, ...
+            uData.movie = d;
+            [~, vObj] = ieMovie(d, 'vname', vname, 'FrameRate', FrameRate, ...
                 'show', false);
-            %disp('Done')
         end
 
     case 'moviergb'
@@ -158,8 +140,8 @@ switch ieParamFormat(plotType)
         % I am not sure why this does not work as well with
         % oiGet(oi, 'rgb');  There appears to be some scaling in that case
         % that shifts the means.
-        xyzMod = oiGet(obj.oiModulated, 'xyz');
-        xyzFixed = oiGet(obj.oiFixed, 'xyz');
+        xyzMod   = oiGet(localEnsurePhotons(obj.oiModulated, obj.photonsModulated), 'xyz');
+        xyzFixed = oiGet(localEnsurePhotons(obj.oiFixed,    obj.photonsFixed),    'xyz');
         rgbMod = xyz2rgb(xyzMod);
         rgbFixed = xyz2rgb(xyzFixed);
         name = oiGet(obj.oiModulated, 'name');
@@ -167,51 +149,33 @@ switch ieParamFormat(plotType)
         % Scale the RGB data to [0, 1] with a common scale factor
         mx1 = max(rgbFixed(:));
         mx2 = max(rgbMod(:));
-        mx = max(mx1, mx2);
-        d = zeros([size(rgbFixed), length(obj.timeAxis)]);
+        mx  = max(mx1, mx2);
         rgbFixed = rgbFixed / mx;
-        rgbMod = rgbMod / mx;
+        rgbMod   = rgbMod   / mx;
 
-        switch obj.composition
-            case 'blend'
-                % We think the mean of rgbFixed and mean of rgbMod should
-                % probably be the same in this case.
-                for ii = 1:nFrames
-                    d(:, :, :, ii) = rgbFixed * (1 - wgts(ii)) + ...
-                        rgbMod * wgts(ii);
-                end
-            case 'add'
-                for ii = 1:nFrames
-                    d(:, :, :, ii) = rgbFixed + rgbMod * wgts(ii);
-                end
-            otherwise
-                error('Unknown composition method: %s\n', obj.composition);
-        end
+        if save, d = zeros([size(rgbFixed) nFrames]); end
 
-        %  Show the movie data. 20Hz Frame rate.
         h = vcNewGraphWin;
-        axis image;
-        axis off;
+        axis image; axis off;
         for ii = 1:nFrames
-            % imagesc(d(:, :, :, ii), [0 256]);
-            image(d(:, :, :, ii));
-            axis image;
-            title(name);
-            drawnow;
-            pause(0.05);
+            switch obj.composition
+                case 'blend'
+                    % Means of rgbFixed and rgbMod should agree in this case.
+                    frame = rgbFixed * (1 - wgts(ii)) + rgbMod * wgts(ii);
+                case 'add'
+                    frame = rgbFixed + rgbMod * wgts(ii);
+                otherwise
+                    error('Unknown composition method: %s\n', obj.composition);
+            end
+            if save, d(:, :, :, ii) = frame; end
+            image(frame); axis image; title(name); drawnow; pause(0.05);
         end
         delete(h);
 
-        uData.movie = d;
-
-        % Write the video object if save is true
         if save
-            %disp('Saving video')
-            [~, vObj] = ieMovie(uData.movie, ...
-                'vname', vname, ...
-                'FrameRate', FrameRate, ...
+            uData.movie = d;
+            [~, vObj] = ieMovie(d, 'vname', vname, 'FrameRate', FrameRate, ...
                 'show', false);
-            %disp('Done')
         end
 
     case 'montage'
@@ -228,14 +192,16 @@ switch ieParamFormat(plotType)
             'bottomMargin', 0.03, ...
             'topMargin', 0.03);
 
+        % Pass 1: find normalisation. photonsFixed/photonsModulated are
+        % cached after the first frameAtIndex call, so pass 2 is fast.
         if (p.Results.showilluminancemap)
             minIllum = Inf;
             maxIllum = -Inf;
             for oiIndex = 1:obj.length
                 currentOI = obj.frameAtIndex(oiIndex);
                 [illuminanceMap, ~] = oiCalculateIlluminance(currentOI);
-                minIllum = min([minIllum min(illuminanceMap(:))]);
-                maxIllum = max([maxIllum max(illuminanceMap(:))]);
+                minIllum = min(minIllum, min(illuminanceMap(:)));
+                maxIllum = max(maxIllum, max(illuminanceMap(:)));
             end
             if (minIllum == maxIllum)
                 illumRange = [minIllum * 0.99 maxIllum * 1.01];
@@ -263,7 +229,8 @@ switch ieParamFormat(plotType)
             h = figure();
             uData.figHandle = h;
         end
-        set(h, 'Color', [1 1 1], 'Position', [10 10 1700 730]);
+        set(h, 'Color', [1 1 1], 'Units', 'normalized', 'Position', [0.01 0.05 0.97 0.88]);
+        figure(h);  % ensure h is the active figure before any subplot calls
         for oiIndex = 1:obj.length
             if (oiIndex == 1)
                 % Plot the modulation function
@@ -281,7 +248,6 @@ switch ieParamFormat(plotType)
                 ylabel('modulation');
             end
 
-            % Ask theOIsequence to return the oiIndex-th frame
             currentOI = obj.frameAtIndex(oiIndex);
             currentOIonsetTimeMillisecs = 1000 * obj.timeAxis(oiIndex);
             dataXYZ = oiGet(currentOI, 'xyz');
@@ -367,4 +333,17 @@ switch ieParamFormat(plotType)
         error('Unknown plot type %s\n', plotType);
 end
 
+end
+
+% -------------------------------------------------------------------------
+
+function oi = localEnsurePhotons(oi, photonsCache)
+% Return oi with photons present.
+% After the first frameAtIndex call, photons are moved from oiFixed/
+% oiModulated into the cache (photonsFixed/photonsModulated) to eliminate
+% the in-memory duplicate.  This helper restores them temporarily for any
+% oiGet call that requires photons (illuminance, xyz, etc.).
+if ~isempty(photonsCache)
+    oi = oiSet(oi, 'photons', photonsCache);
+end
 end

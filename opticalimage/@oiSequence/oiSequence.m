@@ -75,11 +75,11 @@ classdef oiSequence < handle
     oiHarmonicSeq.visualize('movie illuminance');
  %}
 
-properties
-    % photonsFixed - Photons stored as a double
+properties (SetAccess = private)
+    % photonsFixed - Photon cache for oiFixed; populated on first frameAtIndex call.
     photonsFixed;
 
-    % photonsModulated - Photons stored as a double.
+    % photonsModulated - Photon cache for oiModulated; populated on first frameAtIndex call.
     photonsModulated;
 end
 
@@ -174,21 +174,11 @@ methods  % public methods
             error('Time axis does not match modulation function');
         end
 
-        % Make sure that oiFixed and oiModulated have identical shape
-        oiFixedSpatialSupport = round(oiGet(obj.oiFixed, ...
-            'spatial support', 'microns'), 7);
-        oiModulatedSpatialSupport = round(oiGet(obj.oiModulated, ...
-            'spatial support', 'microns'), 7);
-
-        if (any(size(oiFixedSpatialSupport) ~= ...
-                size(oiModulatedSpatialSupport)))
-            error(['Mismatch between spatial dimensions of ' ...
-                'oiFixed, oiModulated']);
-        end
-        if (any(oiFixedSpatialSupport(:) ~= ...
-                oiModulatedSpatialSupport(:)))
-            error(['Mismatch between spatial support of ' ...
-                'oiFixed, oiModulated']);
+        % Verify oiFixed and oiModulated share the same spatial dimensions.
+        fixedSz     = size(oiGet(obj.oiFixed,     'spatial support', 'microns'));
+        modulatedSz = size(oiGet(obj.oiModulated, 'spatial support', 'microns'));
+        if any(fixedSz ~= modulatedSz)
+            error('Mismatch between spatial dimensions of oiFixed and oiModulated.');
         end
     end
 
