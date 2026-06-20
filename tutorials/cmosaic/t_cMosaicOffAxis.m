@@ -22,7 +22,7 @@ close all;
 
 %% Generate the ring rays stimulus
 scene = sceneCreate('ringsrays', 10, 512);
-scene = sceneSet(scene, 'fov', 8.0);
+scene = sceneSet(scene, 'fov', 2.5);
 
 % The stimulus and optics are shared by all three mosaics.
 oi = oiCreate('wvf human');

@@ -229,6 +229,7 @@ function [passed, errMsg] = localRunOneFile(filePath, targetDir, existingFigures
 curdir = pwd;
 cleanupDir = onCleanup(@() cd(curdir)); %#ok<NASGU>
 cd(fileparts(filePath));
+localResetTutorialState;
 
 try
     fprintf('Running %s\n', filePath);
@@ -240,9 +241,7 @@ catch ME
     errMsg = localCompactError(getReport(ME, 'extended', 'hyperlinks', 'off'));
 end
 
-drawnow;
-localCloseTestFigures(existingFigures);
-drawnow;
+localResetTutorialState;
 
 end
 
@@ -262,7 +261,26 @@ function localCloseTestFigures(existingFigures)
 allFigures = findall(groot, 'Type', 'figure');
 testFigures = setdiff(allFigures, existingFigures);
 testFigures = testFigures(ishghandle(testFigures));
-if ~isempty(testFigures), close(testFigures); end
+for figureIndex = 1:numel(testFigures)
+    try
+        close(testFigures(figureIndex));
+    catch
+        if ishghandle(testFigures(figureIndex))
+            delete(testFigures(figureIndex));
+        end
+    end
+    drawnow;
+end
+
+end
+
+function localResetTutorialState
+%% Reset figures, variables, and the ISET session through ieInit.
+
+% ieInit is a script.  Its variable-clearing behavior is controlled by the
+% persistent 'init clear' preference rather than a function argument.
+ieSessionSet('init clear', true);
+ieInit;
 
 end
 
