@@ -24,13 +24,12 @@ function [H, lIndices, mIndices] = HartleyModulationPatterns(omega, stimSizeDegs
         end
     end
 
-    % Reset parpool
-    [shutdownParPoolOnceCompleted, numWorkers] = MosaicPoolingOptimizer.resetParPool(parPoolSize);
-
     % Generate patterns
     H = zeros(nStim, size(X,1), size(X,2), 'single');
 
     if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize))
+        [shutdownParPoolOnceCompleted, numWorkers] = ...
+            MosaicPoolingOptimizer.resetParPool(parPoolSize);
         parfor sIndex = 1:nStim
             fprintf('Hartley pattern %d of %d (%d parallel workers)\n', sIndex, nStim, numWorkers);
             fx = lIndices(sIndex);

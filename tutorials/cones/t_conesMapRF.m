@@ -73,11 +73,12 @@ function t_conesMapRF
 
 
     % Hartley (RF mapping) spatial patterns
-    omega = 9;
+    omega = 3;
     % Compute spatial modulation patterns for the Hartley set
     HartleySpatialModulationPatterns = ...
         rfMappingStimulusGenerator.HartleyModulationPatterns(...
-        omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs);
+        omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs, ...
+        'parPoolSize', 1);
     
 
     % Generate scenes for the Hartley patterns
@@ -121,7 +122,7 @@ function t_conesMapRF
         theReversePolarityConeMosaicExcitation = (squeeze(theConeMosaic.compute(theOI)) - theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
 
         % Update the RF map for each cone
-        parfor iCone = 1:conesNum
+        for iCone = 1:conesNum
             r = theConeMosaicExcitation(iFrame,iCone) - theReversePolarityConeMosaicExcitation(iCone);
             theRFmaps(iCone,:,:) = theRFmaps(iCone,:,:) + ...
                 HartleySpatialModulationPatterns(iFrame,:,:) * r;

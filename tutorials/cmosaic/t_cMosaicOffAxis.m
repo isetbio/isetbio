@@ -21,15 +21,19 @@ clear;
 close all;
 
 %% Generate the ring rays stimulus
-scene = sceneCreate('ringsrays', 10, 2000);
+scene = sceneCreate('ringsrays', 10, 512);
 scene = sceneSet(scene, 'fov', 8.0);
+
+% The stimulus and optics are shared by all three mosaics.
+oi = oiCreate('wvf human');
+oi = oiCompute(oi, scene, 'pad value', 'mean');
 
 %% Set up figures and subfigs
 hFig = figure(1);
 set(hFig, 'Position', [10 10 1400 1200]);
 
 sv = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 3, ...
+       'rowsNum', 1, ...
        'colsNum', 3, ...
        'heightMargin',  0.07, ...
        'widthMargin',    0.05, ...
@@ -38,13 +42,13 @@ sv = NicePlot.getSubPlotPosVectors(...
        'bottomMargin',   0.06, ...
        'topMargin',      0.03);
 
-%% Generate mosaics and compute responses on a 3x3 grid of eccentricities
+%% Generate mosaics and compute responses at three eccentricities
+% A horizontal slice demonstrates the eccentricity dependence without
+% repeatedly loading and cropping a full 3-by-3 set of mosaics.
 deltaDeg = 0.7;
 for xOffset = 1:3
-    for yOffset = 1:3
-
         % Mosaic eccentricity
-        mosaicEcc = [(xOffset-2)*deltaDeg (yOffset-2)*deltaDeg];
+        mosaicEcc = [(xOffset-2)*deltaDeg 0];
 
         % Generate mosaic centered at target eccentricity
         cm = cMosaic(...
@@ -52,18 +56,12 @@ for xOffset = 1:3
             'eccentricityDegs', mosaicEcc ...  % ECC: varying
             );
 
-        % Generate standard human optics
-        oi = oiCreate('wvf human');
-
-        % Compute the optical image of the scene
-        oi = oiCompute(oi,scene,'pad value','mean');
-
         % Compute the noise-free excitation response
         noiseFreeExcitationResponse = cm.compute(oi, 'opticalImagePositionDegs', [0 0]);
 
         % Visualize mosaic response
         cm.visualize('figureHandle', hFig, ...
-            'axesHandle', subplot('Position', sv(end-yOffset+1,xOffset).v), ...
+            'axesHandle', subplot('Position', sv(1,xOffset).v), ...
             'domain', 'degrees', ...
             'crossHairsOnMosaicCenter', true, ...
             'visualizedConeAperture', 'geometricArea', ...
@@ -72,6 +70,4 @@ for xOffset = 1:3
             'backgroundColor', 0.2*[1 1 1], ...
             'plotTitle',  sprintf('ecc: %2.1f, %2.1f degs', mosaicEcc(1), mosaicEcc(2)));
 
-    end
 end
-

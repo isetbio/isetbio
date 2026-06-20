@@ -46,14 +46,15 @@ function t_fixationalEyeMovementsFeedbackGainAndControlGainDependence
 %    02/07/18  npc  Comments.
 %    07/12/18  jnm  Formatting. Written as a function, so formatted as one.
 
-% Generate 500 5-second emPaths with a sample time of 1 msec
-emDurationSeconds = 5;
+% Generate a modest ensemble of 2-second paths with a sample time of 1 msec.
+% This is enough to show the trends while keeping the tutorial interactive.
+emDurationSeconds = 2;
 sampleTimeSeconds = 1 / 1000;
-nTrials = 500;
+nTrials = 25;
 
 % Examined values of feedback and control gain
-feedbackGainValues = [0, 0.10, 0.125, 0.15, 0.175, 0.20];
-controlGammaValues = [0.17, 0.20, 0.25, 0.5];
+feedbackGainValues = [0, 0.15, 0.20];
+controlGammaValues = [0.17, 0.25, 0.5];
 [feedbakGainGrid, controlGammaGrid] = ...
     meshgrid(feedbackGainValues, controlGammaValues);
 

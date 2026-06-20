@@ -11,9 +11,6 @@
 %   Write a routine that takes the outline of the letter and superimposes
 %   it on the color image of the cm.
 %
-% This is VERY slow.  Figure out why.
-%
-
 %%
 ieInit;
 
@@ -23,7 +20,7 @@ ieInit;
 % To make a letter string, use 'ABC' or 'Hello'
 font = fontCreate('A', 'Georgia', 18, 96);
 display = 'LCD-Apple';
-scene = sceneCreate('letter', font, display);
+scene = sceneCreate('letter', font, display, [7 7], 0);
 scene = sceneSet(scene,'wangular',0.5);
 sceneWindow(scene);
 
@@ -70,7 +67,7 @@ cm.visualize(params);
 %% Visualize the impact of eye movements
 
 % These calculations can take a little while (few minutes)
-eyeMovementDurationSeconds = 400/1000;
+eyeMovementDurationSeconds = 100/1000;
 cm.emGenSequence(eyeMovementDurationSeconds, ...
         'microsaccadeType', 'none', ...
         'nTrials', 1, ...
@@ -84,20 +81,6 @@ instancesNum = 1;
 [~, excitations, ~,~,timeAxis] = cm.compute(oi, ...
     'withFixationalEyeMovements', true, ...
     'nTrials', instancesNum);
-
-%% Plot a movie of the excitations
-fname = sprintf('%s-ecc-%d.mp4',fullfile(isetRootPath,'local','excitations'),ecc);
-cm.movie(timeAxis,excitations,'filename',fname);
-implay(fname);
-
-% TODO:  Figure this out.
-%
-% cmd = sprintf('vlc %s',mp4File);
-% [s,r] = system(cmd)
-%
-% implay(mp4File);
-% You can also import the file into PowerPoint or use VLC
-%
 
 %%  Photocurrent
 
@@ -114,9 +97,14 @@ irf = currentIRF(meanIso*cm.integrationTime,ecc,timeAxis);
 % Convolution.
 current = cm.current(excitations,irf,timeAxis);
 
-fname = sprintf('%s-ecc-%d.mp4',fullfile(isetRootPath,'local','current'),ecc);
-cm.movie(timeAxis,current,'filename',fname);
-implay(fname);
+% Plot one cone's excitation and current rather than rendering videos.
+[~, targetConeID] = max(mean(excitations, [1 2]));
+ieNewGraphWin;
+plot(timeAxis, squeeze(excitations(1,:,targetConeID)), 'b-', ...
+    timeAxis, squeeze(current(1,:,targetConeID)), 'r-');
+xlabel('Time (seconds)');
+legend({'Excitations', 'Current'});
+grid on;
 
 %% END
 
@@ -141,4 +129,3 @@ ylabel('Excitations per integration time');
 set(gca, 'FontSize', 16);
 grid on;
 %}
-

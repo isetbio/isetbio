@@ -1,7 +1,5 @@
 % Demo different ways of generating a @cMosaic object
 %
-% Warning:  This script takes a while (few minutes) to run
-%
 % Description:
 %    Shows 3 different ways of generating a @cMosaic object. Also shows how
 %    to visualize the generated mosaic.
@@ -25,8 +23,8 @@ ieInit;
 % lattice. This is the fastest way to generate a @cMosaic at any
 % eccentricity
 cm = cMosaic(...
-    'size degs', [4 3], ...            % SIZE: x=4.0 degs, y=3.0 degs
-    'position degs', [20 -15] ...  % ECC:  x=20 deg, y= -15 deg, near the edge of the precomputed 45x45 mosaic
+    'size degs', [1 1], ...        % A small crop keeps the tutorial quick
+    'position degs', [20 -15] ...  % Near the edge of the precomputed lattice
     );
 
 %% Visualize it (spatial support in degrees)
@@ -47,11 +45,11 @@ drawnow;
 % Generating from scratch can be slow, especially
 % if the mosaic eccentricity is off-axis
 cm = cMosaic(...
-    'size degs', [0.5 0.5], ...            % SIZE: x=0.5 degs, y=0.5 degs
+    'size degs', [0.25 0.25], ...          % Small enough for interactive use
     'position degs', [1.0 0], ...      % ECC:  x=1.0 degs, y= 0.0 degs
     'compute mesh from scratch', true, ...   % generate mesh on-line, will take some time
-    'random seed', randi(9999999), ...     % set the random seed, so at to generate a different mosaic each time
-    'max mesh iterations', 80 ...           % stop iterative procedure after this many iterations
+    'random seed', 1, ...                   % deterministic tutorial output
+    'max mesh iterations', 30 ...           % limit the iterative procedure
     );
 
 %% Visualize in a ieNewGraphWin

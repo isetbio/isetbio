@@ -1,6 +1,9 @@
 %% Figure generation for RealityLabs 2021 application
 %
 % ISETBio-ISET3D
+%
+% Requires ISET3D, Docker, and long-running rendering.
+% UTTBSkip
 
 %% The cone mosaic at different eccentricities 
 
@@ -217,4 +220,3 @@ title('');
 end
 
 %% Rendering of stereo pairs
-

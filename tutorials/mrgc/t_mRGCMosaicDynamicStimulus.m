@@ -1,5 +1,8 @@
 %% Introduction to the midget RGC mosaic (mRGCMosaic) object.
 %
+
+% Requires locally configured precomputed mRGC resources.
+% UTTBSkip
 % Description:
 %    Demonstrates
 %        - how to select one of the pre-computed midget RGC mosaics,

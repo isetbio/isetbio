@@ -1,4 +1,6 @@
 function t_mRGCMosaicCheckerBoardStimulus
+% Requires locally configured precomputed mRGC resources.
+% UTTBSkip
     
     %% Close all figures
     close all;

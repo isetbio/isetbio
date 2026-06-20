@@ -15,7 +15,7 @@
 % number becomes about 20,000.  So BW views the 10K as a good
 % approximation.
 %
-% A second rule of thumb BW once heards is that the L,M,S abosrptions
+% A second rule of thumb BW once heard is that the L,M,S absorptions
 % are 95,66,7 absorptions/sec per candela/m2 for the L, M and S cones.
 %
 % This is within the range as well, for the cone aperture sizes near

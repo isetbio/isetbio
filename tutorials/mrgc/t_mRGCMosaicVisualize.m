@@ -1,5 +1,8 @@
 %% Introduction to the midget RGC mosaic (mRGCMosaic) object.
 %
+
+% Requires locally configured precomputed mRGC resources.
+% UTTBSkip
 % Description:
 %    Demonstrates
 %        - how to visualize different aspects
@@ -99,4 +102,3 @@ function t_mRGCMosaicVisualize
     end
 
 end
-

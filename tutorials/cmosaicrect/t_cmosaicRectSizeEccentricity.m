@@ -59,7 +59,7 @@ cm1.compute(oi);
 % cm1.window;
 %%
 thisF = ieNewGraphWin;
-cm1.plot('h line absorptions lms','xy',[1 10],'hf',thisF);
+cm1.plot('h line absorptions lms','roi',[1 10],'hf',thisF);
 
 %% Let's go to the movies
 
@@ -73,7 +73,7 @@ cm2.compute(oi);
 % cm2.window;
 %%
 thisF = ieNewGraphWin;
-cm2.plot('h line absorptions lms','xy',[1 10],'hf',thisF);
+cm2.plot('h line absorptions lms','roi',[1 10],'hf',thisF);
 %% Eccentricity (20 deg)
 
 cm3 = coneMosaicRect('center',[0 20],'eccentricityunits','deg');
@@ -83,7 +83,7 @@ cm3.compute(oi);
 % cm3.window;
 %%
 thisF = ieNewGraphWin;
-cm3.plot('h line absorptions lms','xy',[1 10],'hf',thisF);
+cm3.plot('h line absorptions lms','roi',[1 10],'hf',thisF);
 %% Eye movements
 
 cm3.plot('movie absorptions');
