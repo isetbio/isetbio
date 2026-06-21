@@ -88,6 +88,13 @@ switch plotType
         end
 
     case {'excitations', 'activations'}
+        % This view renders every cone aperture as a polygon.  Large mosaics
+        % can put substantial pressure on MATLAB Desktop's graphics renderer,
+        % particularly when other MATLAB processes or graphics windows remain
+        % open.  A native MATLAB exit cannot be caught as a MATLAB exception.
+        % If that occurs, first close residual MATLAB processes; for a lighter
+        % diagnostic, use 'data only', true or plot the returned excitations
+        % against cmosaic.coneRFpositionsDegs with scatter.
         [selectedE, trial, timePoint] = localSelectExcitations(...
             cmosaic, allE, p.Results.trial, p.Results.timepoint);
         uData.excitations = selectedE;
