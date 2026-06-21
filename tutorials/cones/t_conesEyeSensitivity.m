@@ -29,7 +29,7 @@ function t_conesEyeSensitivity
 
 % This legacy tutorial deliberately errors while its analytical comparison
 % is being repaired, so omit it from the automated tutorial smoke run.
-% UTTBSkip
+% SkipFile
 
 % History:
 %   02/01/19 jsc      Wrote initial version.

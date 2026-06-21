@@ -2,7 +2,7 @@
 %
 
 % Requires locally configured precomputed mRGC resources.
-% UTTBSkip
+% SkipFile
 % Description:
 %    Demonstrates
 %        - how to visualize different aspects

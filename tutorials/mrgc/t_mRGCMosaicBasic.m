@@ -2,7 +2,7 @@
 %
 
 % Requires locally configured precomputed mRGC resources.
-% UTTBSkip
+% SkipFile
 % Description:
 %    Demonstrates
 %        - how to select one of the pre-computed midget RGC mosaics,

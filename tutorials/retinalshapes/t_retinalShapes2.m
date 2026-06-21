@@ -3,6 +3,9 @@
 % Integrate
 % See also
 %   t_cones*
+%
+% SkipFile
+%
 
 %% Initialize and clear
 ieInit;
@@ -42,7 +45,7 @@ cm.visualize;
 % aperture?  SCE to think about.
 %
 
-% These are the positions.  
+% These are the positions.
 pos = cm.coneRFpositionsMicrons;
 pos = pos*1e-3;   % Positions in millimeters?  Or meters?
 

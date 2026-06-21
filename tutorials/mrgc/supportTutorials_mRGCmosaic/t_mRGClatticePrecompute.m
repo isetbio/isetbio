@@ -9,11 +9,11 @@
 %        isetbio/data/datafiles/rgc/lattices
 %
 %    This takes a very long time to run, and I'm not sure we want to write
-%    out mosaics by default.  The UTTBSkip comment below prevents this from
+%    out mosaics by default.  The SkipFile comment below prevents this from
 %    being autorun.  And I set up a conditional at the bottom so it doesn't
 %    write anything out unless you change the default value.
 
-% UTTBSkip
+% SkipFile
 
 % History:
 %    04/21/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.

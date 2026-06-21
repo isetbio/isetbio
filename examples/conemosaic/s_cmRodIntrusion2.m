@@ -14,10 +14,10 @@ ieInit;
 hParms = harmonicP;
 hParms.row = 1024; hParms.col = 1024; hParms.freq = 10;
 scene = sceneCreate('harmonic',hParms);
-scene = sceneSet(scene,'fov',10);
+stimulusFOVDegs = 5;
+scene = sceneSet(scene,'fov',stimulusFOVDegs);
 
 oi = oiCreate('human'); oi = oiCompute(oi,scene); oiWindow(oi);
-oi = oiCompute(oi,scene); oiWindow(oi);
 
 
 %% Cone aperture rule
@@ -102,7 +102,7 @@ cMPeriphery.visualize;
 
 
 %%
-oi = oiSet(oi,'fov',10);
+oi = oiSet(oi,'fov',stimulusFOVDegs);
 allE = cM1.compute(oi);
 uData = cM1.plot('excitations',allE);
 
@@ -147,7 +147,6 @@ cM4 = cMosaic(...
     'randomSeed', 1234);
 allE = cM4.compute(oi);
 uData = cM4.plot('excitations',allE);
-
 
 
 

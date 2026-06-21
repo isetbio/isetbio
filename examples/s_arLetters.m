@@ -3,7 +3,7 @@
 % ISETBio-ISET3D
 %
 % Requires ISET3D, Docker, and long-running rendering.
-% UTTBSkip
+% SkipFile
 
 %% The cone mosaic at different eccentricities 
 
