@@ -68,7 +68,10 @@ function t_MPandLensAdustedQuantalEfficiency
     % Show the various changes induced in the quantal cone efficiencies
     % by the macular pigment and the lens
     hFig = figure(1); clf
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [200 300 800 650], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
 
 
     subplot(2,2,1)
@@ -113,7 +116,10 @@ end
 
 function plotMPBoostMap(theConeMosaic, macularPigmentBoostFactors)
     hFig = figure(2); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [700 300 800 850], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
 
     ax = subplot(2,1,1);
     theConeMosaic.visualize(...

@@ -31,10 +31,16 @@ scene = sceneSet(scene, 'fov', max(mosaicSizeDegs)*1.1);
 
 %% Set up figures and subfigs
 hFig1 = figure(1);
+originalFigureUnits = hFig1.Units;
+hFig1.Units = 'pixels';
 set(hFig1, 'Position', [10 10 1400 1200], 'Name', 'optics');
+hFig1.Units = originalFigureUnits;
 
 hFig2 = figure(2);
+originalFigureUnits = hFig2.Units;
+hFig2.Units = 'pixels';
 set(hFig2, 'Position', [1000 10 1400 1200], 'Name', 'mosaic responses');
+hFig2.Units = originalFigureUnits;
 
 sv = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 3, ...
@@ -106,4 +112,3 @@ for yOffset = 1:3
 
 end
 end
-

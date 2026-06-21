@@ -196,7 +196,10 @@ function visualizeEverything(theScene, theOI, theConeMosaic, coneExcitations, ..
 
     % Visualize scene and optical image
     hFig = figure(100); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 2400 1300], 'Color', [ 1 1 1]);
+    hFig.Units = originalFigureUnits;
     colsNum = 1;
     rowsNum = 3;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -249,7 +252,10 @@ end
 
 function visualizePSFsamples(theOI, sampledWavelengths)
     hFig = figure(); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig,  'Color', [1 1 1], 'Position', [10 10 1800 600]);
+    hFig.Units = originalFigureUnits;
     colsNum = 7;
     rowsNum = 2;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...

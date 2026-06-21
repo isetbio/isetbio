@@ -145,7 +145,10 @@ tickLabel = xyRange(1):5:xyRange(2);
 if (rowNo == 1)
     hFig = figure(1);
     clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 1600 1100]);
+    hFig.Units = originalFigureUnits;
 else
     figure(1);
 end

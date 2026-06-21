@@ -571,7 +571,10 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, ...
 
     hFig = figure();
     clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 2000 900], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
     subplot('Position', subplotPosVectors(1, 1).v);
     plot(timeAxis, peakIncLconeResponsesAdaptingStim', 'r-');
     hold on;

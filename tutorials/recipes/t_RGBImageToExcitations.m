@@ -130,7 +130,12 @@ oi = oiSet(oi,'wave',wave);
 % by hand
 plotWls = [400 500 550 600 700];
 plotLimMinutes = 100;
-figure; set(gcf,'Position',[10 10 length(plotWls)*300 300]); clf;
+hFig = figure;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
+set(hFig, 'Position', [10 10 length(plotWls)*300 300]);
+hFig.Units = originalFigureUnits;
+clf;
 for i = 1:length(plotWls)
     subplot(1,length(plotWls),i);
     uData = oiPlot(oi,'psf','wave',plotWls(i),'nofigure');

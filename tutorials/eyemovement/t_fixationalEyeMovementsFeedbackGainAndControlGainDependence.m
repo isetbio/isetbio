@@ -80,16 +80,28 @@ subplotPosVectors = NicePlot.getSubPlotPosVectors(...
 % Prepare figures
 hFig1 = figure(1);
 clf;
+originalFigureUnits = hFig1.Units;
+hFig1.Units = 'pixels';
 set(hFig1, 'Position', [10 10 1400 950], 'Color', [1 1 1]);
+hFig1.Units = originalFigureUnits;
 hFig2 = figure(2);
 clf;
+originalFigureUnits = hFig2.Units;
+hFig2.Units = 'pixels';
 set(hFig2, 'Position', [100 10 1400 950], 'Color', [1 1 1]);
+hFig2.Units = originalFigureUnits;
 hFig3 = figure(3);
 clf;
+originalFigureUnits = hFig3.Units;
+hFig3.Units = 'pixels';
 set(hFig3, 'Position', [200 10 1400 950], 'Color', [1 1 1]);
+hFig3.Units = originalFigureUnits;
 hFig4 = figure(4);
 clf;
+originalFigureUnits = hFig4.Units;
+hFig4.Units = 'pixels';
 set(hFig4, 'Position', [300 10 1400 950], 'Color', [1 1 1]);
+hFig4.Units = originalFigureUnits;
 % hFig5 = figure(5);
 % clf;
 % set(hFig5, 'Position', [400 10 1400 950], 'Color', [1 1 1]);

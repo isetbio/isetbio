@@ -99,22 +99,21 @@ current = cm.current(excitations,irf,timeAxis);
 
 % Plot one cone's excitation and current rather than rendering videos.
 [~, targetConeID] = max(mean(excitations, [1 2]));
-ieNewGraphWin;
+ieFigure;
 plot(timeAxis, squeeze(excitations(1,:,targetConeID)), 'b-', ...
     timeAxis, squeeze(current(1,:,targetConeID)), 'r-');
 xlabel('Time (seconds)');
 legend({'Excitations', 'Current'});
 grid on;
 
-%% END
 
 %% Visualize time-series response of a single cone
-%{
+
 % Find the cone with max noise-free response
 [~,idx] = max(excitations(:));
 [~,~,targetConeID] = ind2sub(size(excitations), idx);
 
-ieNewGraphWin;
+ieFigure;
 
 % Plot the time series response for individual trials
 plot(timeAxis, squeeze(excitations(:,:,targetConeID)), 'b--');
@@ -128,4 +127,6 @@ xlabel('Time (seconds)');
 ylabel('Excitations per integration time');
 set(gca, 'FontSize', 16);
 grid on;
-%}
+
+
+%% END

@@ -63,7 +63,10 @@ subjectRankOrder = 1;
 
 %% Setup figure
 hFig = figure(1); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 2400 1100], 'Color', [1 1 1]);
+hFig.Units = originalFigureUnits;
 rowsNum = 4;
 colsNum = 10;
 sv = NicePlot.getSubPlotPosVectors(...

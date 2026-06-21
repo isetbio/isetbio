@@ -84,7 +84,10 @@ for subjectRankOrder = 1
     % Setup a very large and complex figure.  This might
     % not fit well on your screen.
     hFig = figure(1); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [0 0 3000 1500], 'Color', [0 0 0]);
+    hFig.Units = originalFigureUnits;
 
     rowsNum = numel(mosaicEccDegsY);
     colsNum = numel(mosaicEccDegsX);

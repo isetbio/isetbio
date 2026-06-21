@@ -59,7 +59,10 @@ function t_osCurrentsVsLuminanceLevel
 
     
     hFig = figure(1); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 1800 1200]);
+    hFig.Units = originalFigureUnits;
      
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -186,7 +189,10 @@ function t_osCurrentsVsLuminanceLevel
     
 
     hFig2 = figure(2); clf;
+    originalFigureUnits = hFig2.Units;
+    hFig2.Units = 'pixels';
     set(hFig2, 'Position', [10 10 900 1290], 'Color', [1 1 1]);
+    hFig2.Units = originalFigureUnits;
     
     modelRegime = [500 20000];
     modelRegimeY = [modelRegime(1) modelRegime(1) modelRegime(2) modelRegime(2) modelRegime(1)];

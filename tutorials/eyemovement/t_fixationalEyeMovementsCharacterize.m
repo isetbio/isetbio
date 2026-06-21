@@ -222,8 +222,11 @@ function visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
     % Plot the results
     hFig = figure();
     clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Name', figureName, 'Position', [0 0 1150 950], ...
         'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
 
     % emPlots - position (last trial)
     subplot(3, 3, [1 2]);

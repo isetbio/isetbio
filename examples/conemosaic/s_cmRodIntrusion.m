@@ -15,7 +15,10 @@ function s_cmRodIntrusion()
     load(fullfile(isetbioRootPath, 'tutorials/cones/resources/CurcioConesRods'));
 
     hFig = figure(1);clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [70 70 1280 890]);
+    hFig.Units = originalFigureUnits;
 
     % Plot it
     ax = subplot('Position', [0.01 0.01 0.48 0.98]);
@@ -135,7 +138,10 @@ function s_cmRodIntrusion()
 
     % Show mosaic activations to a uniform field
     hFig = figure(3);clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [70 70 720 950]);
+    hFig.Units = originalFigureUnits;
 
     uniformFieldOI = generateTestOI();
 

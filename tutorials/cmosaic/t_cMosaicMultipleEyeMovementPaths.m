@@ -70,7 +70,10 @@ cm.visualize();
 
 
 hFig = figure(2); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [100 300 1120 1060]);
+hFig.Units = originalFigureUnits;
 subplotPos = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 8, ...
        'colsNum', 8, ...

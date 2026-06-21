@@ -85,7 +85,10 @@ cm = cMosaic(...
     
 %% Setup figure
 hFig = figure(1); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 1500 800], 'Color', [1 1 1]);
+hFig.Units = originalFigureUnits;
 rowsNum = 2;
 colsNum = 5;
 sv = NicePlot.getSubPlotPosVectors(...

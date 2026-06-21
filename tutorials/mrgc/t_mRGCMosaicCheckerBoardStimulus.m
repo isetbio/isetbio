@@ -120,7 +120,10 @@ function visualizeMRGCMosaicActivation(figNo, theMRGCMosaic, theMRGCMosaicRespon
         visualizedResponseGain, numberOfChecks, postFix, saveFigures, figureDir)
 
     hFig = figure(figNo); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [0 0 0], 'Name', postFix);
+    hFig.Units = originalFigureUnits;
     ax = subplot('Position', [0.05 0.05 0.94 0.94]);
 
     theMRGCMosaic.visualize(...
@@ -160,7 +163,10 @@ function visualizeInputConeMosaicActivation(figNo, theMRGCMosaic, theConeMosaicR
         visualizedResponseGain, numberOfChecks, saveFigures, figureDir)
 
     hFig = figure(figNo);clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [0 0 0]);
+    hFig.Units = originalFigureUnits;
     ax = subplot('Position', [0.05 0.05 0.94 0.94]);
 
     theMRGCMosaic.inputConeMosaic.visualize(...
@@ -195,7 +201,10 @@ end
 
 function visualizeRetinalOpticalImage(figNo, theMRGCMosaic, theStimulusRetinalImage, saveFigures, figureDir)
     hFig = figure(figNo); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
     ax = subplot('Position', [0.05 0.05 0.94 0.94]);
 
     theMRGCMosaic.inputConeMosaic.visualize(...
@@ -222,7 +231,10 @@ function visualizeTheMRGCMosaic(figNo,theMRGCMosaic, saveFigures, figureDir)
     % Here, we visualize the mRGCMosaic (RF centers) without with the input cone mosaic.
     % In this visualization, the gray contours identify the mRGC RF centers
     hFig = figure(figNo); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
     ax = subplot('Position', [0.05 0.05 0.94 0.94]);
     theMRGCMosaic.visualize(...
         'figureHandle', hFig, ...

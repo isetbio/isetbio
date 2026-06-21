@@ -102,7 +102,10 @@ theNewConeMosaic = cMosaic(...
 %% Visualize the 2 mosaics
 fprintf('Visualizing mosaics ...\n');
 hFig = figure(1); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 1100 900]);
+hFig.Units = originalFigureUnits;
 ax = subplot(2,2,1); cla(ax);
 theOldConeMosaic.visualizeGrid(...
     'axesHandle', ax, ...
@@ -254,7 +257,10 @@ newMosaicSconeResponsesNonInterleaved = cat(1, newMosaicSconeResponsesNonInterle
 
 %% Plot performance charts
 hFig = figure(2); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 500 800 400]);
+hFig.Units = originalFigureUnits;
 
 % The compute time plot
 ax = subplot(1,3,1);
@@ -309,7 +315,10 @@ end
 
 %% Plot correspondence of responses
 hFig = figure(3); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 500 1200 400]);
+hFig.Units = originalFigureUnits;
 ax1 = subplot(2,3,1);
 ax2 = subplot(2,3,4);
 plotCorrespondences(ax1, ax2, activationRange, oldMosaicLconeResponsesInterleaved, newMosaicLconeResponsesInterleaved, 'L-cones (interleaved)');
@@ -321,7 +330,10 @@ ax2 = subplot(2,3,6);
 plotCorrespondences(ax1, ax2, activationRange, oldMosaicSconeResponsesInterleaved, newMosaicSconeResponsesInterleaved, 'S-cones (interleaved)')
 
 hFig = figure(4); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 500 1200 400]);
+hFig.Units = originalFigureUnits;
 ax1 = subplot(2,3,1);
 ax2 = subplot(2,3,4);
 plotCorrespondences(ax1, ax2, activationRange, oldMosaicLconeResponsesNonInterleaved, newMosaicLconeResponsesNonInterleaved, 'L-cones (non-interleaved)');
@@ -356,6 +368,5 @@ function plotCorrespondences(ax1, ax2, activationRange, oldMosaicResponse, newMo
     xlabel(ax2, 'excitations (@coneMosaicHex)');
     ylabel(ax2, 'error (%)');
 end
-
 
 

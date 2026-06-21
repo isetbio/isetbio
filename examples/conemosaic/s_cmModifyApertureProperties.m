@@ -55,7 +55,10 @@ sv = NicePlot.getSubPlotPosVectors(...
        'topMargin',      0.02);
    
 hFig = figure(1);
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 2500 1200]);
+hFig.Units = originalFigureUnits;
 
 
 
@@ -266,4 +269,3 @@ cm.visualize(...
     'backgroundColor', [0 0 0], ...
     'colorbarTickLabelColor', [0 1 0], ...
     'plotTitle', sprintf('differential response\n(Gaussian-Pillbox matching ChenMakoutWilliams1993)'));
-

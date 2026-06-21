@@ -161,7 +161,10 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
     videoOBJ.open();
 
     hFig = figure(1);clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Resize', 'off', 'Position', [300 500 1270 1000], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
     fontSize = 14;
 
     axMosaic = subplot(2,3,1);

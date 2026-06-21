@@ -242,7 +242,10 @@ function hFig = visualizeResponses(cm, r1, r2, emStruct, t1, t2, figNo, figName)
    cMap = brewermap(1024, 'reds');
    
    hFig = figure(figNo); clf;
+   originalFigureUnits = hFig.Units;
+   hFig.Units = 'pixels';
    set(hFig, 'Position', [10 10 1400 550], 'Name', figName);
+   hFig.Units = originalFigureUnits;
    ax = subplot('Position', sv(1,1).v);
    cm.visualize('figureHandle', hFig, 'axesHandle', ax, ...
                  'activation', r1(:), ...

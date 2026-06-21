@@ -55,7 +55,10 @@ else
 end
 
 hFig = figure(1000);
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 1300 1200]);
+hFig.Units = originalFigureUnits;
 
 % Visualize the left mosaic with the corresponding contour density plot
 % superimposed.
@@ -119,7 +122,10 @@ rightMosaicActivation = cmRight.compute(oi);
  
 %% Visualize mosaics
 hFig = figure(1000);
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 1300 1200]);
+hFig.Units = originalFigureUnits;
 
 % Visualize the meridian labeling convention
 ax = subplot('Position', [0.25 0.45 0.55 0.6]);
@@ -160,7 +166,10 @@ cmRight.visualize(...
 
 
 hFig = figure(1001); clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 1300 1200]);
+hFig.Units = originalFigureUnits;
 
 % Visualize the optical image
 ax = subplot('Position', [0.3 0.57 0.45 0.4]);

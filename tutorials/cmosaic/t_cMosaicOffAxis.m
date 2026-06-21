@@ -30,9 +30,10 @@ oi = oiCompute(oi, scene, 'pad value', 'mean');
 
 %% Set up figures and subfigs
 hFig = ieFigure;
-set(hFig,'Units','pixels');
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 1400 1200]);
-set(hFig,'Units','normalized');
+hFig.Units = originalFigureUnits;
 
 sv = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 1, ...

@@ -126,7 +126,10 @@ tTicks = (0:stimRefreshRate:10) * 1000;
 % Render results
 hFig = figure(10);
 clf;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [10 10 750 1100]);
+hFig.Units = originalFigureUnits;
 subplot(3, 1, 1);
 % Check ois time axis, i.e. number of frames
 stairs(ois.timeAxis * 1000, ois.modulationFunction, 'k', 'LineWidth', 1.5)
