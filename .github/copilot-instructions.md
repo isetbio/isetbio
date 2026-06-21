@@ -67,7 +67,7 @@ The `isetbioTutorialsTest` and `isetbioExamplesTest` runners execute `t_*` and
 runs, add this exact comment anywhere in the file:
 
 ```matlab
-% UTTBSkip
+% SkipFile
 ```
 
 Use this opt-out sparingly for files that require unavailable external data or
@@ -75,6 +75,13 @@ toolboxes, deliberate user interaction, unusually expensive computation, or a
 known failure that is explicitly documented nearby. The runners report these
 files as `Skipped`. Remove the tag when the file becomes suitable for routine
 automated execution.
+
+The legacy `% UTTBSkip` marker remains supported for compatibility, but new
+and updated files should use `% SkipFile`.
+
+ISETBio's wrappers use the shared ISETCam test engine. See
+`../isetcam/docs/tutorial-example-test-architecture.md` for the canonical run
+schema and the wrapper contract for additional repositories.
 
 ## ISETCam Pipeline
 
