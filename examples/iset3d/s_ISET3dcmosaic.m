@@ -13,7 +13,12 @@
 
 %%
 ieInit;
-if ~piDockerExists, piDockerConfig; end
+try
+    if ~piDockerExists, piDockerConfig; end
+catch
+    disp('ISET3d must be on your path');
+    return;
+end
 
 %% Read the recipe
 thisSE = sceneEye('chess set','eye model','navarro');

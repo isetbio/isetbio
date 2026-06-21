@@ -34,15 +34,27 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
 eccMicrons  = 1000*RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
 sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDegs, sqrt(sum(eccDegs.^2,2)));
 
-% Load cone positions
+% Load cone positions. Keep the most recently used full lattice in memory.
+% A typical lattice MAT-file is about 18 MB, and scripts often construct
+% several mosaics by cropping the same lattice. A one-entry cache avoids
+% repeated disk reads without retaining every eye/size variant. Use
+% `clear retinalattice.import.finalConePositions` to release the cache.
 p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
 theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
 [~, mosaicName, mosaicExt] = fileparts(theMosaicFileName);
-fprintf('Loading cone mosaic lattice: %s%s\n', mosaicName, mosaicExt);
-load(theMosaicFileName, 'rfPositions');
+persistent cachedMosaicFileName cachedRFPositions
+if isempty(cachedMosaicFileName) || ...
+        ~strcmp(cachedMosaicFileName, theMosaicFileName)
+    fprintf('Loading cone mosaic lattice: %s%s\n', mosaicName, mosaicExt);
+    latticeData = load(theMosaicFileName, 'rfPositions');
 
-% Reverse the polarity
-rfPositions = -rfPositions;
+    % Reverse the polarity once before caching the positions.
+    cachedRFPositions = -latticeData.rfPositions;
+    cachedMosaicFileName = theMosaicFileName;
+else
+    fprintf('Using cached cone mosaic lattice: %s%s\n', mosaicName, mosaicExt);
+end
+rfPositions = cachedRFPositions;
 
 rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
 

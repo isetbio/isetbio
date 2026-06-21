@@ -21,11 +21,16 @@
 %    than those in the current "correct" method. I am not sure if that has
 %    any significance.
 %
+% This is very old and should be updated. (BW).
+%
 % 03/31/18  dhb  Wrote it.
 % 10/26/18  dhb  Another try.
 
+%
+% SkipFile
+%
 %% Clear
-clear; close all;
+ieInit;
 
 %% Get Marimont-Wandell optics
 %
@@ -72,7 +77,8 @@ centerSample = floor(nSamples/2)+1;
 % with a sufficiently large tolerance not to throw an error.
 %
 % Make sure it is normalized to unit volume at each wavelength.
-PSFISETBio = opticsGet(optics,'psf data');
+tmp = opticsGet(optics,'psf data');
+PSFISETBio = tmp.psf;
 maxFracNegative = 0;
 for ww = 1:size(PSFISETBio,3)
     volume = sum(sum(PSFISETBio(:,:,ww)));
@@ -132,12 +138,12 @@ fprintf('Maximum fractional negative PSF in ISETBio method: %f\n',maxFracNegativ
 maxFracNegative = 0;
 for ww = 1:size(OTFMarimontWandell.OTF,3)
     % Get PSF the original isetbio way. Note that the raw psf does not have
-    % unit volumen with this method.
+    % unit volume with this method.
     PSFOrig(:,:,ww) = fftshift(fft2(fftshift(fftshift(OTFMarimontWandell.OTF(:,:,ww)))));
     if (abs(sum(sum(PSFOrig(:,:,ww)))-1) < 1e-3)
         fprintf('Orig PSF does have unit volume\n');
     end
-    if (min(min(PSFOrig(:,:,ww))) < 0 & abs(min(min(PSFOrig(:,:,ww)))/max(max(PSFOrig(:,:,ww)))) > maxFracNegative)
+    if (min(min(PSFOrig(:,:,ww))) < 0 && abs(min(min(PSFOrig(:,:,ww)))/max(max(PSFOrig(:,:,ww)))) > maxFracNegative)
         maxFracNegative = abs(min(min(PSFOrig(:,:,ww)))/max(max(PSFOrig(:,:,ww))));
     end
     
@@ -146,7 +152,7 @@ for ww = 1:size(OTFMarimontWandell.OTF,3)
     if (any(abs(imag(PSFOrig(:,:,ww))) > 1e-10))
         error('Computed psf is not sufficiently real');
     end
-    if (any(imag(PSFOrig(:,:,ww))) ~= 0)
+    if (any(imag(PSFOrig(:,:,ww))))
         PSFOrig(:,:,ww) = PSFOrig(:,:,ww) - imag(PSFOrig(:,:,ww))*1i;
     end
     
@@ -160,11 +166,15 @@ end
 fprintf('Maximum fractional negative PSF in original method: %f\n',maxFracNegative);
 
 %% Check for agreement at each between new and old ways of getting PSF
+PSF1ISETEBioThisWl = double(PSFISETBio(:,:,ww));
+PSFOrigThisWl      = double(PSFOrig(:,:,ww));
+fracMismatch(ww)   = max(abs(PSFOrigThisWl(:) - PSF1ISETEBioThisWl(:))) / max(PSF1ISETEBioThisWl(:));
 %
-% These bear reasonable but not perfect resemblence to each other. The old
-% way does not generate negative PSF values, whereas the new way does.
-% This is a little mysterious to me.
+% These bear reasonable but not perfect resemblance to each other. The
+% old way does not generate negative PSF values, whereas the new way
+% does. This is a little mysterious to me.
 maxFracMismatch = 0;
+PSFISETBio = double(opticsGet(optics,'psf data'));
 maxMismatchWlIndex = 0;
 for ww = 1:size(OTFMarimontWandell.OTF,3)
     PSF1ISETEBioThisWl = PSFISETBio(:,:,ww);

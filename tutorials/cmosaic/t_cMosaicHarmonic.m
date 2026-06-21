@@ -97,9 +97,12 @@ fname = sprintf('%s-harmonic-ecc-%d.mp4',fullfile(isetRootPath,'local','current'
 cm.movie(timeAxis,current,'filename',fname);
 
 % Play the movie (unless we are publishing the script)
-stackInfo = dbstack;
-if ~any(strcmp({stackInfo.name}, 'publish'))
-    implay(fname);
-end
+%{
+ stackInfo = dbstack;
+ if ~any(strcmp({stackInfo.name}, 'publish'))
+     implay(fname);
+ end
+%}
 
+%% END
 
