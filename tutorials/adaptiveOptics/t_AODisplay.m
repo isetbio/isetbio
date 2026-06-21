@@ -126,7 +126,7 @@ switch (powerSpecification)
         % The routine here finds the radiance on an external conventional display that
         % produces the same retinal illuminance as the corneal power specified
         % above.  This is purely geometric calculation; attenuation of light by
-        % occular media is not taken into account at this stage.  Note that this
+        % ocular media is not taken into account at this stage.  Note that this
         % conversion routine expects power per wavelength band, not power per nm,
         % as its input, but returns power per nm as its output.  A little
         % confusing, but that is why the spd being passed in is multiplied by the
@@ -167,7 +167,7 @@ end
 % is basically in focus for an emmetropic eye accommodated to infinity.
 theScene = sceneCreate('empty');
 theScene = sceneSet(theScene,'wavelength',wls);
-theScene =  sceneSet(theScene,'distance',2);
+theScene = sceneSet(theScene,'distance',2);
 theScene = sceneSet(theScene, 'h fov', backgroundSizeDegs);
 
 % Make an image with the background + spot spectral radiance at all locations
@@ -202,8 +202,7 @@ radiancePhotonsSpot = Energy2Quanta(wls,radianceEnergySpot);
 theScene = sceneSet(theScene,'photons',radiancePhotonsSpot);
 
 % Visualize scene
-vcAddAndSelectObject(theScene);
-sceneWindow;
+sceneWindow(theScene);
 
 %% Build the oi
 %
@@ -259,7 +258,7 @@ theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 opticsP = oiGet(theOI, 'optics');
 opticsP = opticsSet(opticsP, 'model', 'shift invariant');
 opticsP = opticsSet(opticsP, 'name', 'AO tutorial');
-theOI = oiSet(theOI,'optics',opticsP);
+theOI   = oiSet(theOI,'optics',opticsP);
 
 % Compute the retinal image and visualize.  Note that to convolve with the
 % PSF, we have to pad the outside of the image with something, and we
@@ -270,8 +269,7 @@ theOI = oiSet(theOI,'optics',opticsP);
 % an image when you convolve, unless you think hard about how to extend
 % beyond the image.
 theOI = oiCompute(theOI,theScene,'pad value','mean');
-vcAddAndSelectObject(theOI);
-oiWindow;
+oiWindow(theOI);
 
 %% Create the coneMosaic object
 %

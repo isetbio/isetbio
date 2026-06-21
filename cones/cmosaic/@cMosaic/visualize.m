@@ -12,7 +12,7 @@ function visualizationParams = visualize(obj, varargin)
 %
 % Input
 %   obj - a cMosaic
-% 
+%
 % Optional key/val
 %   Many.  Not yet documented here.  Sigh.
 %
@@ -37,7 +37,7 @@ function visualizationParams = visualize(obj, varargin)
 %        visParams = cm.visualize('params')
 %
 %   Also, display the various settable params and info about them
-%   
+%
 %        cm.visualize('help');
 %
 %  The source code contains examples.
@@ -63,15 +63,15 @@ cm.visualize('density contour overlay',true,...
 
 %% History
 %  12/19/23  dhb  Add 'verbose' flag.  Remove red from text that isn't
-%                 actually an error.  In general, any text printed by a 
+%                 actually an error.  In general, any text printed by a
 %                 function would ideally be controllable all the way down
 %                 a calling chain, and won't be red unless it represents
 %                 something bad.  Here, I don't think visualizing a
 %                 circular aperture as a circle rises to red.
 
-%% If the call is 
+%% If the call is
 %
-%   cm.visualize('params') or cm.visualize('help') 
+%   cm.visualize('params') or cm.visualize('help')
 %
 % we provide some help.
 %
@@ -82,8 +82,8 @@ else
     visualizationParams = '';
 end
 
-%% If key/val pairs, force to lower case, no spaces.  
-% 
+%% If key/val pairs, force to lower case, no spaces.
+%
 % I (BW) spent a lot of time arranging this, but it is always possible I
 % missed something.
 if numel(varargin) > 1
@@ -284,7 +284,7 @@ switch (domain)
         rfSpacings = obj.coneRFspacingsDegs;
         rfApertureDiameters = obj.coneApertureDiametersDegs;
         rfDiameters = rfApertureDiameters/obj.coneApertureToDiameterRatio;
-        
+
         rfProximityThreshold = 1/270;
         if (isstruct(displayedEyeMovementData))
             emPath = -1/60*obj.fixEMobj.emPosArcMin(displayedTrials,displayedTimePoints,:);
@@ -296,7 +296,7 @@ switch (domain)
         rfSpacings = obj.coneRFspacingsMicrons;
         rfApertureDiameters = obj.coneApertureDiametersMicrons;
         rfDiameters = rfApertureDiameters/obj.coneApertureToDiameterRatio;
-        
+
         rfProximityThreshold = 1;
         if (isstruct(displayedEyeMovementData))
             emPath = -obj.fixEMobj.emPosMicrons(displayedTrials,displayedTimePoints,:);
@@ -347,9 +347,40 @@ end
 
 %% Set figure size
 if (isempty(figureHandle))
-    figureHandle = figure(); clf;
-    set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-    axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
+    % Create a figure only if the handle is empty or invalid.
+    if isempty(figureHandle) || ~ishandle(figureHandle)
+        figureHandle = ieFigure();
+    else
+        figure(figureHandle);
+    end
+
+    % Save previous Units, set to pixels while changing Position, then
+    % ensure restoration with onCleanup so it's restored even on error.
+    prevUnits = get(figureHandle, 'Units');
+    % Validate prevUnits
+    if isempty(prevUnits)
+        prevUnits = 'pixels';
+    end
+
+    % onCleanup object restores Units on function exit or error.
+    restoreUnits = onCleanup(@() set(figureHandle, 'Units', prevUnits));
+
+    set(figureHandle, 'Units', 'pixels');      % make Position refer to pixels
+    set(figureHandle, 'Position', [10 10 700 700]);
+    set(figureHandle, 'Color', [1 1 1]);       % set background color
+    % restoreUnits will run automatically when leaving the scope
+
+    % Ensure axesHandle is valid before creating a new subplot to avoid
+    % assigning an invalid handle which can lead to unexpected behavior.
+    if isempty(axesHandle) || ~ishandle(axesHandle)
+        axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
+    else
+        % If the existing axes belong to a different figure, reparent them.
+        if get(axesHandle, 'Parent') ~= figureHandle
+            delete(axesHandle);
+            axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
+        end
+    end
 else
     if (isempty(axesHandle))
         figure(figureHandle);
@@ -380,25 +411,6 @@ else
     deltaAngle = 360/visualizedConeApertureThetaSamples;
 end
 
-%{ 
-% BW removed.  To delete if no one complains.
-    if (conesNum < 100)
-        deltaAngle = 5;  % 72 samples
-    elseif (conesNum < 500)
-        deltaAngle = 10;
-    elseif (conesNum < 1000)
-        deltaAngle = 15;
-    elseif (conesNum < 2000)
-        deltaAngle = 20;
-    elseif (conesNum < 40000)
-        deltaAngle = 30;
-    elseif (conesNum < 60000)
-        deltaAngle = 45;
-    else
-        deltaAngle = 60;  % 6 samples
-    end
-
-%}
 % Generate cone aperture shape as a set of (x,y) values.  The
 % deltaAngle determines the sampling rate around the circle.
 iTheta = (0:deltaAngle:360) / 180 * pi;
@@ -414,13 +426,13 @@ hold(axesHandle, 'on');
 switch (ieParamFormat(visualizedConeAperture))
     case ieParamFormat('coneSpacing')
         visualizedApertures = rfSpacings;
-        
+
     case ieParamFormat('geometricArea')
         visualizedApertures = rfDiameters;
-        
+
     case ieParamFormat('lightCollectingArea')
         visualizedApertures = rfApertureDiameters;
-        
+
     case ieParamFormat('lightCollectingAreaCharacteristicDiameter')
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
@@ -431,7 +443,7 @@ switch (ieParamFormat(visualizedConeAperture))
             end
             visualizedApertures = rfApertureDiameters;
         end
-        
+
     case ieParamFormat('lightCollectingArea2sigma')
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
@@ -442,7 +454,7 @@ switch (ieParamFormat(visualizedConeAperture))
             end
             visualizedApertures = rfApertureDiameters;
         end
-        
+
     case ieParamFormat('lightCollectingArea4sigma')
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
@@ -453,7 +465,7 @@ switch (ieParamFormat(visualizedConeAperture))
             end
             visualizedApertures = rfApertureDiameters;
         end
-        
+
     case ieParamFormat('lightCollectingArea5sigma')
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
@@ -464,7 +476,7 @@ switch (ieParamFormat(visualizedConeAperture))
             end
             visualizedApertures = rfApertureDiameters;
         end
-        
+
     case ieParamFormat('lightCollectingArea6sigma')
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
@@ -475,7 +487,7 @@ switch (ieParamFormat(visualizedConeAperture))
                 fprintf('Cone aperture is not Gaussian, so cannot visualize 6xsigma. Visualizing the diameter\n');
             end
         end
-        
+
     otherwise
         error('Unknown visualizedConeAperture (%s)', visualizedConeAperture);
 end
@@ -490,12 +502,12 @@ if (~isempty(activation))
         activationRange(1) = activationRange(1)-0.1;
         activationRange(2) = activationRange(2)+0.1;
     end
-    
-    
+
+
     activation = (activation - activationRange(1))/(activationRange(2)-activationRange(1));
     activation(activation<0) = 0;
     activation(activation>1) = 1;
-    
+
     % Visualize activations
     faceAlpha = 1.0;
     edgeAlpha = 1.0;
@@ -511,7 +523,7 @@ if (~isempty(activation))
     % Plot K-cone activations
     renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.kConeIndices)*0.5, ...
         rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1, faceAlpha, edgeAlpha);
-    
+
     if (~isempty(verticalActivationSliceEccentricity))
         d = abs(rfPositions(:,2)-verticalActivationSliceEccentricity);
         idx = find(d < rfProximityThreshold);
@@ -532,7 +544,7 @@ if (visualizeCones)
     else
         edgeColor = [0.5 0.5 0.5];
     end
-    
+
     if (~isempty(activation))
         faceAlphaCones = 0.0;
         edgeColor = [1 0 0];
@@ -550,14 +562,14 @@ if (visualizeCones)
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedLconeIndices)*0.5, ...
             rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
     end
-    
+
     % Plot M-cones
     if (labelCones) || (~isempty(labelConesWithIndices))
         edgeColor = [0.1 0.1 0.1];
     else
         edgeColor = [0.5 0.5 0.5];
     end
-    
+
     if (~isempty(activation))
         faceAlphaCones = 0.0;
         edgeColor = [0 1 0];
@@ -575,8 +587,8 @@ if (visualizeCones)
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedMconeIndices)*0.5, ...
             rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
     end
-    
-    
+
+
     % Plot S-cones
     if (labelCones)  || (~isempty(labelConesWithIndices))
         edgeColor = [0.1 0.1 0.1];
@@ -602,8 +614,8 @@ if (visualizeCones)
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedSconeIndices)*0.5, ...
             rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
     end
-    
-    
+
+
     % Plot K-cones
     if (labelCones)  || (~isempty(labelConesWithIndices))
         edgeColor = [1 1 0];
@@ -638,7 +650,7 @@ if (densityContourOverlay)
     % Compute dense 2D map
     sampledPositions{1} = linspace(xRange(1), xRange(2), 24);
     sampledPositions{2} = linspace(yRange(1), yRange(2), 24);
-    
+
     % Convert spacing to density
     if (strcmp(domain, 'microns'))
         % Convert to mm, so we report density in cones / mm^2
@@ -646,9 +658,9 @@ if (densityContourOverlay)
     else
         density2DMap = cMosaic.densityMap(rfPositions, rfSpacings, sampledPositions);
     end
-    
+
     [densityContourX,densityContourY] = meshgrid(sampledPositions{1}, sampledPositions{2});
-    
+
     % Render contour map
     if (isempty(densityContourLevels))
         densityContourLevels = round(prctile(density2DMap(:), [1 5 15 30 50 70 85 95 99])/100)*100;
@@ -679,11 +691,11 @@ if (~isempty(crossHairsAtPosition))
     xx2 = crossHairsAtPosition(1)*[1 1];
     yy2 = [yRange(1) yRange(2)];
     plot(axesHandle, xx1, yy1, '-', 'Color', crossHairsColor, 'LineWidth', 1.5);
-    plot(axesHandle, xx2, yy2,  '-', 'Color', crossHairsColor,'LineWidth', 1.5); 
+    plot(axesHandle, xx2, yy2,  '-', 'Color', crossHairsColor,'LineWidth', 1.5);
 end
 
 if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
-    
+
     if (isempty(crossHairsColor))
         if (isempty(activation))
             if (strcmp(backgroundColor, 'none'))
@@ -695,7 +707,7 @@ if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairs
             crossHairsColor = [1 0 0];
         end
     end
-    
+
     if (crossHairsOnMosaicCenter)
         % Crosshairs centered on the middle of the mosaic
         xx1 = [xRange(1) xRange(2)];
@@ -772,7 +784,7 @@ if (~isempty(superimposedRGBopticalImage))
 
     assert(numel(superimposedRGBopticalImageSpatialSupportMicrons) == size(superimposedRGBopticalImage,2), ...
         'The **spatial support** of superimposed RGB optical image does not match the size of the passed superimposed RGC optical image');
-    
+
     superimposeRGBopticalImage(obj, axesHandle, domain, ...
         superimposedRGBopticalImageSpatialSupportMicrons, ...
         superimposedRGBopticalImageSpatialSupportMicrons, ...
@@ -802,7 +814,7 @@ else
     if (isempty(cMap))
         cMap = gray(numel(obj.coneRFspacingsDegs)); %brewermap(numel(obj.coneRFspacingsDegs), '*greys');
     end
-    
+
     if (ischar(backgroundColor) && strcmp(backgroundColor, 'mean of color map'))
         midRow = round(size(cMap,1)/2);
         backgroundColor = squeeze(cMap(midRow,:));
@@ -816,7 +828,7 @@ if (~isempty(activation))
         colorBarTicks = [0.00 0.25 0.5 0.75 1.0];
         colorBarTickLabels = cell(1, numel(colorBarTicks));
         colorBarTickLevels = activationRange(1) + (activationRange(2)-activationRange(1)) * colorBarTicks;
-        
+
         for k = 1:numel(colorBarTicks)
             if (max(abs(colorBarTickLevels)) >= 10)
                 colorBarTickLabels{k} = sprintf('%2.0f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
@@ -828,7 +840,7 @@ if (~isempty(activation))
                 colorBarTickLabels{k} = sprintf('%2.3f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
             end
         end
-        
+
         if (isempty(colorbarFontSize))
             colorbarFontSize = fontSize/2;
         end
@@ -882,12 +894,12 @@ if (isempty(domainVisualizationTicks))
     yy = yRange(2)-yRange(1);
     ticksX = xo + xx*0.5*[-0.75 0 0.75];
     ticksY = yo + yy*0.5*[-0.75 0 0.75];
-    
+
     signX = sign(ticksX);
     signY = sign(ticksY);
     ticksX = abs(ticksX);
     ticksY = abs(ticksY);
-    
+
     if (xx > 10)
         domainVisualizationTicks.x = round(ticksX);
     elseif (xx > 5)
@@ -948,7 +960,7 @@ switch (domain)
             end
         end
         minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
-        
+
         if (minTickIncrement >= 0.1)
             set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                 'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
@@ -956,7 +968,7 @@ switch (domain)
             set(axesHandle, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
                 'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
         end
-        
+
     case 'microns'
         if (~noXlabel)
             if (labelRetinalMeridians)
@@ -1062,20 +1074,20 @@ end
 %% Method to superimpose an optical image on top of the mosaic
 function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, ...
     theOI, superimposedRGBimageAlpha)
-    
-    % Get the rgb value
-    theOpticalImageRGB = oiGet(theOI, 'rgb');
 
-    % Obtain spatial support in microns
-    theSpatialSupportMeters = oiGet(theOI, 'spatial support');
+% Get the rgb value
+theOpticalImageRGB = oiGet(theOI, 'rgb');
 
-    % Obtain spatial support in microns
-    xSupportMicrons = squeeze(theSpatialSupportMeters(1,1:end,1)) * 1e6;
-    ySupportMicrons = squeeze(theSpatialSupportMeters(1:end,1,2)) * 1e6;
+% Obtain spatial support in microns
+theSpatialSupportMeters = oiGet(theOI, 'spatial support');
 
-    % Render the RGBimage
-    superimposeRGBopticalImage(obj,axesHandle, visualizationDomain, ...
-        xSupportMicrons, ySupportMicrons, theOpticalImageRGB, superimposedRGBimageAlpha);
+% Obtain spatial support in microns
+xSupportMicrons = squeeze(theSpatialSupportMeters(1,1:end,1)) * 1e6;
+ySupportMicrons = squeeze(theSpatialSupportMeters(1:end,1,2)) * 1e6;
+
+% Render the RGBimage
+superimposeRGBopticalImage(obj,axesHandle, visualizationDomain, ...
+    xSupportMicrons, ySupportMicrons, theOpticalImageRGB, superimposedRGBimageAlpha);
 end
 
 
