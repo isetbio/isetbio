@@ -385,7 +385,12 @@ else
     if (isempty(axesHandle))
         figure(figureHandle);
         clf;
+        % A supplied figure may use normalized units. Position is specified
+        % in pixels, so switch units explicitly and then restore them.
+        originalFigureUnits = figureHandle.Units;
+        figureHandle.Units = 'pixels';
         set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
+        figureHandle.Units = originalFigureUnits;
         axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
     end
 
@@ -1179,5 +1184,4 @@ S.EdgeAlpha = edgeAlpha;
 S.LineWidth = lineWidth;
 patch(S, 'Parent', axesHandle);
 end
-
 

@@ -9,7 +9,10 @@ function visualizeDynamicMRGCMosaicResponse(figNo, theMRGCMosaic, visualizedMRGC
     domainVisualizationLimits(3:4) = theMRGCMosaic.eccentricityDegs(2) + visualizedHeightDegs * 0.5*[-1 1];
 
     hFig = figure(figNo); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
     ax = subplot('Position', [0.035 0.03 0.96 0.96]);
     theMRGCMosaic.visualize(...
         'figureHandle', hFig, ...
@@ -28,7 +31,10 @@ function visualizeDynamicMRGCMosaicResponse(figNo, theMRGCMosaic, visualizedMRGC
 
     %% Visualize the time course of activation of select mRGC responses
     hFig = figure(figNo+1); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [10 10 750 1150], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
 
     
     visualizedMRGCXcoords = squeeze(theMRGCMosaic.rgcRFpositionsDegs(visualizedMRGCindices,1));
@@ -77,7 +83,10 @@ function visualizeDynamicMRGCMosaicResponse(figNo, theMRGCMosaic, visualizedMRGC
     if (exportVideo)
         %% Visualize the mean spatiotemporal response as a video
         hFig = figure(figNo+4); clf;
+        originalFigureUnits = hFig.Units;
+        hFig.Units = 'pixels';
         set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
+        hFig.Units = originalFigureUnits;
         ax = subplot('Position', [0.035 0.03 0.96 0.96]);
     
         videoOBJ = VideoWriter(videoFileName, 'Uncompressed AVI');
