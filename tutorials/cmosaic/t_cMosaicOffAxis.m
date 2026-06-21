@@ -29,8 +29,10 @@ oi = oiCreate('wvf human');
 oi = oiCompute(oi, scene, 'pad value', 'mean');
 
 %% Set up figures and subfigs
-hFig = figure(1);
+hFig = ieFigure;
+set(hFig,'Units','pixels');
 set(hFig, 'Position', [10 10 1400 1200]);
+set(hFig,'Units','normalized');
 
 sv = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 1, ...
