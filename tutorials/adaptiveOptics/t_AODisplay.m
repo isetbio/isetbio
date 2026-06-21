@@ -304,19 +304,6 @@ emPath = zeros(nTrialsNum, 1, 2);
 
 % Compute isomerizations for each eye position.
 theExcitations = theMosaic.compute(theOI);
-
-% Plot a lightweight map of the cone excitations.  The detailed aperture
-% rendering produced by cMosaic.plot can overwhelm MATLAB Desktop's
-% graphics renderer for this relatively large foveal mosaic.
-conePositionsDegs = theMosaic.coneRFpositionsDegs;
-excitationMap = squeeze(theExcitations);
-ieNewGraphWin([], [], 'Cone excitations');
-scatter(conePositionsDegs(:,1), conePositionsDegs(:,2), 8, ...
-    excitationMap, 'filled');
-axis image;
-xlabel('Horizontal position (deg)');
-ylabel('Vertical position (deg)');
-title('Cone excitations');
-colorbar;
+theMosaic.plot('excitations',theExcitations);
 
 %% END

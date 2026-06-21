@@ -83,26 +83,42 @@ hdl = figureHandle;
 switch plotType
     case {'conemosaic', 'mosaic'}
         if ~p.Results.dataonly
-            [uData, hdl] = localVisualize(cmosaic, [], p, false, ...
-                figureHandle, axesHandle, uData);
+            % Preserve the original workhorse path for basic mosaic plots.
+            % This direct call predates the generalized plot interface and
+            % has been exercised extensively across MATLAB releases.
+            visualizationParams = cmosaic.visualize;
+            uData.figureHandle = visualizationParams.figureHandle;
+            uData.axesHandle = visualizationParams.axesHandle;
+            hdl = visualizationParams.figureHandle;
         end
 
     case {'excitations', 'activations'}
-        % This view renders every cone aperture as a polygon.  Large mosaics
-        % can put substantial pressure on MATLAB Desktop's graphics renderer,
-        % particularly when other MATLAB processes or graphics windows remain
-        % open.  A native MATLAB exit cannot be caught as a MATLAB exception.
-        % If that occurs, first close residual MATLAB processes; for a lighter
-        % diagnostic, use 'data only', true or plot the returned excitations
-        % against cmosaic.coneRFpositionsDegs with scatter.
+        % This view has historically been used for large mosaics.  If MATLAB
+        % Desktop exits natively here, suspect a graphics/resource regression
+        % rather than invalid excitation data.  Native exits bypass try/catch;
+        % record the mosaic size and close residual MATLAB processes before
+        % reproducing the problem in a fresh session.
         [selectedE, trial, timePoint] = localSelectExcitations(...
             cmosaic, allE, p.Results.trial, p.Results.timepoint);
         uData.excitations = selectedE;
         uData.trial = trial;
         uData.timePoint = timePoint;
         if ~p.Results.dataonly
-            [uData, hdl] = localVisualize(cmosaic, selectedE, p, false, ...
-                figureHandle, axesHandle, uData);
+            % Use the established parameter-struct invocation.  Besides
+            % retaining long-tested rendering behavior, this still permits
+            % the newer plot interface to select a trial/time point and to
+            % supply existing figure or axes handles.
+            visualizationParams = cmosaic.visualize('params');
+            visualizationParams.activation = selectedE;
+            visualizationParams.plotTitle = p.Results.plottitle;
+            visualizationParams.verticalActivationColorBar = true;
+            visualizationParams.figureHandle = figureHandle;
+            visualizationParams.axesHandle = axesHandle;
+            visualizationParams.labelConesInActivationMap = p.Results.labelcones;
+            visualizationParams = cmosaic.visualize(visualizationParams);
+            uData.figureHandle = visualizationParams.figureHandle;
+            uData.axesHandle = visualizationParams.axesHandle;
+            hdl = visualizationParams.figureHandle;
         end
 
     case {'eyemovementpath'}
