@@ -21,7 +21,8 @@
 %    than those in the current "correct" method. I am not sure if that has
 %    any significance.
 %
-% This is very old and should be updated. (BW).
+% This is very old and should be updated. It doesn't run correctly any
+% more. (BW).
 %
 % 03/31/18  dhb  Wrote it.
 % 10/26/18  dhb  Another try.

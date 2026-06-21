@@ -1,10 +1,10 @@
 % Compare eccentricity-varying and spatially uniform cone efficacy
 %
 % Description:
-%   Cone inner-segment aperture and outer-segment length vary with retinal
-%   eccentricity. This example compares the response of one cone mosaic
-%   with those variations enabled against the same mosaic with spatially
-%   uniform aperture and outer-segment length.
+%   Cone inner-segment aperture and outer-segment length vary with
+%   retinal eccentricity. This example compares the response of one
+%   cone mosaic with those variations enabled against the same mosaic
+%   with spatially uniform aperture and outer-segment length.
 %
 %   Related examples cover aperture shape and macular pigment separately:
 %     s_cmModifyApertureProperties
