@@ -407,7 +407,7 @@ methods (Static)
 
     % Method to generate a video of fixationalEMs with a cone mosaic
     generateEMandMosaicComboVideo(...
-        fixationalEMObj, coneMosaicHexObj, varargin);
+        fixationalEMObj, coneMosaicObj, varargin);
 end % Static methods
 
 methods (Access = private)

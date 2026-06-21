@@ -74,3 +74,5 @@ for xOffset = 1:3
             'plotTitle',  sprintf('ecc: %2.1f, %2.1f degs', mosaicEcc(1), mosaicEcc(2)));
 
 end
+
+%% END

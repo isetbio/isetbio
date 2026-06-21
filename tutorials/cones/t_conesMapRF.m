@@ -1,22 +1,36 @@
-% Demo usage of RF mapping using the subspace RF mapping method 
+% Map the visual receptive field of one cone using Hartley patterns
 %
 % Description:
-%    Shows how to use the rfMappingStimulusGenerator package to map 
-%    the visual spatial RFs of cones using the subspace RF mapping method.
+%    This tutorial illustrates the basic steps of subspace receptive-field
+%    (RF) mapping. A compact set of orthogonal Hartley patterns is presented
+%    at forward and reverse contrast. The difference between the two cone
+%    responses weights each pattern in the reconstructed visual RF.
+%
+%    For clarity and speed, we map only the cone nearest the mosaic center
+%    and use a low-order Hartley basis. The recovered RF is compared with
+%    the expected visual RF: the cone aperture convolved with the optical
+%    point-spread function (PSF).
 %
 
 % History:
 %    09/28/22  NPC  ISETBIO Team, Copyright 2022 Wrote it.
 
 function t_conesMapRF
-    
-    mosaicEccDegs = [0 -0];
-    mosaicSizeDegs = 0.3*[1 1];
+
+    % Experiment geometry. Eccentricity locates the mosaic on the retina;
+    % mosaic size controls how many cones are simulated; stimulus size sets
+    % the visual field over which the RF is reconstructed.
+    %
+    % A small central mosaic is sufficient because this tutorial maps one
+    % representative cone rather than producing a movie of every cone.
+    mosaicEccDegs = [0 0];
+    mosaicSizeDegs = 0.15*[1 1];
     stimSizeDegs = 0.3;
 
     whichEye = 'right eye';
 
-    % Set cone aperture modifiers
+    % Model the light-collecting aperture of each cone as a Gaussian. These
+    % parameters affect the anatomical aperture used in the final comparison.
     sigmaGaussian = 0.204;
     coneApertureModifiers = struct(...
             'smoothLocalVariations', true, ...
@@ -34,7 +48,10 @@ function t_conesMapRF
         'coneApertureModifiers', coneApertureModifiers ...
         );
 
-    % Optical params
+    % Optical parameters. Polans2015 supplies measured wavefronts; the rank
+    % chooses a subject from that database; pupil diameter and refractive
+    % error determine the PSF. wavefrontSpatialSamples controls PSF sampling
+    % accuracy and contributes to startup time, but is computed only once.
     mosaicCenterPositionDegs = mean(theConeMosaic.coneRFpositionsDegs,1);
     opticsParams = struct(...
         'positionDegs',mosaicCenterPositionDegs, ...  % (x,y) eccentricity for the PSF, in degrees
@@ -52,14 +69,16 @@ function t_conesMapRF
     [thePSFData, ~, ~, theOI] = computeVlambdaWeightedPSF(...
             opticsParams, theConeMosaic, theConeMosaic.wave);
 
-    % Generate a presentation display with a desired resolution
+    % Match the virtual presentation display sampling to the retinal PSF.
     retinalImageResolutionDegs = thePSFData.supportXdegs(2)-thePSFData.supportXdegs(1);
     viewingDistanceMeters = 4;
 
     theDisplay = rfMappingStimulusGenerator.presentationDisplay(...
         theConeMosaic.wave, retinalImageResolutionDegs, viewingDistanceMeters);
 
-    % Stim params for the RF mapping
+    % Stimulus parameters. coneContrasts=[1 1 1] makes an equal-contrast
+    % L/M/S modulation. contrast scales the Hartley pattern around the
+    % background. pixelSizeDegs determines the RF-map spatial sampling.
     stimParams = struct(...
         'backgroundLuminanceCdM2', 50.0, ...
         'backgroundChromaticity', [0.301 0.301], ...
@@ -72,9 +91,10 @@ function t_conesMapRF
         );
 
 
-    % Hartley (RF mapping) spatial patterns
-    omega = 3;
-    % Compute spatial modulation patterns for the Hartley set
+    % Hartley spatial patterns used for RF mapping. The number of patterns
+    % is (2*omega+1)^2, so omega=1 gives 9 patterns. The previous omega=3
+    % produced 49 patterns and required 98 optical-image computations.
+    omega = 1;
     HartleySpatialModulationPatterns = ...
         rfMappingStimulusGenerator.HartleyModulationPatterns(...
         omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs, ...
@@ -84,7 +104,7 @@ function t_conesMapRF
     % Generate scenes for the Hartley patterns
     [theRFMappingStimulusScenes, theNullStimulusScene, spatialSupportDegs] = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
         theDisplay, stimParams, HartleySpatialModulationPatterns, ...
-        'validateScenes', ~true);
+        'validateScenes', false);
 
     fprintf('Generated forward polarity stimuli\n');
 
@@ -94,14 +114,21 @@ function t_conesMapRF
         'validateScenes', false);
      fprintf('Generated inverse polarity stimuli\n');
 
-    % Preallocate memory
-    conesNum = numel(theConeMosaic.coneTypes);
+    % Select the cone nearest the mosaic center. All cones respond when the
+    % mosaic is computed, but only this cone is needed to demonstrate the
+    % RF reconstruction.
+    coneDistances = vecnorm(theConeMosaic.coneRFpositionsDegs - ...
+        mosaicCenterPositionDegs, 2, 2);
+    [~, mappedConeIndex] = min(coneDistances);
+
+    % Preallocate the response vector and the RF map for the selected cone.
     nStim = numel(theRFMappingStimulusScenes);
     pixelsNum = size(HartleySpatialModulationPatterns,2);
-    theRFmaps = zeros(conesNum, pixelsNum, pixelsNum);
-    theConeMosaicExcitation = zeros(nStim, conesNum);
+    mappedConeResponses = zeros(nStim, 1);
+    theRFmap = zeros(pixelsNum, pixelsNum);
 
-    % Compute the cone mosaic responses and build - up the RF
+    % Compute the response to the null scene once, then measure the linear
+    % response to each Hartley pattern as forward minus reverse polarity.
     for iFrame = 0:nStim
         fprintf('Computing mosaic response to stim %d of %d\n', iFrame, nStim);
 
@@ -113,38 +140,45 @@ function t_conesMapRF
             continue;
         end
 
-        % The forward polarity responses
+        % Forward-polarity response, expressed as contrast relative to the
+        % null response.
         theOI = oiCompute(theOI,theRFMappingStimulusScenes{iFrame},'pad value','mean');
-        theConeMosaicExcitation(iFrame,:) = (squeeze(theConeMosaic.compute(theOI)) - theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
+        forwardResponses = (squeeze(theConeMosaic.compute(theOI)) - ...
+            theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
         
-        % The reverse polarity responses
+        % Reverse-polarity response.
         theOI = oiCompute(theOI,theReversePolarityRFMappingStimulusScenes{iFrame},'pad value','mean');
-        theReversePolarityConeMosaicExcitation = (squeeze(theConeMosaic.compute(theOI)) - theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
+        reverseResponses = (squeeze(theConeMosaic.compute(theOI)) - ...
+            theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
 
-        % Update the RF map for each cone
-        for iCone = 1:conesNum
-            r = theConeMosaicExcitation(iFrame,iCone) - theReversePolarityConeMosaicExcitation(iCone);
-            theRFmaps(iCone,:,:) = theRFmaps(iCone,:,:) + ...
-                HartleySpatialModulationPatterns(iFrame,:,:) * r;
-        end
+        % Accumulate the selected cone's RF estimate in the Hartley basis.
+        mappedConeResponses(iFrame) = forwardResponses(mappedConeIndex) - ...
+            reverseResponses(mappedConeIndex);
+        theRFmap = theRFmap + squeeze(...
+            HartleySpatialModulationPatterns(iFrame,:,:)) * ...
+            mappedConeResponses(iFrame);
     end
-    theRFmaps = 1/(2*nStim)*theRFmaps;
+    theRFmap = theRFmap/(2*nStim);
 
-    % Compute maxRF for each cone type
-    maxRFconeType = zeros(1,4);
-    for iCone = 1:conesNum
-         maxRFconeType(theConeMosaic.coneTypes(iCone)) = max([...
-             maxRFconeType(theConeMosaic.coneTypes(iCone))  ...
-             max(max(squeeze(abs(theRFmaps(iCone,:,:)))))]);
-    end
+    % Summarize the setup and compare the measured RF with its prediction.
+    visualizeMappingSetup(theConeMosaic, mappedConeIndex, thePSFData, ...
+        spatialSupportDegs, HartleySpatialModulationPatterns, stimParams);
+    rfCorrelation = visualizeMappedRF(theConeMosaic, mappedConeIndex, ...
+        thePSFData, spatialSupportDegs, theRFmap);
 
-    % Visualize the cone mosaic, the employed stimuli, the PSF and the
-    % visually mapped cone RF maps
-    visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitation, thePSFData, theDisplay, spatialSupportDegs, theRFMappingStimulusScenes, theRFmaps, maxRFconeType, stimParams);
+    % A simple quantitative checkpoint for the tutorial.
+    fprintf('Mapped cone %d using %d Hartley patterns.\n', ...
+        mappedConeIndex, nStim);
+    fprintf('Correlation between predicted and mapped RF: %0.3f\n', ...
+        rfCorrelation);
+    assert(isfinite(rfCorrelation), 'The mapped RF correlation is not finite.');
 
 end
 
-function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitation, thePSFData, theDisplay, spatialSupportDegs, theRFMappingStimulusScenes, theRFmaps, maxRFconeType, stimParams)
+function visualizeMappingSetup(theConeMosaic, mappedConeIndex, thePSFData, ...
+    spatialSupportDegs, HartleySpatialModulationPatterns, stimParams)
+% Show the mosaic, optics, and one representative mapping stimulus.
+
     mosaicCenterPositionDegs = mean(theConeMosaic.coneRFpositionsDegs,1);
     xLims = mosaicCenterPositionDegs(1) + round(0.4*stimParams.stimSizeDegs*[-1 1]*100)/100;
     yLims = mosaicCenterPositionDegs(2) + round(0.4*stimParams.stimSizeDegs*[-1 1]*100)/100;
@@ -153,21 +187,15 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
     yTicks = mosaicCenterPositionDegs(2) + round(0.4*stimParams.stimSizeDegs*[-1:0.5:1]*100)/100;
 
 
-    % Write to local dir so it is not check in the repo
-    localDirPath = fullfile(isetbioRootPath, 'local');
-    videoOBJ = VideoWriter(fullfile(localDirPath,'SubSpaceRFmapping'), 'MPEG-4');
-    videoOBJ.FrameRate = 10;
-    videoOBJ.Quality = 100;
-    videoOBJ.open();
-
-    hFig = figure(1);clf;
+    hFig = figure(1); clf;
     originalFigureUnits = hFig.Units;
     hFig.Units = 'pixels';
-    set(hFig, 'Resize', 'off', 'Position', [300 500 1270 1000], 'Color', [1 1 1]);
+    set(hFig, 'Position', [100 300 1200 400], 'Color', [1 1 1]);
     hFig.Units = originalFigureUnits;
     fontSize = 14;
 
-    axMosaic = subplot(2,3,1);
+    % Mosaic and the cone whose RF will be mapped.
+    axMosaic = subplot(1,3,1);
     theConeMosaic.visualize(...
         'figureHandle', hFig, ...
         'axesHandle', axMosaic, ...
@@ -175,166 +203,90 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
         'domainVisualizationLimits', [xLims(1) xLims(2) yLims(1) yLims(2)], ...
         'domainVisualizationTicks', struct('x', xTicks, 'y', yTicks), ...
         'visualizedConeAperture', 'lightCollectingArea4sigma', ...
+        'labelConesWithIndices', mappedConeIndex, ...
         'fontSize', fontSize ...
         );
+    title(axMosaic, sprintf('mapped cone %d', mappedConeIndex));
 
-
-    ax = subplot(2,3,2);
+    % The wavelength-weighted PSF that blurs the retinal stimulus.
+    ax = subplot(1,3,2);
     imagesc(ax, thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
-    hold(ax, 'on');
-    plot(ax, [thePSFData.supportXdegs(1) thePSFData.supportXdegs(end)], [0 0], 'g-');
-    plot(ax, [0 0], [thePSFData.supportYdegs(1) thePSFData.supportYdegs(end)], 'g-');
-    hold(ax, 'off');
     axis(ax, 'image'); axis(ax, 'xy');
-    set(ax, 'XLim', xLims-mosaicCenterPositionDegs(1), 'YLim', yLims-mosaicCenterPositionDegs(2), ...
-        'XTick', xTicks-mosaicCenterPositionDegs(1), 'YTick', yTicks-mosaicCenterPositionDegs(2), ...
-        'Color', [0 0 0]);
-    set(ax, 'FontSize', fontSize);
+    set(ax, 'XLim', xLims-mosaicCenterPositionDegs(1), ...
+        'YLim', yLims-mosaicCenterPositionDegs(2), ...
+        'FontSize', fontSize);
     colormap(ax, brewermap(1024, 'greys'));
     xlabel(ax, 'space (degrees)');
+    ylabel(ax, 'space (degrees)');
     title(ax, 'PSF (vLambda-weighted)');
 
-    % Plot the stimuli
-    halfLutEntriesNum = 500; 
-    cMap = brewermap(2*halfLutEntriesNum+1, '*greys');
-    ax1 = subplot(2,3,5);
-    ax2 = subplot(2,3,4);
-
-
-    for iFrame = 1:numel(theRFMappingStimulusScenes)
-       
-        visualizeScene(theRFMappingStimulusScenes{iFrame}, ...
-            'presentationDisplay', theDisplay, ...
-            'displayRadianceMaps', false, ...
-            'spatialSupportInDegs', true, ...
-            'axesHandle', ax1);
-
-       % sceneSRGBimage = sceneGet(theRFMappingStimulusScenes{iFrame}, 'RGBimage');
-
-       %image(ax1, spatialSupportDegs+mosaicCenterPositionDegs(1), spatialSupportDegs+mosaicCenterPositionDegs(2), sceneSRGBimage);
-       %axis(ax1, 'image');
-
-        set(ax1, 'XLim', xLims-mosaicCenterPositionDegs(1),  'YLim', yLims-mosaicCenterPositionDegs(2), ...
-            'XTick', [], 'YTick', []);
-        set(ax1, 'FontSize', fontSize);
-        title(ax1, sprintf('stimulus scene %d/%d',iFrame, numel(theRFMappingStimulusScenes)));
-
-        theConeMosaic.visualize(...
-            'figureHandle', hFig, ...
-            'axesHandle', ax2, ...
-            'domain', 'degrees', ...
-            'domainVisualizationLimits', [xLims(1) xLims(2) yLims(1) yLims(2)], ...
-            'domainVisualizationTicks', struct('x', xTicks, 'y', yTicks), ...
-            'visualizedConeAperture', 'lightCollectingArea4sigma', ...
-            'activation', squeeze(theConeMosaicExcitation(iFrame,:)), ...
-            'plotTitle', sprintf('response to stim %d/%d (4 sigma)',iFrame, numel(theRFMappingStimulusScenes)), ...
-            'fontSize', fontSize ...
-        );
-
-        drawnow;
-        videoOBJ.writeVideo(getframe(hFig));
-           
-    end
-
-    
-
-    % Plot the RFs
-    maxRF = max(abs(theRFmaps(:)));
-    conesNum = size(theRFmaps,1);
-    halfLutEntriesNum = 500; cMap = brewermap(2*halfLutEntriesNum+1, '*RdBu');
-
-
-    [X,Y] = meshgrid(spatialSupportDegs,spatialSupportDegs);
-    R = sqrt(X.^2 + Y.^2);
-
-    ax4 = subplot(2,3,6);
-    ax5 = subplot(2,3,3);
-
-    for iCone = 1:conesNum
-
-        xCross = theConeMosaic.coneRFpositionsDegs(iCone,1);
-        yCross = theConeMosaic.coneRFpositionsDegs(iCone,2);
-        Rc = theConeMosaic.coneApertureDiametersDegs(iCone) * theConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor;
-
-        [XX,YY] = meshgrid(spatialSupportDegs+mosaicCenterPositionDegs(1)-xCross,spatialSupportDegs+mosaicCenterPositionDegs(2)-yCross);
-        
-        % Anatomical cone aperture
-        R = sqrt(XX.^2 + YY.^2);
-
-        % Gaussian cone aperture
-        theConeAperture = exp(-(R/Rc).^2);
-
-        % Pillbox cone aperture
-        %theConeAperture = R * 0;
-        %theConeAperture(R <= 0.5*theConeMosaic.coneApertureDiametersDegs(iCone)) = 1;
-
-        % The visual cone aperture
-        theVisualConeAperture = conv2(theConeAperture, thePSFData.data, 'same');
-
-        [~,maxIndex] = max(theVisualConeAperture(:));
-        [row,col] = ind2sub(size(R), maxIndex);
-        cla(ax5);
-        shadedAreaPlot(ax5,spatialSupportDegs+mosaicCenterPositionDegs(1), theConeAperture(row,:)/max(theConeAperture(:)), 0, ...
-            [1 1 0.5], [0 0 0], 0.7, 1.0, '-');
-        hold(ax5, 'on');
-        plot(ax5, spatialSupportDegs+mosaicCenterPositionDegs(1), theVisualConeAperture(row,:)/max(theVisualConeAperture(:)), 'r-', 'LineWidth', 1.5);
-        
-        theCurrentRFmap = squeeze(theRFmaps(iCone,:,:));
-        plot(ax5, spatialSupportDegs+mosaicCenterPositionDegs(1), theCurrentRFmap(row,:)/max(theCurrentRFmap(:)), 'b-', 'LineWidth', 1.5);
-        hold(ax5, 'off');
-        legend(ax5, {'anatomical cone aperture', 'conv(cone aperture, vLambda PSF)', 'visual cone RF map'}, 'Location', 'North');
-        axis(ax5, 'square');
-        grid(ax5, 'on'); box(ax5, 'on');
-        set(ax5, 'XLim', xLims, 'YLim', [-0.02 1.4], 'YTick', 0:0.1:1.4, 'XTick', xTicks, 'XTickLabels', sprintf('%2.2f\n', xTicks), 'FontSize', 15);
-        xlabel(ax5, 'space (degrees)');
-
-        theConeMosaic.visualize(...
-            'figureHandle', hFig, ...
-            'axesHandle', axMosaic, ...
-            'domain', 'degrees', ...
-            'domainVisualizationLimits', [xLims(1) xLims(2) yLims(1) yLims(2)], ...
-            'domainVisualizationTicks', struct('x', xTicks, 'y', yTicks), ...
-            'visualizedConeAperture', 'lightCollectingArea4sigma', ...
-            'labelConesWithIndices', iCone, ...
-            'fontSize', fontSize ...
-        );
-        
-
-        zLevels = [-0.95:0.1:-0.05 0.05:0.1:0.95];
-        contourf(ax4, spatialSupportDegs+mosaicCenterPositionDegs(1), ...
-                     spatialSupportDegs+mosaicCenterPositionDegs(2), ...
-                     squeeze(theRFmaps(iCone,:,:))/maxRFconeType(theConeMosaic.coneTypes(iCone)), zLevels);
-        hold(ax4, 'on');
-        plot(ax4, xCross*[1 1], yCross + Rc *[-1 1], 'b-', 'LineWidth', 1.0);
-        plot(ax4, xCross + Rc*[-1 1], yCross*[1 1], 'b-', 'LineWidth', 1.0);
-        hold(ax4, 'off');
-        set(ax4, 'CLim', [-1 1], 'XLim', xLims, 'YLim', yLims, ...
-            'Color', squeeze(cMap(halfLutEntriesNum+1,:)));
-        axis(ax4, 'image'); axis(ax4, 'xy');
-        set(ax4, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabels', sprintf('%2.2f\n', xTicks), 'YTickLabels', sprintf('%2.2f\n', yTicks));
-        grid(ax4, 'on');
-        set(ax4, 'FontSize', fontSize);
-        xlabel(ax4, 'space (degrees)');
-        title(ax4, sprintf('visual RF map - cone %d/%d',iCone, conesNum));
-        colormap(ax4, cMap);
-
-
-        drawnow;
-        videoOBJ.writeVideo(getframe(hFig));
-        
-    end
-    videoOBJ.close();
+    % Display a non-DC pattern from the compact Hartley set. The middle
+    % pattern is the DC component when omega=1, so use the final pattern.
+    representativeStimulusIndex = size(HartleySpatialModulationPatterns,1);
+    ax = subplot(1,3,3);
+    imagesc(ax, spatialSupportDegs, spatialSupportDegs, ...
+        squeeze(HartleySpatialModulationPatterns(representativeStimulusIndex,:,:)));
+    axis(ax, 'image'); axis(ax, 'xy');
+    set(ax, 'FontSize', fontSize, 'CLim', [-1 1]);
+    colormap(ax, brewermap(1024, '*greys'));
+    xlabel(ax, 'space (degrees)');
+    ylabel(ax, 'space (degrees)');
+    title(ax, sprintf('Hartley pattern %d of %d', ...
+        representativeStimulusIndex, size(HartleySpatialModulationPatterns,1)));
 end
 
 
-function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
-    x = [x fliplr(x)];
-    y = [y y*0+baseline];
-    px = reshape(x, [1 numel(x)]);
-    py = reshape(y, [1 numel(y)]);
-    pz = -10*eps*ones(size(py)); 
-    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, ...
-        'FaceAlpha', faceAlpha, 'LineWidth', lineWidth, 'LineStyle', lineStyle);
+function rfCorrelation = visualizeMappedRF(theConeMosaic, mappedConeIndex, ...
+    thePSFData, spatialSupportDegs, theRFmap)
+% Compare the anatomical aperture, predicted visual RF, and mapped RF.
+
+    mosaicCenterPositionDegs = mean(theConeMosaic.coneRFpositionsDegs,1);
+    conePositionDegs = theConeMosaic.coneRFpositionsDegs(mappedConeIndex,:);
+    coneRadiusDegs = theConeMosaic.coneApertureDiametersDegs(mappedConeIndex) * ...
+        theConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor;
+
+    % Express the stimulus support relative to the selected cone.
+    [xGrid,yGrid] = meshgrid(...
+        spatialSupportDegs + mosaicCenterPositionDegs(1) - conePositionDegs(1), ...
+        spatialSupportDegs + mosaicCenterPositionDegs(2) - conePositionDegs(2));
+    radialDistance = sqrt(xGrid.^2 + yGrid.^2);
+
+    % The anatomical light-collecting aperture and its optically blurred
+    % prediction. Normalize each map for shape comparison.
+    coneAperture = exp(-(radialDistance/coneRadiusDegs).^2);
+    predictedVisualRF = conv2(coneAperture, thePSFData.data, 'same');
+    predictedVisualRF = predictedVisualRF/max(predictedVisualRF(:));
+    normalizedRFmap = theRFmap/max(abs(theRFmap(:)));
+
+    correlationMatrix = corrcoef(predictedVisualRF(:), normalizedRFmap(:));
+    rfCorrelation = correlationMatrix(1,2);
+
+    hFig = figure(2); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
+    set(hFig, 'Position', [100 100 1200 400], 'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
+
+    mapTitles = {'anatomical cone aperture', ...
+        'predicted visual RF', ...
+        sprintf('mapped RF (r = %0.3f)', rfCorrelation)};
+    mapData = {coneAperture, predictedVisualRF, normalizedRFmap};
+
+    for ii = 1:numel(mapData)
+        ax = subplot(1,3,ii);
+        imagesc(ax, spatialSupportDegs, spatialSupportDegs, mapData{ii});
+        axis(ax, 'image'); axis(ax, 'xy');
+        xlabel(ax, 'space (degrees)');
+        ylabel(ax, 'space (degrees)');
+        title(ax, mapTitles{ii});
+        if ii < 3
+            set(ax, 'CLim', [0 1]);
+            colormap(ax, brewermap(1024, 'greys'));
+        else
+            set(ax, 'CLim', [-1 1]);
+            colormap(ax, brewermap(1024, '*RdBu'));
+        end
+    end
 end
 
 function [thePSFData, testSubjectID, subtractCentralRefraction, theOI] = computeVlambdaWeightedPSF(...
