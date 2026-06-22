@@ -323,6 +323,7 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
     load(optimallyMappedRFmapsFileName, 'optimallyMappedVisualRFmaps', 'indicesOfOptimallyMappedRGCs');
 
     hFig = figure(22); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1600 1110]);
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -606,5 +607,4 @@ function renderRFmap(ax, d, smoothingKernel, rfPixelSizeSamples, centerConePosit
     ylabel(ax, 'space, y (degs)');
     title(ax, sprintf('RGC %d - %s %s RF ([%2.2f ... %2.2f])', theRGCindex, stimulusChromaticity, rfPolarity, min(theRFmap(:)), max(theRFmap(:))));
 end
-
 

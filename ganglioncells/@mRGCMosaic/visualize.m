@@ -212,6 +212,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     if (isempty(ax))
         if (isempty(hFig))
             hFig = figure(); clf;
+            set(hFig, 'Units', 'pixels');
             if (isempty(obj.name))
                 set(hFig, 'Color', [1 1 1], 'Position', [10 10 1300 900]);
             else
@@ -530,7 +531,6 @@ function renderPooledConesLineSegments(obj,ax, lConeInputLineColor, mConeInputLi
     end
 
 end
-
 
 
 

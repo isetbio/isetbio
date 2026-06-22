@@ -26,6 +26,7 @@ function visualizeDestinationLatticePooling(obj, varargin)
     if (isempty(ax))
         if (isempty(hFig))
             hFig = figure(); clf;
+            set(hFig, 'Units', 'pixels');
             set(hFig, 'Color', [1 1 1], 'Position', [10 10 850 800]);
         end
         ax = subplot('Position', [0.05 0.07 0.93 0.9]);

@@ -20,6 +20,7 @@ function angularAndLinearSizeVariationWithEccentricity()
     sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(constantSizeVisualDegs, eccDegs);
     
     hFig = figure(99); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [10 10 1000 500], 'Color', [1 1 1]);
     
     subplot(1,2,1);
@@ -43,4 +44,3 @@ function angularAndLinearSizeVariationWithEccentricity()
     
     
 end
-

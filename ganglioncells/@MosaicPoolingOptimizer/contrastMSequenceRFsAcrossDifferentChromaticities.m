@@ -329,6 +329,7 @@ function renderMSequenceRFMaps(figNo, theComputeReadyMRGCmosaic, exampleConeCent
 
     
     hFig = figure(figNo); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1620 900]);
 
     referenceCentroid = achromaticRFcentroid;

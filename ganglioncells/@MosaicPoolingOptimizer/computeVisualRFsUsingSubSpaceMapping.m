@@ -74,6 +74,7 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
     load(optimallyMappedRFmapsFileName, 'optimallyMappedVisualRFmaps', 'indicesOfOptimallyMappedRGCs');
 
     hFig = figure(22); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1200 1280]);
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...

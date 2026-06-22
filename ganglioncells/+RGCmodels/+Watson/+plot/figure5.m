@@ -16,6 +16,7 @@ function figure5()
     
     % Generate figure
     hFig = figure(5); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [10 10 1000 500], 'Color', [1 1 1]);
     theMeridianLabels = cell(1,numel(examinedMeridians));
     for k = 1:numel(examinedMeridians)
@@ -37,6 +38,5 @@ function figure5()
     ylabel('density (total RGC RFs/deg^2)');
     grid on;
 end
-
 
 

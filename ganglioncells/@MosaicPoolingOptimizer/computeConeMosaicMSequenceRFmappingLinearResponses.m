@@ -215,6 +215,7 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
 
             if (visualizeResponses)
                 hFig = figure(2); clf;
+                set(hFig, 'Units', 'pixels');
                 set(hFig, 'Position', [10 10 2000 800]);
                 ax1 = subplot(1,3,1);
                 ax2 = subplot(1,3,2);

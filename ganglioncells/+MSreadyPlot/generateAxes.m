@@ -5,6 +5,7 @@ function theAxes = generateAxes(hFig,ff, varargin)
     p.parse(varargin{:});
     figPosition = p.Results.figPosition;
 
+    set(hFig, 'Units', 'pixels');
     if (isempty(figPosition))
         set(hFig, 'Position', [10 10 ff.figureSize(1) ff.figureSize(2)], 'Color', [1 1 1]);
     else

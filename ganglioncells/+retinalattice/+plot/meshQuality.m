@@ -7,6 +7,7 @@ function subplotIndex = meshQuality(figNo,subplotIndex, histogramData, bin1Perce
         end
         if (subplotIndex == 1)
             clf;
+            set(hFig, 'Units', 'pixels');
             set(hFig, 'Position', [10 10 820 930]);
         end
         

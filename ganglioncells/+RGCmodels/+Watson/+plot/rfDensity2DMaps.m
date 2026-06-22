@@ -86,6 +86,7 @@ function rfDensity2DMaps(figNo, neuronType, varargin)
     
     % Plot
     hFig = figure(figNo);
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [10 10 1500 800], 'Color', [1 1 1], 'Name', neuronType);
     
     % Left eye
@@ -117,4 +118,3 @@ function plotData(ax, rfPosXmicrons, rfPosYmicrons, densityMap, densityRange, ti
     xlabel(ax, sprintf('space (%s)', spatialSupportUnits));
     title(ax,titleLabel);
 end
-

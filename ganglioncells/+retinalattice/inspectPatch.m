@@ -24,6 +24,7 @@ function inspectPatch(fovDegs, neuronType, whichEye)
     
     allIterations = 1:1:size(maxMovements,2);
     hFig = figure(1); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [10 10 1600 700], 'Color', [1 1 1]);
     
    
@@ -54,6 +55,7 @@ function inspectPatch(fovDegs, neuronType, whichEye)
     set(gca, 'FontSize', 14);
     
     hFig = figure(2); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [10 10 1600 700], 'Color', [1 1 1]);
     
     xyLimsMicrons = 1000*[-0.5 0.5]*RGCmodels.Watson.convert.rhoDegsToMMs(fovDegs);
@@ -83,4 +85,3 @@ function inspectPatch(fovDegs, neuronType, whichEye)
     end
     
 end
-

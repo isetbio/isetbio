@@ -53,6 +53,7 @@ function [H, lIndices, mIndices] = HartleyModulationPatterns(omega, stimSizeDegs
             if (visualizePatterns)
                 if (sIndex == 1)
                     hFig = figure(1);
+                    set(hFig, 'Units', 'pixels');
                     set(hFig, 'Position', [10 10 2000 1000]);
                     ax1 = subplot(1,2,1);
                     ax2 = subplot(1,2,2);

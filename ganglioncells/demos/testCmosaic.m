@@ -508,6 +508,7 @@ function visualizeResults(theConeMosaic, absorptionsCountCond1, absorptionsCount
     for iTrial = 1:nTrials
         for timePoint = 1:nTimePoints
             hFig = figure(100);
+            set(hFig, 'Units', 'pixels');
             set(hFig, 'Position', [10 10 1800 660], 'Name', sprintf('trial %d, time point: %d', iTrial, timePoint));
             ax = subplot('Position', [0.04 0.07 0.285 0.9]);
             theConeMosaic.visualize(...
@@ -640,6 +641,7 @@ function  [theConeMosaic, theOpticsEnsemble] = generateMosaic(...
 
     if (visualizeMosaic)
         hFig = figure(1); clf;
+        set(hFig, 'Units', 'pixels');
         set(hFig, 'Position', [0 0 1200 1200], 'Color', [1 1 1]);
         ax = subplot('Position', [0.06 0.06 0.93 0.93]);
         theConeMosaic.visualize(...
@@ -651,4 +653,3 @@ function  [theConeMosaic, theOpticsEnsemble] = generateMosaic(...
         NicePlot.exportFigToPDF('newConeMosaic.pdf', hFig, 300);  
     end
 end
-

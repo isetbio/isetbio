@@ -3,6 +3,7 @@ function visualizeConvergenceSequence(currentPass, costsMatrix, costsNames, ...
 
     % Visualize convergence
     hFig = figure(figNo); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [100 100 1000 800], 'Color', [1 1 1], 'Name', plotTitle);
 
     maxCostsDisplayed = min([3 size(costsMatrix,2)]);

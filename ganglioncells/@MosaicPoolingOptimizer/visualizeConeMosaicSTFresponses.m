@@ -68,6 +68,7 @@ function generateVideo(theConeMosaicSTFresponses, normalizingResponses, theConeM
     theIdentifiedConeIndices, targetConePositions, theMidgetRGCMosaic, thePSFdata, videoFileName)
 
     hFig = figure(10);
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1280 1280]);
     ax = subplot('Position', [0.03 0.04 0.97 0.94]);
     cMap = gray(1024);

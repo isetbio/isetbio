@@ -51,6 +51,7 @@ function [theStimulusFxCoord, theStimulusFyCoord, stimulusInInsideAnalyzedSFregi
         rowsNum = max(iyListKept)-min(iyListKept)+1;
         colsNum = max(ixListKept)-min(ixListKept)+1;
         hFig = figure(1001); clf;
+        set(hFig, 'Units', 'pixels');
         set(hFig, 'Position', [10 10 1280 1350], 'Color', [1 1 1]);
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', rowsNum, ...
@@ -85,6 +86,7 @@ function [theStimulusFxCoord, theStimulusFyCoord, stimulusInInsideAnalyzedSFregi
     if (visualizeFullStimulusSet)
 
         hFig = figure(1001); clf;
+        set(hFig, 'Units', 'pixels');
         set(hFig, 'Position', [10 10 1280 1350], 'Color', [1 1 1]);
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 2*omega+1, ...
@@ -127,4 +129,3 @@ function [theStimulusFxCoord, theStimulusFyCoord, stimulusInInsideAnalyzedSFregi
 
 
 end
-

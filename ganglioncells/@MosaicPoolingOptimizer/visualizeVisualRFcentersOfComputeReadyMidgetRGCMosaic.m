@@ -52,6 +52,7 @@ function visualizeVisualRFcentersOfComputeReadyMidgetRGCMosaic(...
     rfCenterPatchData.faceVertexCData = colorVertexCData;
 
     hFig = figure(100); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [10 10 1800 1000], 'Color', [1 1 1]);
     ax = subplot('Position', [0.02 0.02 0.98 0.98]);
 

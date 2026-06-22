@@ -292,6 +292,7 @@ function renderBPIfigure(figNo, theBPIscatterData, centerConeType, ...
     hFigBPIpopulation = figure(figNo); clf;
     ff = MSreadyPlot.figureFormat('1x1 small');
     theAxes = MSreadyPlot.generateAxes(hFigBPIpopulation,ff);
+    set(hFigBPIpopulation, 'Units', 'pixels');
     position = get(hFigBPIpopulation, 'OuterPosition');
     position(2) = 600;
     set(hFigBPIpopulation, 'Color', [1 1 1], 'OuterPosition', position);
@@ -332,6 +333,7 @@ function renderSTFsFigure(figNo, theComputeReadyMRGCmosaic, exampleConeCenterDat
     hFigMultiSTF = figure(figNo); clf;
     ff = MSreadyPlot.figureFormat('1x1 small');
     theAxes = MSreadyPlot.generateAxes(hFigMultiSTF,ff);
+    set(hFigMultiSTF, 'Units', 'pixels');
     position = get(hFigMultiSTF, 'OuterPosition');
     position(2) = 100;
     set(hFigMultiSTF, 'Color', [1 1 1], 'OuterPosition', position);
@@ -368,6 +370,7 @@ function renderConePoolingMapFigure(figNo, theComputeReadyMRGCmosaic, ...
     ff = MSreadyPlot.figureFormat('1x1 small');
     theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap,ff);
     
+    set(hFigConePoolingMap, 'Units', 'pixels');
     position = get(hFigConePoolingMap, 'OuterPosition');
     position(2) = 100;
 
@@ -398,6 +401,7 @@ function renderConePoolingMapFigure(figNo, theComputeReadyMRGCmosaic, ...
     ff = MSreadyPlot.figureFormat('1x1 small');
     theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap2,ff);
 
+    set(hFigConePoolingMap2, 'Units', 'pixels');
     position = get(hFigConePoolingMap2, 'OuterPosition');
     position(2) = 400;
 

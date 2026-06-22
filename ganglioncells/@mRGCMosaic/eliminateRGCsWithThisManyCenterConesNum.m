@@ -15,6 +15,7 @@ function eliminateRGCsWithThisManyCenterConesNum(obj, targetCenterConesNum)
    indicesOfRGCsIdentified = indicesOfRGCsToEliminate;
 
    hFig = figure(10); clf;
+   set(hFig, 'Units', 'pixels');
    set(hFig, 'Position', [10 10 1800 1000], 'Color', [1 1 1], ...
         'Name', sprintf('Before elimination of RGCs with %d center cones', targetCenterConesNum));
    obj.visualize(...
@@ -86,6 +87,7 @@ function eliminateRGCsWithThisManyCenterConesNum(obj, targetCenterConesNum)
     % Visualize mosaic after RGC elimination
     indicesOfRGCsIdentified = obj.indicesOfRGCsWithThisManyCenterCones(targetCenterConesNum);
     hFig = figure(20); clf;
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Position', [10 10 1800 1000], 'Color', [1 1 1], ...
        'Name', sprintf('After elimination of RGCs with %d center cones', targetCenterConesNum));
     obj.visualize(...

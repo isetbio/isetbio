@@ -16,6 +16,7 @@ function hFig = visualizeCurrentConnectivity(obj, figNo, varargin)
            'rightMargin',    0.00, ...
            'bottomMargin',   0.05, ...
            'topMargin',      0.03);
+    set(hFig, 'Units', 'pixels');
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1650 990]);
 
     % The input lattices on the rop-right plot
@@ -57,4 +58,3 @@ function hFig = visualizeCurrentConnectivity(obj, figNo, varargin)
 
 
 end
-
