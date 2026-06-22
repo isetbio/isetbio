@@ -251,11 +251,9 @@ end
 
 
 function visualizePSFsamples(theOI, sampledWavelengths)
-    hFig = figure(); clf;
-    originalFigureUnits = hFig.Units;
+    hFig = ieFigure;
     hFig.Units = 'pixels';
     set(hFig,  'Color', [1 1 1], 'Position', [10 10 1800 600]);
-    hFig.Units = originalFigureUnits;
     colsNum = 7;
     rowsNum = 2;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...

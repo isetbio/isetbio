@@ -85,7 +85,7 @@ function d = generateCustomDisplay(varargin)
         w = displayGet(d, 'wave');
         spd = displayGet(d, 'spd');
         ambientSPD = displayGet(d, 'ambient spd');
-        hFig = figure();
+        hFig = ieFigure(); set(hFig,'Units','pixel');
         set(hFig, 'Position', [10 10 1500 400], 'Color', [1 1 1]);
         subplot(1,4,1);
         stairs(w, spd(:,1)*1e3, 'r-', 'LineWidth', 1.5); hold on;

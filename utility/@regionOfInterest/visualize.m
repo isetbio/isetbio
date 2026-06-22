@@ -38,12 +38,12 @@ function visualize(obj, varargin)
 
     % Set figure size
     if (isempty(figureHandle))
-        figureHandle = figure(); clf;
+        figureHandle = ieFigure(); set(figureHandle,'Units','pixel');
         set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
         axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
     else
         if (isempty(axesHandle))
-            figure(figureHandle);
+            figure(figureHandle); set(figureHandle,'Units','pixel');
             clf;
             set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
             axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
