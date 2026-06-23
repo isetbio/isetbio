@@ -1,4 +1,4 @@
-%% t_mouseConesDensity
+%% data_mouseConesDensity
 %
 % Create some graphs comparing the density of the mouse cone photoreceptors
 % with human.
@@ -40,7 +40,7 @@ for jj = 1:length(ang)
 end
 
 %% Counting receptors
-ieNewGraphWin;
+ieFigure;
 
 mouse = 16*1e3*ones(size(coneDensity));
 
@@ -58,7 +58,7 @@ legend;
 
 %%  Add a surface where the mouse density is
 
-ieNewGraphWin;
+ieFigure;
 [A, T] = meshgrid(ang, pos);
 [X, Y] = pol2cart(A, T);
 
