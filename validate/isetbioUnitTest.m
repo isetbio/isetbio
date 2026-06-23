@@ -1,14 +1,14 @@
-function results = isetbioUnitTests(mode)
-% ISETBIOUNITTESTS - Master runner for all ISETBio unit tests
+function results = isetbioUnitTest(mode)
+% ISETBIOUNITTEST - Master runner for all ISETBio unit tests
 %
 % Usage:
-%   results = isetbioUnitTests;
-%   results = isetbioUnitTests('full');
+%   results = isetbioUnitTest;
+%   results = isetbioUnitTest('full');
 
 if ieNotDefined('mode'), mode = 'core'; end
 mode = ieParamFormat(mode);
 
-rootPath = fileparts(mfilename('fullpath'));
+rootPath = isetbioRootPath;
 testDirs = dir(fullfile(rootPath, '**', '_tests_'));
 
 import matlab.unittest.TestSuite;
@@ -31,13 +31,13 @@ masterSuite = localSelectMode(masterSuite, mode);
 if isempty(masterSuite)
     fprintf('No ISETBio tests found for mode ''%s''.\n', mode);
     results = [];
-    ieTestReport(results, 'isetbioUnitTests');
+    ieTestReport(results, 'isetbioUnitTest');
     return;
 end
 
 runner = TestRunner.withTextOutput;
 results = runner.run(masterSuite);
-ieTestReport(results, 'isetbioUnitTests');
+ieTestReport(results, 'isetbioUnitTest');
 
 end
 
@@ -51,7 +51,7 @@ switch mode
     case {'full', 'all'}
         % Keep the complete suite.
     otherwise
-        error('Unknown isetbioUnitTests mode %s. Use ''core'' or ''full''.', mode);
+        error('Unknown isetbioUnitTest mode %s. Use ''core'' or ''full''.', mode);
 end
 
 end

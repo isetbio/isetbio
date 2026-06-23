@@ -1,14 +1,13 @@
-function run = isetbioExamplesTest(varargin)
-% Run ISETBio examples through the shared ISETCam test engine.
+function run = isetbioTutorialTest(varargin)
+% Run ISETBio tutorials through the shared ISETCam test engine.
 %
 % Syntax:
-%   run = isetbioExamplesTest
-%   run = isetbioExamplesTest('select',scriptName)
-%   run = isetbioExamplesTest('start',scriptName)
+%   run = isetbioTutorialTest
+%   run = isetbioTutorialTest('selection',scriptName)
+%   run = isetbioTutorialTest('start',scriptName)
 %
-% With no arguments, all examples run.  'select' runs only scriptName;
-% 'start' runs scriptName and every example after it.  A single scriptName
-% argument remains supported as the legacy form of 'select'.
+% With no arguments, all tutorials run. 'selection' runs only scriptName;
+% 'start' runs scriptName and every tutorial after it.
 
 [selector,start] = localParseSelection(varargin{:});
 
@@ -18,43 +17,38 @@ localEnsureISETCam(repoRoot);
 config = struct();
 config.repositoryName = 'ISETBio';
 config.repositoryRoot = repoRoot;
-config.suiteKind = 'examples';
+config.suiteKind = 'tutorials';
 config.runnerName = mfilename;
 config.selector = selector;
 config.start = start;
 config.skipPathPatterns = { ...
     [filesep 'data' filesep], ...
-    ['scripts' filesep 'image' filesep 'jpegFiles'], ...
-    ['scripts' filesep 'optics' filesep 'chromAb']};
+    ['hyperspectral' filesep 'support']};
 
 run = ieRunTutorialExampleTests(config);
 
 end
 
 function [selector,start] = localParseSelection(varargin)
-%% Parse the public selection options while retaining legacy calls.
+%% Parse the public selection options.
 
 selector = '';
 start = '';
 if isempty(varargin), return; end
-if isscalar(varargin)
-    selector = varargin{1};
-    return;
-end
 if numel(varargin) ~= 2
-    error('isetbioExamplesTest:InvalidInput', ...
-        'Use no arguments or one name-value pair: select or start.');
+    error('isetbioTutorialTest:InvalidInput', ...
+        'Use no arguments or one name-value pair: selection or start.');
 end
 
 option = lower(char(varargin{1}));
 switch option
-    case {'select','selector'}
+    case 'selection'
         selector = varargin{2};
     case 'start'
         start = varargin{2};
     otherwise
-        error('isetbioExamplesTest:InvalidOption', ...
-            'Unknown option "%s". Use select or start.',option);
+        error('isetbioTutorialTest:InvalidOption', ...
+            'Unknown option "%s". Use selection or start.',option);
 end
 
 end
@@ -65,7 +59,7 @@ function localEnsureISETCam(repoRoot)
 if ~isempty(which('ieRunTutorialExampleTests')), return; end
 dependencyRoot = fullfile(fileparts(repoRoot),'isetcam');
 if ~isfolder(dependencyRoot)
-    error('isetbioExamplesTest:MissingISETCam', ...
+    error('isetbioTutorialTest:MissingISETCam', ...
         'ISETCam dependency not found: %s',dependencyRoot);
 end
 addpath(genpath(dependencyRoot));

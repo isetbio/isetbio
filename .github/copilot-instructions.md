@@ -62,7 +62,7 @@ pages, tests, and nearby tutorials/examples.
 
 ### Skipping Automated Tutorial and Example Runs
 
-The `isetbioTutorialsTest` and `isetbioExamplesTest` runners execute `t_*` and
+The `isetbioTutorialTest` and `isetbioExampleTest` runners execute `t_*` and
 `s_*` files by default. To exclude a source file from these automated smoke
 runs, add this exact comment anywhere in the file:
 
@@ -144,9 +144,9 @@ plotting.
   include all tests.
 - Local and repository-wide runners must close figures created during testing
   while preserving figures that were open before the test run.
-- Run the full ISETBio unit-test suite with `isetbioUnitTests` and render or
-  summarize its output with ISETCam's `ieTestReport`. `isetbioUnitTests` is
-  the ISETBio master runner; `ieUnitTests` remains the ISETCam master runner.
+- Run the full ISETBio unit-test suite with `isetbioUnitTest` and render or
+  summarize its output with ISETCam's `ieTestReport`. `isetbioUnitTest` is
+  the ISETBio master runner; `ieUnitTest` is the ISETCam master runner.
 - When converting legacy `isetvalidate` scripts into built-in unit tests,
   place each test with the ISETBio subsystem or behavior it protects rather
   than copying the legacy validation directory layout. Do not duplicate a
