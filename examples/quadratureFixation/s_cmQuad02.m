@@ -1,9 +1,13 @@
-%% Show the quadrature calculation at the cone excitations for a harmonic
+    %% Show the quadrature calculation at the cone excitations for a harmonic
 %
 % On the cone excitations. When the shift is within a few cones the
 % response stays within a couple of percent. But for a shift of five
 % or so cones, the value changes more than a couple of percent.
 %
+
+%
+% HAS BUGS IN PLOTTING - the 'hf' call isn't working right in cm.plot
+% (BW)
 
 %% Quadrature filters with cone mosaic data
 
@@ -21,7 +25,7 @@ scene = sceneCreate('harmonic',hparams);
 fov = 4; scene = sceneSet(scene,'fov',3);
 oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean'); ieAddObject(oi);
 
-cm = coneMosaic;
+cm = coneMosaicRect;
 cm.noiseFlag = 'none';
 cm.spatialDensity = [0 .6 .3 .1];
 cm.setSizeToFOV(fov*0.7);
@@ -38,12 +42,12 @@ hparams.freq = 2;
 hparams.ph = pi/2;
 sQuad = imageHarmonic(hparams);
 sQuad = sQuad - 1;
-% vcNewGraphWin; mesh(sQuad); colormap(gray)
+% ieFigure; mesh(sQuad); colormap(gray)
 
 hparams.ph = 0;
 cQuad = imageHarmonic(hparams);
 cQuad = cQuad - 1;
-% vcNewGraphWin; mesh(cQuad); colormap(gray)
+% ieFigure; mesh(cQuad); colormap(gray)
 
 %% Validate that the circshift does the expected 0 change
 
@@ -64,7 +68,7 @@ end
 % Plot the size of the displacement and the error on the same graph
 % {
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 plot(d,eAbsorb,'o-'); grid on; set(gca, 'ylim',[-1 1]); title('Circular shift')
 xlabel('Distance (cones)'); ylabel('Percent error');
 %}
@@ -89,23 +93,24 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error'); 
-subplot(1,2,2), cm.plot('eye movement path','hf',gca);
+subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
 title(sprintf('Noise %s',cm.noiseFlag));
 
 %% Recompute the cone mosaic, adding Poisson noise
 
 cm.spatialDensity = [0 .6 .3 .1];
 cm.noiseFlag = 'random';
-cm.emGenSequence(50,'rSeed',[],'nTrials',1);
+tSamples = 50;
+cm.emGenSequence(tSamples,'rSeed',[],'nTrials',1);
 cm.compute(oi);
 % cm.window;
 
 baseIMG     = cm.absorptions(:,:,baseFrame);
 eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
-eAbsorb = zeros(t,1);
+eAbsorb = zeros(tSamples,1);
 
 % First try just shifting the base frame.  In the no noise case, we get a
 % very solid result.
@@ -118,10 +123,11 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+
+ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
-subplot(1,2,2), cm.plot('eye movement path','hf',gca);
+subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
 title(sprintf('Noise %s',cm.noiseFlag));
 
 %% END
@@ -149,7 +155,7 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);
@@ -182,7 +188,7 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);
@@ -211,7 +217,7 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);

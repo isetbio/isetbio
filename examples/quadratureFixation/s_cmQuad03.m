@@ -22,7 +22,8 @@ fov = 4; scene = sceneSet(scene,'fov',3);
 oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean'); ieAddObject(oi);
 % oiWindow(oi);
 
-cm = coneMosaic;
+%%
+cm = coneMosaicRect;
 cm.setSizeToFOV(fov*0.7);
 cm.emGenSequence(100,'rSeed',[],'nTrials',1);
 cm.noiseFlag = 'random';
@@ -42,12 +43,12 @@ hparams.freq = 2;
 hparams.ph = pi/2;
 sQuad = imageHarmonic(hparams);
 sQuad = sQuad - 1;
-% vcNewGraphWin; mesh(sQuad); colormap(gray)
+% ieFigure; mesh(sQuad); colormap(gray)
 
 hparams.ph = 0;
 cQuad = imageHarmonic(hparams);
 cQuad = cQuad - 1;
-% vcNewGraphWin; mesh(cQuad); colormap(gray)
+% ieFigure; mesh(cQuad); colormap(gray)
 
 %% Demonstrate the quadrature shifting (again)
 
@@ -69,7 +70,7 @@ end
 % {
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 plot(d,eAbsorb,'o-'); grid on; set(gca, 'ylim',[-1 1]); 
 title('Circular shift')
 xlabel('Distance (cones)'); ylabel('Percent error');
@@ -92,12 +93,12 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
 title('Quadratic case, absorptions, 1-back')
 
-subplot(1,2,2), cm.plot('eye movement path','hf',gca);
+subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
 title(sprintf('Noise %s',cm.noiseFlag));
 drawnow
 
@@ -119,13 +120,13 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 subplot(1,2,1), plot(d(startFrame:end),eAbsorb(startFrame:end),'o-'); 
 grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
 title('Quadratic case, current, 1-back')
 
-subplot(1,2,2), cm.plot('eye movement path','hf',gca);
+subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
 title(sprintf('Noise %s',cm.noiseFlag));
 drawnow
 
@@ -153,14 +154,14 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieFigure;
 subplot(1,2,1), 
 plot(d(startFrame:end),eAbsorbS(startFrame:end),'ob-', ...
     d(startFrame:end),eAbsorbC(startFrame:end),'xr-'); 
 grid on; 
 xlabel('Distance (cones)'); ylabel('Percent error');
 title('Linear case')
-subplot(1,2,2), cm.plot('eye movement path','hf',gca);
+subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
 title(sprintf('Noise %s',cm.noiseFlag));
 
 %% END
