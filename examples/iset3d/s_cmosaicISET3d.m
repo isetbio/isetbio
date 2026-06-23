@@ -6,7 +6,12 @@
 
 %%
 ieInit;
-if ~piDockerExists, piDockerConfig; end
+if ~exist('piDockerExists','file')
+    warning('ISET3d:notOnPath','No ISET3d on path');
+    return;
+elseif ~piDockerExists
+    piDockerConfig;
+end
 
 %% Read and set the recipe
 thisSE = sceneEye('chessSet','eye model','navarro');

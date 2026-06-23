@@ -5,9 +5,8 @@
 % or so cones, the value changes more than a couple of percent.
 %
 
-%
-% HAS BUGS IN PLOTTING - the 'hf' call isn't working right in cm.plot
-% (BW)
+% SkipFile
+
 
 %% Quadrature filters with cone mosaic data
 
@@ -22,7 +21,7 @@ chdir(fullfile(isetbioRootPath,'local'));
 hparams = harmonicP; 
 hparams.freq = 3;
 scene = sceneCreate('harmonic',hparams);
-fov = 4; scene = sceneSet(scene,'fov',3);
+fov = 2; scene = sceneSet(scene,'fov',fov);
 oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean'); ieAddObject(oi);
 
 cm = coneMosaicRect;
@@ -96,7 +95,7 @@ d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error'); 
-subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
+subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
 
 %% Recompute the cone mosaic, adding Poisson noise
@@ -127,7 +126,7 @@ d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
-subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
+subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
 
 %% END

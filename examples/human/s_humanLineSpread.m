@@ -32,6 +32,7 @@ cm = coneMosaicRect;
 cm.setSizeToFOV(1);
 cm.integrationTime = 1;
 cm.compute(oi);
+
 [~,target] = cm.plot('hline absorptions lms','roi',[1 148]);
 title(target.Children(end),'Wave: broadband');
 

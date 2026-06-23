@@ -3,8 +3,10 @@
 % ISETBio-ISET3D
 %
 % Requires ISET3D, Docker, and long-running rendering.
+%
+%
 % SkipFile
-
+%
 %% The cone mosaic at different eccentricities 
 
 % A long strip along the horizontal axis
@@ -13,7 +15,6 @@ cm.visualize;
 title('');
 
 %% Rendering of a uniform field
-
 
 % We can see the 'breaks' in the mosaic in this image
 scene = sceneCreate('uniform ee');

@@ -118,7 +118,7 @@ p.addRequired('plotType',...
     @(x)(ismember(ieParamFormat(x),validPlots)) || ...
     @(x)(strcmpi(ieParamFormat(plotType(1:12)),'outersegment')));
 
-p.addParameter('hf',[],@(x)(isa(x,'matlab.ui.Figure')));
+p.addParameter('hf',[],@(x)(isa(x,'matlab.ui.Figure') || isa(x,'matlab.graphics.axis.Axes')));
 p.addParameter('x', [], @isscalar);   % x axis value
 p.addParameter('y', [], @isscalar);   % y axis value
 p.addParameter('roi',[],@isvector);  % (x,y) or (x,y,width,height)
@@ -134,7 +134,6 @@ roi = p.Results.roi;
 
 % Returns.
 uData = [];
-hf = [];
 
 %% Initialize the window for plotting
 
@@ -152,9 +151,16 @@ else
     app = []; cm  = obj;
     if isempty(hf)
         % If they did not specify a window, create one.
-        hf = ieNewGraphWin;
+        hf = ieFigure;
+        curAx = get(hf,'CurrentAxes');
+        
+    elseif isa(hf,'matlab.ui.Figure')
+        % They sent a figure.  Get the axis.
+        curAx = get(hf,'CurrentAxes');
+    else
+        % They sent the axis.
+        curAx = hf;  
     end
-    curAx = get(hf,'CurrentAxes');
 end
 
 
@@ -203,15 +209,6 @@ switch ieParamFormat(plotType)
                 cla(curAx);
                 coneRectRender(cm,'axes handle',curAx);
             end
-            %{
-            locs    = cm.coneLocs;
-            pattern = cm.pattern(:);
-
-            % The locations are converted to microns from meters, I think.
-            [axisData.support, axisData.spread, axisData.delta, axisData.mosaicImage] = ...
-                conePlot(locs * 1e6, pattern);
-            imagesc(axisData.mosaicImage);
-            %}
             axis off; axis image; colorbar('off');
         end
 
@@ -282,7 +279,7 @@ switch ieParamFormat(plotType)
                 c = [x, x, 1,size(data,1)];
         end
 
-        ieNewGraphWin;
+        ieFigure;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
             plot(data(:, x), 'k-', 'LineWidth', 2);
@@ -330,7 +327,7 @@ switch ieParamFormat(plotType)
         coneLocs(:,:,2) = reshape(cm.coneLocs(:,2),cm.rows,cm.cols);
         coneLocs = coneLocs*1e6;  % In microns
 
-        ieNewGraphWin(hf, 'tall'); names = 'LMS';
+        ieFigure(hf, 'tall'); names = 'LMS';
         c = {'ro-', 'go-', 'bo-'};
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
@@ -387,7 +384,7 @@ switch ieParamFormat(plotType)
 
         t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
-        ieNewGraphWin;
+        ieFigure;
         yStr = 'Absorptions per frame';
         data = squeeze(data(y, x, :));
         plot(t, squeeze(data), 'LineWidth', 2);
@@ -452,7 +449,7 @@ switch ieParamFormat(plotType)
             ieROIDraw(app,'shape','line','shape data',c);
         end
 
-        ieNewGraphWin;
+        ieFigure;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
             plot(data(:, x), 'LineWidth', 2);
@@ -485,7 +482,7 @@ switch ieParamFormat(plotType)
             ieROIDraw(app,'shape','line','shape data',c);
         end
 
-        ieNewGraphWin([], 'tall');
+        ieFigure([], 'tall');
         names = 'LMS';
         c = {'ro-', 'go-', 'bo-'};
         yStr = 'Photocurrent (pA)';
@@ -532,7 +529,7 @@ switch ieParamFormat(plotType)
 
         t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
-        ieNewGraphWin;
+        ieFigure;
         yStr = 'Photcurrent per frame (pA)';
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         uData.x = t;
@@ -552,19 +549,7 @@ switch ieParamFormat(plotType)
 
         % The outersegment cone temporal impulse response functions are
         % always represented at a high sampling rate (0.1 ms).
-
         lmsFilters = cm.os.linearFilters(obj);
-
-        % Old code if ~isempty(cm.absorptions)
-        % This doesn't make sense to me (BW).  Guessing this
-        % if/else is older code that should be removed.
-        %{
-            absorptionsInXWFormat = RGB2XWFormat(cm.absorptions);
-            lmsFilters = cm.os.linearFilters('absorptionsInXWFormat', ...
-                absorptionsInXWFormat);
-        %}
-
-
 
         %% Interpolate stored lmsFilters to the time base of absorptions
         osTimeAxis = cm.os.timeAxis;
@@ -715,7 +700,7 @@ switch ieParamFormat(plotType)
 end
 
 % Put back the modified user data
-if exist('uData','var'), set(curAx, 'userdata', uData); end
+if exist('uData','var'), set(gcf, 'userdata', uData); end
 
 end
 

@@ -16,13 +16,16 @@ chdir(fullfile(isetbioRootPath,'local'));
 dlSize = 128; dlSigma = 3;
 n = 128; sigma = 3; 
 scene = sceneDeadleaves(dlSize, dlSigma);
-fov = 4; scene = sceneSet(scene,'fov',3);
+fov = 2; scene = sceneSet(scene,'fov',fov);
 % sceneWindow(scene);
 
-oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean'); ieAddObject(oi);
+oi = oiCreate('human'); 
+oi = oiCompute(oi,scene,'pad value','mean'); 
+ieAddObject(oi);
 % oiWindow(oi);
 
-%%
+%% Computations with the rectangular mosaic
+
 cm = coneMosaicRect;
 cm.setSizeToFOV(fov*0.7);
 cm.emGenSequence(100,'rSeed',[],'nTrials',1);
@@ -70,6 +73,7 @@ end
 % {
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
+
 ieFigure;
 plot(d,eAbsorb,'o-'); grid on; set(gca, 'ylim',[-1 1]); 
 title('Circular shift')
@@ -93,12 +97,13 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
+
 ieFigure;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
 title('Quadratic case, absorptions, 1-back')
 
-subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
+subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
 drawnow
 
@@ -120,6 +125,7 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
+
 ieFigure;
 subplot(1,2,1), plot(d(startFrame:end),eAbsorb(startFrame:end),'o-'); 
 grid on; set(gca,'ylim',[-10 10]);
@@ -154,6 +160,7 @@ end
 
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
+
 ieFigure;
 subplot(1,2,1), 
 plot(d(startFrame:end),eAbsorbS(startFrame:end),'ob-', ...
@@ -161,6 +168,7 @@ plot(d(startFrame:end),eAbsorbS(startFrame:end),'ob-', ...
 grid on; 
 xlabel('Distance (cones)'); ylabel('Percent error');
 title('Linear case')
+
 subplot(1,2,2), cm.plot('eye movement path','hf',gcf);
 title(sprintf('Noise %s',cm.noiseFlag));
 
