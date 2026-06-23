@@ -1,96 +1,69 @@
 # Major Changes
 
-This document records repository changes that affect public APIs, compatibility,
-or major implementation paths. It also lists significant deprecations that are
-under consideration.
+This document summarizes changes affecting public APIs, compatibility, or major
+implementation paths.
+
+## 2026-06: Validation Infrastructure Reorganized
+
+ISETBio and ISETCam now keep their public test runners and validation
+infrastructure in top-level `validate/` directories. Runner names are singular
+and consistent:
+
+- ISETBio: `isetbioUnitTest`, `isetbioTutorialTest`, `isetbioExampleTest`
+- ISETCam: `ieUnitTest`, `ieTutorialTest`, `ieExampleTest`
+
+The tutorial and example runners use `'selection'` to run one script and
+`'start'` to run from one script through the remainder of the deterministic
+plan. The earlier plural names, positional selector, and `'select'` aliases
+were removed during this early-development reorganization.
+
+ISETCam owns the shared `ieRunTutorialExampleTests` engine and `ieTestReport`.
+The engine provides cross-repository discovery, isolation, skipping, durable
+checkpoints, and consistent reporting. Usage is documented in
+`validate/README.md`; the shared architecture is documented in ISETCam's
+`docs/tutorial-example-test-architecture.md`.
 
 ## 2026-06: RemoteDataToolbox References Retired
 
-RemoteDataToolbox is deprecated. ISETBio no longer includes its RDT
-configuration file or the obsolete cone-mosaic artifact-publishing examples.
-The ToolboxToolbox local-hook template remains supported and configures local
-validation data. It retains inert RemoteDataToolbox preference fields required
-by the current UnitTestToolbox, with remote access disabled.
+RemoteDataToolbox is deprecated. ISETBio removed its RDT configuration and
+obsolete cone-mosaic artifact-publishing examples. The ToolboxToolbox local
+hook still configures local validation data and retains inert RDT preference
+fields currently required by UnitTestToolbox.
 
-Some external repositories still use legacy RDT-related names or calls. ISETBio
-retains compatibility references to current isetvalidate directory and listing
-names while collaborators migrate their independently maintained repositories.
-External repositories and deployment branches were intentionally left
-unchanged.
+Compatibility references to current `isetvalidate` directory and listing names
+remain temporarily while independently maintained repositories migrate.
 
-## 2026-06: Bundled Data Directory Consolidated
+## 2026-06: Bundled Data Consolidated
 
-The former top-level `dataiset/` tree and `data/datafiles/` tree have been
-merged into one canonical bundled-data directory:
+The former `dataiset/` and `data/datafiles/` trees were merged into:
 
 `data/datafiles/`
 
-Use `isetbioDataPath` to construct paths to ISETBio-owned data. The helper now
-returns the canonical directory above. Code that reads ISETCam-owned data, such
-as Stockman-Sharpe fundamentals and CIE color matching functions, uses
-`isetRootPath` instead.
-
-The source-tree promotion also required correcting `isetbioRootPath`, which had
-continued to walk up the directory hierarchy using its former location.
-
-Data-path tests verify representative file locations and spot-check golden
-values from cone-density, wavefront, RGC, tree-shrew, and precomputed cone-mosaic
-data.
+Use `isetbioDataPath` for ISETBio-owned data and `isetRootPath` for ISETCam-owned
+data. The move also corrected `isetbioRootPath`, which still reflected its old
+source location. Tests cover representative paths and golden values from major
+data collections.
 
 ## 2026-06: Legacy Eye-Movement Struct API Removed
 
-The legacy eye-movement struct API has been removed:
+The `emCreate`, `emGet`, and `emSet` struct API was removed. Cone-mosaic eye
+movements now use `fixationalEM`; both `cMosaic.emGenSequence` and
+`coneMosaicRect.emGenSequence` use this class.
 
-- `emCreate`
-- `emGet`
-- `emSet`
+Mosaic compute methods consume generated numeric paths from the attached
+`fixEMobj`, `emPositions`, or an explicit `emPath`. The independent analysis
+utility `emFitParameters` remains available.
 
-Current cone-mosaic eye movements are generated with the `fixationalEM` class.
-Both `cMosaic.emGenSequence` and `coneMosaicRect.emGenSequence` use
+The external `isetvalidate` script
+`isetbioRDT/eyemovements/v_ibioRDT_eyeMovementsPhysio.m` must migrate to
 `fixationalEM`.
-
-The mosaic compute methods consume previously generated numeric eye-movement
-paths:
-
-- `cMosaic.compute` reads paths from the attached `fixEMobj`.
-- `coneMosaicRect.compute` reads paths from `emPositions` or an explicit
-  `emPath` argument.
-
-Code that previously constructed or modified an eye-movement struct must migrate
-to `fixationalEM`, a mosaic's `emGenSequence` method, or an explicitly supplied
-numeric eye-movement path.
-
-The historical analysis utility `emFitParameters` remains available and is
-independent of the removed struct API.
-
-### External Compatibility
-
-The separate `isetvalidate` repository contains at least one validation that
-uses the removed API:
-
-`isetbioRDT/eyemovements/v_ibioRDT_eyeMovementsPhysio.m`
-
-That validation must be migrated to `fixationalEM` before it can run against
-this version of ISETBio.
 
 ## Rectangular Cone-Mosaic Window
 
 `coneMosaicRect.window` and `coneRectWindow` use the App Designer
-`coneRectWindow_App`. Recent maintenance improved the default launch behavior,
-protected cone-absorption computation failures from closing or damaging the
-window, and added GUI smoke tests.
+`coneRectWindow_App`. Maintenance improved launch behavior, protected the
+window from absorption-computation failures, and added GUI smoke tests.
 
-This work does not introduce a new public API. It strengthens the existing
-App Designer path in preparation for a possible legacy-window removal.
-
-## Pending Decision: GUIDE Cone-Mosaic Window
-
-The legacy GUIDE implementation remains in:
-
-- `cones/rectangular/coneMosaicWindow.m`
-- `cones/rectangular/coneMosaicWindow.fig`
-
-Repository code no longer directly calls `coneMosaicWindow`; rectangular mosaic
-windows route through `coneRectWindow_App`. Before removing the GUIDE files,
-confirm that the App Designer window covers the required workflows and migrate
-or document any remaining external callers.
+The unused GUIDE implementation remains in
+`cones/rectangular/coneMosaicWindow.m` and `.fig` pending confirmation that the
+App Designer window covers all required workflows.
