@@ -47,7 +47,7 @@ classdef cMosaic < handle
     %    'conedensities'                    - Vector, with 3 or 4 densities for L-, M-, S-, and possibly a 4th cone. Default: [0.6 0.3 0.1 0.0]
     %    'tritanopic radius degs'           - Scalar. Radius of S-cone free region. Default: 0.15 degs
     %    'noise flag'                       - String. Indicating whether to compute with random noise, frozen noise or no-noise. Valid options are {'random', 'frozen', 'none'}
-    %    'random seed'                      - Random seed for the noise.
+    %    'random seed'                      - Random seed for the noise and cone types.
     %    'integration time'                 - Scalar. Integration time in seconds. Default is: 5/1000
     %    'use parfor'                       - Logical, indicating whether to use parfor. Default: true.
     %
@@ -423,6 +423,7 @@ classdef cMosaic < handle
 
             p.parse(varargin{:});
             
+
             obj.name    = p.Results.name;
             obj.sourceLatticeSizeDegs = p.Results.sourcelatticesizedegs;
             obj.overlappingConeFractionForElimination = p.Results.overlappingconefractionforelimination;
@@ -467,7 +468,7 @@ classdef cMosaic < handle
             obj.randomSeed = p.Results.randomseed;
             obj.integrationTime = p.Results.integrationtime;
             obj.opticalImagePositionDegs = p.Results.opticalimagepositiondegs;
-            
+
             % Parallel computations
             obj.useParfor = p.Results.useparfor;
             
