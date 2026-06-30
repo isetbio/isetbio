@@ -4,18 +4,22 @@
 function StrehlRatioAsAFunctionOfDefocus(...
     examinedRefractionErrorDiopters, StrehlRatioAsAFunctionOfDefocus, ...
     theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio, ...
-    whichEye, zernikeDataBase, subjectID, ...
+    whichEye, zernikeDataBase, subjectID,  ...
     varargin)
 
     p = inputParser;
     p.addParameter('axesToRenderIn', [], @(x)(isempty(x)||(isa(x, 'handle'))));
+    p.addParameter('figureDir', [], @(x)(isempty(x)||(ischar(x))));
     p.addParameter('darkScheme', false, @islogical);
+    p.addParameter('backgroundIsTransparent', false, @islogical);
     p.parse(varargin{:});
+
     axesToRenderIn = p.Results.axesToRenderIn;
+    figureDir = p.Results.figureDir;
+    backgroundIsTransparent = p.Results.backgroundIsTransparent;
 
-    ff = PublicationReadyPlotLib.figureComponents('1x1 standard tall figure', ...
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard very tall figure', ...
         'darkScheme', p.Results.darkScheme);
-
     
     if (isempty(axesToRenderIn))
         % Initialize figure
@@ -25,6 +29,8 @@ function StrehlRatioAsAFunctionOfDefocus(...
     else
         ax = axesToRenderIn;
     end
+
+
 
 
     plot(ax, examinedRefractionErrorDiopters, StrehlRatioAsAFunctionOfDefocus, 'ro-', ...
@@ -40,15 +46,21 @@ function StrehlRatioAsAFunctionOfDefocus(...
 
     xlabel(ax, 'defocus (D)');
     ylabel(ax, 'Strehl ratio');
-    theTitle = sprintf('%s_%s_subjID_%d.pdf', whichEye, zernikeDataBase, subjectID);
+    theTitle = sprintf('%s_%s_subjID_%d (max Strehl ratio @ %2.2fD)', whichEye, zernikeDataBase, subjectID, theOptimalStrehlRatioDefocusDiopters);
+    thePDFfileName = sprintf('StrehlRationOptimization_%s_%s_subjID_%d', whichEye, zernikeDataBase, subjectID);
+    
     title(ax, theTitle, 'Interpreter', 'none');
 
     % Finalize figure using the Publication-Ready format
     PublicationReadyPlotLib.applyFormat(ax,ff);
 
+    if (backgroundIsTransparent)
+        set(hFig, 'Color', 'none');
+        set(ax, 'Color', 'none', 'XColor', [0.9 0.9 0.9], 'YColor', [0.9 0.9 0.9]);
+    end
+
     if (isempty(axesToRenderIn))
-        pdfFileName = sprintf('StrehlOptimization_%s.pdf', theTitle);
-        thePDFfileName = fullfile(pdfFileName);
+        thePDFfileName = fullfile(figureDir,thePDFfileName);
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
 
