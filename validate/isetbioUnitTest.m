@@ -16,6 +16,7 @@ import matlab.unittest.TestRunner;
 
 existingFigures = findall(groot, 'Type', 'figure');
 cleanupFigures = onCleanup(@() localCloseTestFigures(existingFigures));
+cleanupPrefs = ieUnitTestSetup(); %#ok<NASGU>
 
 masterSuite = [];
 for ii = 1:numel(testDirs)

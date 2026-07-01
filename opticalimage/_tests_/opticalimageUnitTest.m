@@ -18,6 +18,7 @@ import matlab.unittest.TestRunner;
 
 existingFigures = findall(groot, 'Type', 'figure');
 cleanupFigures = onCleanup(@() localCloseTestFigures(existingFigures)); %#ok<NASGU>
+cleanupPrefs = ieUnitTestSetup(); %#ok<NASGU>
 suite = TestSuite.fromFolder(testDir);
 
 switch mode
