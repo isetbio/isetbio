@@ -1,4 +1,4 @@
-% t_mouseCones
+% s_mouseCones
 %
 %  Illustrate an image on the mouse cone mosaic.  Just the spatial
 %  sampling.  We don't have the pigments or any of that right yet.  This
@@ -49,7 +49,9 @@ oi = oiCreate('human');  % Makes a shift invariant
 
 oi = oiSet(oi,'optics fnumber',1);
 oi = oiSet(oi,'optics focal length',1.9*1e-3);
-oi = oiSet(oi,'lens density',0.0);
+lens = oiGet(oi,'optics lens');
+lens.density = 0.0;
+oi = oiSet(oi,'optics lens',lens);
 
 % We need to check the PSF and do better here.  Probably we need to deal
 % with chromatic aberration, too.
@@ -74,10 +76,10 @@ cmM.visualize;
 noiseFree = cmM.compute(oi);
 
 % {
-vParams = cm.visualize('params');
+vParams = cmM.visualize('params');
 vParams.activation = noiseFree;
 vParams.activationColorMap = hot(512);
 vParams.verticalActivationColorBar = true;
 vParams.activationRange = [0 max(noiseFree(:))];
-cm.visualize(vParams);
+cmM.visualize(vParams);
 %}
