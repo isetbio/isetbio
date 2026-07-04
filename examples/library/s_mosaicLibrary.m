@@ -1,8 +1,13 @@
 %% s_mosaicLibrary:  Standard sample mosaics
+% SkipFile
 %
 % Sometimes we just want a simple stored mosaic.  This code builds a
 % library of a few mosaics with different sizes at different visual
 % field positions
+%
+% This is a data-generation script. It intentionally writes many cMosaic
+% files, including a very large 18 deg mosaic, and is not meant for routine
+% automated example smoke tests.
 %
 % We need to rerun this script every time we make a basic change to the
 % @cMosaic class.  The saved mosaic may not know about the proper methods.

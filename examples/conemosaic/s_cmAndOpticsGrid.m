@@ -1,31 +1,19 @@
 function s_cmAndOpticsGrid()
 % Plot Polans optics across a grid of (x,y) eccentricities
 %
-% BW: This is a good tutorial to go through with Nicolas and/or David. It
-% is a very complicated read of something that should be much simpler. It
-% does not use the wvf* methods, but reimplements them in its own way, and
-% only their only use is in this context.  I believe that this relies on a
-% very important method, oiEnsembleGenerate, that should be at the heart of
-% the re-write. We would like the functionality of this tutorial. But we would like it
-% to read simply and to rely on the existing tools.
-%
 % See Also:
 %   t_cMosaicOffAxisDistortion
 %   t_cMosaicRankedSubjectsOptics
-
-% History:
-%    07/20/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
+%
 
 %% Initialize
 ieInit;
-clear;
-close all;
 
 %% Control parameters below
 %
-% Setting fastParamters to true does
-% a more limited set of calculations
-% and the whole thing runs more quickly.
+% Setting fastParamters to true does a more limited set of calculations and
+% the whole thing runs more quickly. If you want the larger calculation,
+% change it to false.  But put it back so isetbioExampleTest runs quickly.
 fastParameters = true;
 
 %% Control saving of figures.
@@ -33,7 +21,7 @@ fastParameters = true;
 % We don't want tutorials saving things into the isetbio source tree
 % willy-nilly.
 %
-% Set default for save to false in any case, as for this tutorial at least
+% Set default for save to false in any case, as for this example at least
 % saving crushes Matlab on the autorun.
 saveFigures = false;
 figureDir = fullfile(isetbioRootPath,'local',mfilename);
@@ -46,16 +34,23 @@ else
     fprintf('Not saving figures. Set saveFigures to true in the source to save\n');
 end
 
-% Setup fast version
-fastVersion = true;
-
 %% Mosaic size (in degrees)
-mosaicSizeDegs = [1 1];
+if (fastParameters)
+    mosaicSizeDegs = [0.35 0.35];
+    wavefrontSpatialSamples = 201;
+    useParforForMosaicGeneration = false;
+    visualizedConeApertureThetaSamples = 16;
+else
+    mosaicSizeDegs = [1 1];
+    wavefrontSpatialSamples = 501;
+    useParforForMosaicGeneration = true;
+    visualizedConeApertureThetaSamples = 32;
+end
 
 %% Mosaic eccentricity (in degrees)
 if (fastParameters)
     fprintf('Running limited set of locations. Change fastParameters to false in the source to get more\n');
-    mosaicEccDegsX  = [-30 -20 0 20 30];
+    mosaicEccDegsX  = [-30 0 30];
     mosaicEccDegsY  = [-10 0 10];
 else
     mosaicEccDegsX  = [-12 -8 -4 -2 0 2 4 8 12];
@@ -81,12 +76,11 @@ opticsZernikeCoefficientsDataBase = 'Polans2015';
 % For example, use 1:10
 for subjectRankOrder = 1
 
-    % Setup a very large and complex figure.  This might
-    % not fit well on your screen.
-    hFig = figure(1); clf;
+    % Setup a large grid figure, capped to fit on typical screens.
+    hFig = ieFigure; clf;
     originalFigureUnits = hFig.Units;
     hFig.Units = 'pixels';
-    set(hFig, 'Position', [0 0 3000 1500], 'Color', [0 0 0]);
+    set(hFig, 'Position', localFigurePosition([1600 960]), 'Color', [0 0 0]);
     hFig.Units = originalFigureUnits;
 
     rowsNum = numel(mosaicEccDegsY);
@@ -117,18 +111,13 @@ for subjectRankOrder = 1
         % Determine if we need to subtract the subject's central refraction
         subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);
 
-        % Mosaic size: 20 cones across
-        conesAcrossMosaic = 20;
-        mosaicEccMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs([X(iEcc) Y(iEcc)]);
-        coneSpacingDegs = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(whichEye, mosaicEccMicrons, 'cones', false);
-        % sizeDegs = coneSpacingDegs*conesAcrossMosaic*[1 1];
-
         % Generate mosaic centered at target eccentricity
         cm = cMosaic(...
             'whichEye', whichEye, ...
             'sizeDegs', mosaicSizeDegs, ...
             'eccentricityDegs', [X(iEcc) Y(iEcc)], ...
-            'opticalImagePositionDegs', 'mosaic-centered' ...
+            'opticalImagePositionDegs', 'mosaic-centered', ...
+            'useParfor', useParforForMosaicGeneration ...
             );
 
         % Original comment was brief and not quite right.
@@ -136,7 +125,7 @@ for subjectRankOrder = 1
         % This call is used to get a PSF.
         % Generate optics appropriate for a particular subject from a
         % particular database at a particular eccentricity and pupil diameter and ...
-        [oiEnsemble, psfEnsemble] = ...
+        [~, psfEnsemble] = ...
             cm.oiEnsembleGenerate(cm.eccentricityDegs, ...
             'zernikeDataBase', opticsZernikeCoefficientsDataBase, ...
             'subjectID', testSubjectID, ...
@@ -145,7 +134,7 @@ for subjectRankOrder = 1
             'zeroCenterPSF', false, ...
             'flipPSFUpsideDown', false, ...
             'subtractCentralRefraction', subtractCentralRefraction, ...
-            'wavefrontSpatialSamples', 501);
+            'wavefrontSpatialSamples', wavefrontSpatialSamples);
         thePSFData = psfEnsemble{1};
 
         % Visualize PSF
@@ -162,7 +151,7 @@ for subjectRankOrder = 1
 
         % Ticks and visualization limits
         domainUnits = 'microns';
-        
+
         % Visualize part of the mosaic
         domainVisualizationLims(1:2) = cm.eccentricityMicrons(1) + (psfPlotHalfWidthMicrons+0.5)*[-1 1];
         domainVisualizationLims(3:4) = cm.eccentricityMicrons(2) + (psfPlotHalfWidthMicrons+0.5)*[-1 1];
@@ -180,7 +169,7 @@ for subjectRankOrder = 1
             'axesHandle', ax, ...
             'domain', domainUnits, ...
             'visualizedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
-            'visualizedConeApertureThetaSamples', 32, ...
+            'visualizedConeApertureThetaSamples', visualizedConeApertureThetaSamples, ...
             'domainVisualizationLimits', domainVisualizationLims, ...
             'domainVisualizationTicks', domainVisualizationTicks, ...
             'labelConesWithIndices', nan, ...
@@ -207,4 +196,15 @@ for subjectRankOrder = 1
 
 end
 
+end
+
+function figurePosition = localFigurePosition(desiredSizePixels)
+screenSize = get(groot, 'ScreenSize');
+screenWidth = screenSize(3);
+screenHeight = screenSize(4);
+figureWidth = min(desiredSizePixels(1), max(900, screenWidth - 120));
+figureHeight = min(desiredSizePixels(2), max(650, screenHeight - 160));
+left = max(10, round((screenWidth - figureWidth)/2));
+bottom = max(40, round((screenHeight - figureHeight)/2));
+figurePosition = [left bottom figureWidth figureHeight];
 end

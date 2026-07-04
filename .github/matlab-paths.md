@@ -16,3 +16,11 @@ addpath(genpath(fullfile(getenv('HOME'),'Documents','MATLAB','isetbio')));
 
 which ieInit
 ```
+
+For sessions where you plan to run several parfor-heavy tutorials or
+examples, you can also start the pool explicitly after path setup, or place
+this in `startup.m`:
+
+```matlab
+ieParallelPoolWarmUp('config','conservative','runSilent',true);
+```
