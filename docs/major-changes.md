@@ -20,8 +20,8 @@ were removed during this early-development reorganization.
 ISETCam owns the shared `ieRunTutorialExampleTests` engine and `ieTestReport`.
 The engine provides cross-repository discovery, isolation, skipping, durable
 checkpoints, and consistent reporting. Usage is documented in
-`validate/README.md`; the shared architecture is documented in ISETCam's
-`docs/tutorial-example-test-architecture.md`.
+[testing.md](testing.md); the shared architecture is documented in ISETCam's
+[tutorial/example test architecture](../../isetcam/docs/tutorial-example-test-architecture.md).
 
 ## 2026-06: RemoteDataToolbox References Retired
 

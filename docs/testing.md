@@ -90,6 +90,16 @@ Use the canonical marker for a script that must be discovered but skipped:
 Scripts whose purpose is to generate or refresh repository data files should
 be named `data_*.m`, not `t_*.m` or `s_*.m`.
 
+## Publishing tutorials and examples
+
+Use ISETCam `iePublish` to convert tutorials and examples into HTML files that
+can be linked from wiki pages. By default, `iePublish` embeds figures directly
+in the generated HTML, which avoids keeping separate image files beside the
+page.
+
+See the [ISETCam publishing guide](../../isetcam/docs/publish.md) for the
+recommended workflow and options.
+
 ## Reports and interrupted runs
 
 The tutorial and example runners return the same run structure used by
