@@ -46,14 +46,15 @@ function t_fixationalEyeMovementsFeedbackGainAndControlGainDependence
 %    02/07/18  npc  Comments.
 %    07/12/18  jnm  Formatting. Written as a function, so formatted as one.
 
-% Generate 500 5-second emPaths with a sample time of 1 msec
-emDurationSeconds = 5;
+% Generate a modest ensemble of 2-second paths with a sample time of 1 msec.
+% This is enough to show the trends while keeping the tutorial interactive.
+emDurationSeconds = 2;
 sampleTimeSeconds = 1 / 1000;
-nTrials = 500;
+nTrials = 25;
 
 % Examined values of feedback and control gain
-feedbackGainValues = [0, 0.10, 0.125, 0.15, 0.175, 0.20];
-controlGammaValues = [0.17, 0.20, 0.25, 0.5];
+feedbackGainValues = [0, 0.15, 0.20];
+controlGammaValues = [0.17, 0.25, 0.5];
 [feedbakGainGrid, controlGammaGrid] = ...
     meshgrid(feedbackGainValues, controlGammaValues);
 
@@ -79,16 +80,28 @@ subplotPosVectors = NicePlot.getSubPlotPosVectors(...
 % Prepare figures
 hFig1 = figure(1);
 clf;
+originalFigureUnits = hFig1.Units;
+hFig1.Units = 'pixels';
 set(hFig1, 'Position', [10 10 1400 950], 'Color', [1 1 1]);
+hFig1.Units = originalFigureUnits;
 hFig2 = figure(2);
 clf;
+originalFigureUnits = hFig2.Units;
+hFig2.Units = 'pixels';
 set(hFig2, 'Position', [100 10 1400 950], 'Color', [1 1 1]);
+hFig2.Units = originalFigureUnits;
 hFig3 = figure(3);
 clf;
+originalFigureUnits = hFig3.Units;
+hFig3.Units = 'pixels';
 set(hFig3, 'Position', [200 10 1400 950], 'Color', [1 1 1]);
+hFig3.Units = originalFigureUnits;
 hFig4 = figure(4);
 clf;
+originalFigureUnits = hFig4.Units;
+hFig4.Units = 'pixels';
 set(hFig4, 'Position', [300 10 1400 950], 'Color', [1 1 1]);
+hFig4.Units = originalFigureUnits;
 % hFig5 = figure(5);
 % clf;
 % set(hFig5, 'Position', [400 10 1400 950], 'Color', [1 1 1]);

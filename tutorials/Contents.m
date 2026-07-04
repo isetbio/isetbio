@@ -17,6 +17,5 @@
 % t_optics                      - Optics related calculatoins.
 % t_mosaic                      - Support for describing mosaic geometry. This is DHB code from the early 1990s that we may or may not actually be using.
 % t_outersegmemt                - Isomerizations to photocurrent.
-% t_rdt                         - Using remote data toolbox.
 % t_scene                       - Scene modeling.
 % t_wavefront                   - Wavefront optics calculations.

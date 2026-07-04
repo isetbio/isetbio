@@ -1,4 +1,4 @@
-% isetbio/data/datafiles/human
+% ISETBio bundled human data files
 %
 % Files containing data pertaining to humans
 %

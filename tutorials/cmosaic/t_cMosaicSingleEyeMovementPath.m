@@ -89,7 +89,10 @@ set(gca, 'FontSize', 16);
 emPathsDegs = cm.fixEMobj.emPosArcMin/60;
 
 hFig = figure;
+originalFigureUnits = hFig.Units;
+hFig.Units = 'pixels';
 set(hFig, 'Position', [100 300 800 400]);
+hFig.Units = originalFigureUnits;
 activationRange = prctile(noiseFreeExcitationResponseInstances(:), [1 99]);
 
 subplotPos = NicePlot.getSubPlotPosVectors(...

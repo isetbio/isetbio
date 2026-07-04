@@ -62,8 +62,7 @@ function t_cMosaicCustomConeData()
      % Visualize the retinal image of the test stimulus, the generated
      % @cMosaic, and its activation by the test stimulus
 
-     hFig = figure(1); clf;
-     set(hFig, 'Position', [10 10 1500 500], 'Color', [1 1 1]);
+     hFig = ieFigure([],'wide');     
      ax = subplot(1,3,1);
      visualizeOpticalImage(theOI, ...
          'axesHandle', ax, ...

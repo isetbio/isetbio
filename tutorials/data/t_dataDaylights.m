@@ -1,8 +1,8 @@
-% The daylight files in isettools/data/lights
+% The daylight files in ISETCam's data/lights directory
 %
 % Description:
 %    A script covering the use of the daylight files in
-%    isettools/data/lights.
+%    ISETCam's data/lights directory.
 %
 
 % History:
