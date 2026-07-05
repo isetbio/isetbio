@@ -45,7 +45,7 @@ fprintf('Length of r %d\n',length(r))
 % A 1 in the first slot creates the exponential impulse response function.
 % It last a long time and it doesn't start until a few steps in because,
 % well, the absorptions start a few steps in
-vcNewGraphWin; plot(r(:,1))
+ieFigure; plot(r(:,1))
 
 %% A value in the 3rd and 30th slot produces two of them
 
@@ -53,7 +53,7 @@ A = zeros(200,3);
 A(3,:) = 1;
 A(30,:) = 1;
 r = conv2(h,A);
-vcNewGraphWin; plot(r(:,1))
+ieFigure; plot(r(:,1))
 
 %% A value in the 3rd and 30th slot produces two of them
 
@@ -61,7 +61,7 @@ A = zeros(60,3);
 A(3,:) = 1;
 A(30,:) = 1;
 r = conv2(h,A);
-vcNewGraphWin; plot(r(:,1))
+ieFigure; plot(r(:,1))
 
 %% But if the impulse response is longer than the stimulus
 
@@ -76,7 +76,7 @@ A(30,:) = 1;
 r = conv2(h,A);
 
 % The output is truncated.
-vcNewGraphWin; plot(r(:,1))
+ieFigure; plot(r(:,1))
 
 %% We truncate the response to the length of the absorptions
 
@@ -103,6 +103,6 @@ r = conv2(h,A);
 r = r(1:30,:);
 
 % The output is truncated.
-vcNewGraphWin; plot(r(:,1))
+ieFigure; plot(r(:,1))
 
 %%
