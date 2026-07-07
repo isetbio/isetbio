@@ -1,5 +1,6 @@
 function t_customHumanConeMosaicsBasedOnAOmeasurements()
 % Gnerate ISETBio models of cone mosaics & optics based on AO data from the Sabesan lab
+% SkipFile
 %
 % Description:
 %   Script used to generate ISETBio models of cone mosaics with corresponding
@@ -436,4 +437,3 @@ function allSubjectData = importAllSubjectData(filename)
     % Convert to output type
     allSubjectData = table2cell(allSubjectData);
 end
-

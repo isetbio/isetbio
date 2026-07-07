@@ -24,7 +24,8 @@ ieInit;
 % eccentricity
 cm = cMosaic(...
     'size degs', [1 1], ...        % A small crop keeps the tutorial quick
-    'position degs', [20 -15] ...  % Near the edge of the precomputed lattice
+    'position degs', [20 -15], ... % Near the edge of the precomputed lattice
+    'use parfor', false ...        % Avoid parpool startup for this small crop
     );
 
 %% Visualize it (spatial support in degrees)
@@ -45,11 +46,13 @@ drawnow;
 % Generating from scratch can be slow, especially
 % if the mosaic eccentricity is off-axis
 cm = cMosaic(...
-    'size degs', [0.25 0.25], ...          % Small enough for interactive use
-    'position degs', [1.0 0], ...      % ECC:  x=1.0 degs, y= 0.0 degs
+    'size degs', [0.2 0.2], ...            % Small enough for interactive use
+    'position degs', [0.4 0], ...          % Slightly off-axis
+    'source lattice size degs', 1.2, ...   % Bound the online lattice around the ROI
     'compute mesh from scratch', true, ...   % generate mesh on-line, will take some time
+    'use parfor', false, ...               % Avoid parpool startup for this tiny example
     'random seed', 1, ...                   % deterministic tutorial output
-    'max mesh iterations', 30 ...           % limit the iterative procedure
+    'max mesh iterations', 3 ...            % limit the iterative procedure
     );
 
 %% Visualize in a ieNewGraphWin

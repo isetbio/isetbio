@@ -25,13 +25,24 @@ function updateStateGivenKeptConeIndices(obj, keptConeIndices)
 
     keptConeIndices = keptConeIndices(:);
     theConeIndices = obj.coneIndicesInZones;
-    parfor zoneBandIndex = 1:numel(theConeIndices)
-        coneIndices = theConeIndices{zoneBandIndex};
-        newConeIndices = [];
-        for k = 1:numel(coneIndices)
-            newConeIndices = cat(1, newConeIndices, find(keptConeIndices == coneIndices(k)));
+    if (obj.useParfor)
+        parfor zoneBandIndex = 1:numel(theConeIndices)
+            coneIndices = theConeIndices{zoneBandIndex};
+            newConeIndices = [];
+            for k = 1:numel(coneIndices)
+                newConeIndices = cat(1, newConeIndices, find(keptConeIndices == coneIndices(k)));
+            end
+            theConeIndices{zoneBandIndex} = newConeIndices;
         end
-        theConeIndices{zoneBandIndex} = newConeIndices;
+    else
+        for zoneBandIndex = 1:numel(theConeIndices)
+            coneIndices = theConeIndices{zoneBandIndex};
+            newConeIndices = [];
+            for k = 1:numel(coneIndices)
+                newConeIndices = cat(1, newConeIndices, find(keptConeIndices == coneIndices(k)));
+            end
+            theConeIndices{zoneBandIndex} = newConeIndices;
+        end
     end
     obj.coneIndicesInZones = theConeIndices;
 end

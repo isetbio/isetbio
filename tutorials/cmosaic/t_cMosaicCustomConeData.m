@@ -51,7 +51,8 @@ function t_cMosaicCustomConeData()
      % magnification factor
      theConeMosaic = cMosaic(...
          'coneData', theCustomConeDataStruct, ...
-         'micronsPerDegree', theCustomRetinalMagnification);
+         'micronsPerDegree', theCustomRetinalMagnification, ...
+         'useParfor', false);
 
      % Generate a test stimulus
      theOI = generateTestStimulusAndItsOpticalImage;

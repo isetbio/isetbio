@@ -35,8 +35,14 @@ if (~obj.anchorAllEccVaryingParamsToTheirFovealValues)
         % Smooth variations in cone apertures
         coneRFspacingsMicronsTmp = 0*obj.coneRFspacingsMicrons;
         unsmoothedRFspacingsMicrons = obj.coneRFspacingsMicrons;
-        parfor coneIndex = 1:nConesNum
-            coneRFspacingsMicronsTmp(coneIndex) = median(unsmoothedRFspacingsMicrons(nearbyConeIndices(:,coneIndex)));
+        if (obj.useParfor)
+            parfor coneIndex = 1:nConesNum
+                coneRFspacingsMicronsTmp(coneIndex) = median(unsmoothedRFspacingsMicrons(nearbyConeIndices(:,coneIndex)));
+            end
+        else
+            for coneIndex = 1:nConesNum
+                coneRFspacingsMicronsTmp(coneIndex) = median(unsmoothedRFspacingsMicrons(nearbyConeIndices(:,coneIndex)));
+            end
         end
         obj.coneRFspacingsMicrons = coneRFspacingsMicronsTmp;
         clear 'coneRFspacingsMicronsTmp'
@@ -314,4 +320,3 @@ else
 end
 
 end
-
