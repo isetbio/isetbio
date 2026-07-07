@@ -11,12 +11,20 @@
 %%
 ieInit;
 close all
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Rings and rays
 %
-nRays    = 10;
-nSamples = 256;
-fov      = 0.75;
+if isRunningTutorialTest
+    nRays    = 8;
+    nSamples = 128;
+    fov      = 0.35;
+else
+    nRays    = 10;
+    nSamples = 256;
+    fov      = 0.75;
+end
 
 %% Make three copies of rings and rays
 

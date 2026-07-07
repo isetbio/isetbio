@@ -217,3 +217,84 @@ The crash-active file was:
 `HANDOFF.md` itself was written after the clean working tree check. If this
 file is uncommitted on the source machine, commit or copy it before switching
 computers.
+
+## 2026-07-07 Follow-Up On This Machine
+
+The post-crash continuation run completed successfully:
+
+```matlab
+isetbioTutorialTest('start','t_customHumanConeMosaicsBasedOnAOmeasurements')
+```
+
+Result:
+
+- Total planned: 63
+- Passed: 39
+- Failed: 0
+- Skipped: 24
+- Unfinished: 0
+
+Run log:
+
+```text
+local/2026-07-07_094305_isetbioTutorialTest/progress.log
+```
+
+Additional smoke-mode runtime reductions were then made for passing tutorials
+that were still relatively slow:
+
+- `tutorials/recipes/t_dynamicStimulusFixationalEM.m`
+  - Uses a shorter duration, lower frame rate, smaller matched stimulus/mosaic
+    FOV, and one trial for both direct Desktop use and tutorial smoke runs.
+    This avoids the previous warning flood and keeps the script student-facing
+    without top-level test-runner branching.
+- `tutorials/oisequences/t_oisCreate.m`
+  - Uses shorter temporal weights and skips movie generation under the tutorial
+    runner.
+- `tutorials/oisequences/t_oisHarmonic.m`
+  - Uses smaller image dimensions, shorter temporal weights, and skips
+    movie/montage visualization under the tutorial runner.
+- `tutorials/optics/t_wvfWatsonJOV.m`
+  - Uses fewer scale/Zernike demonstrations and suppresses GUI-heavy plots
+    under the tutorial runner.
+- `tutorials/outersegment/advancedTutorials_os/t_osTimeStep.m`
+  - Runs fewer conditions, uses a shorter simulation time axis, and skips the
+    large plotting routine under the tutorial runner.
+- `tutorials/cones/t_conesPerifovea.m`
+  - Uses a smaller rings/rays stimulus and FOV under the tutorial runner.
+
+Focused checks passed for all six edited tutorials.
+
+The full tutorial smoke suite then completed successfully:
+
+```matlab
+isetbioTutorialTest
+```
+
+Result:
+
+- Total planned: 83
+- Passed: 58
+- Failed: 0
+- Skipped: 25
+- Unfinished: 0
+- Started: 2026-07-07 09:55:12
+- Finished: 2026-07-07 10:02:52
+
+Run log:
+
+```text
+local/2026-07-07_095512_isetbioTutorialTest/progress.log
+```
+
+The remaining longer passing tutorials in that full run were mostly around
+20-30 seconds:
+
+- `t_cMosaicHarmonic`
+- `t_cMosaicBasic`
+- `t_RGBImageToExcitations`
+- `t_dynamicStimulusToPhotocurrent`
+- `t_linearFilters`
+
+These are good next candidates if the goal is to push the full smoke suite
+below its current roughly 8-minute runtime.

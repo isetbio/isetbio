@@ -39,6 +39,8 @@ function t_osTimeStep
 
 %% Init
 ieInit;
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Examine the effects of varying the integrationTime
 conditionSet = 1;
@@ -53,6 +55,9 @@ conditionSet = 1;
 % conditionSet = 4;
 
 condData = makeConditionSet(conditionSet);
+if isRunningTutorialTest
+    condData = condData(1:2);
+end
 
 % Run all the conditions
 for stimulusConditionIndex = 1:numel(condData)
@@ -68,10 +73,12 @@ for stimulusConditionIndex = 1:numel(condData)
         c.integrationTime, c.osTimeStep, c.photonNoise, c.osNoise);
 
     % Plot the results
-    plotEverything(theConeMosaic, theOIsequence, ...
-        isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, ...
-        absorptionsTimeAxis, photoCurrentTimeAxis, ...
-        stimulusConditionIndex, c);
+    if ~isRunningTutorialTest
+        plotEverything(theConeMosaic, theOIsequence, ...
+            isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, ...
+            absorptionsTimeAxis, photoCurrentTimeAxis, ...
+            stimulusConditionIndex, c);
+    end
 end
 
 end
@@ -131,8 +138,14 @@ function [theConeMosaic, theOIsequence, ...
 %
 
     % Define the time axis for the simulation
-    minTime = -0.84;
-    maxTime = 0.72;
+    callStack = dbstack;
+    if any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'))
+        minTime = -0.24;
+        maxTime = 0.24;
+    else
+        minTime = -0.84;
+        maxTime = 0.72;
+    end
     oiTimeAxis = minTime:stimulusSamplingInterval:maxTime;
 
     % Compute the stimulus modulation function

@@ -9,29 +9,29 @@
 ieInit;
 
 %% Stimulus params
-% Duration: 0.5 second
-stimulusDurationSeconds = 0.5;
+% Duration: 0.2 second
+stimulusDurationSeconds = 0.2;
 
-% Frame duration: based on a 120 Hz refresh rate
+% Frame duration: based on a 60 Hz refresh rate
 % The time resolution of the fixationalEM and the
 % integration time of the cone mosaic also get set to this value
-frameDurationSeconds = 1/120;
+frameDurationSeconds = 1/60;
 
-% Field of view: 0.3 degs
-fovDegs = .3;
+% Field of view: 0.2 degs
+fovDegs = .2;
 
 %% Generate the OIsequence
 theOISequence = generateOpticalImageSequence(stimulusDurationSeconds, frameDurationSeconds, fovDegs);
 
 %% Generate the cone mosaic
 theConeMosaic = cMosaic(...
-    'sizeDegs', [0.5 0.5], ...      
+    'sizeDegs', fovDegs*[1 1], ...
     'eccentricityDegs', [0 0], ... 
     'integrationTime', frameDurationSeconds ...    
     );
 
 %% Generate fixational eye movements
-nTrials = 3;
+nTrials = 1;
 theFixationalEMObj = generateFixationalEyeMovements(stimulusDurationSeconds, frameDurationSeconds, nTrials, theConeMosaic);
 
 %% Compute mosaic responses
