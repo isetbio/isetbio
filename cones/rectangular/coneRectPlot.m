@@ -131,6 +131,13 @@ plotType = ieParamFormat(plotType);
 hf  = p.Results.hf;
 oi  = p.Results.oi;                    % Used in plotGraphs routine
 roi = p.Results.roi;
+isMoviePlot = ismember(plotType, {'movieabsorptions', 'moviecurrent'});
+showMovie = true;
+if isMoviePlot && isfield(p.Unmatched, 'show')
+    showMovie = p.Unmatched.show;
+end
+skipPlotWindow = isMoviePlot && isequal(showMovie, false) && ...
+    isempty(hf) && ~isa(obj,'coneRectWindow_App');
 
 % Returns.
 uData = [];
@@ -149,11 +156,13 @@ if isa(obj,'coneRectWindow_App')
 else
     % User sent coneMosaicRect in
     app = []; cm  = obj;
-    if isempty(hf)
+    if skipPlotWindow
+        % Non-interactive movie export does not need a MATLAB figure.
+        curAx = [];
+    elseif isempty(hf)
         % If they did not specify a window, create one.
         hf = ieFigure;
         curAx = get(hf,'CurrentAxes');
-        
     elseif isa(hf,'matlab.ui.Figure')
         % They sent a figure.  Get the axis.
         curAx = get(hf,'CurrentAxes');
@@ -179,10 +188,12 @@ end
 
 % If the user has changed the default, we leave it alone.
 % We should have a better way to check this.
-co = get(curAx, 'ColorOrder');
-if size(co,1) == 7    % This is the default number.  So we reorder.
-    set(get(curAx, 'parent'), ...
-        'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
+if ~isempty(curAx)
+    co = get(curAx, 'ColorOrder');
+    if size(co,1) == 7    % This is the default number.  So we reorder.
+        set(get(curAx, 'parent'), ...
+            'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
+    end
 end
 
 %% Switch on passed plot type
@@ -700,7 +711,9 @@ switch ieParamFormat(plotType)
 end
 
 % Put back the modified user data
-if exist('uData','var'), set(gcf, 'userdata', uData); end
+if exist('uData','var') && ~skipPlotWindow
+    set(gcf, 'userdata', uData);
+end
 
 end
 
