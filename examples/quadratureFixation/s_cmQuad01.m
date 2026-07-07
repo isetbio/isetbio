@@ -1,7 +1,6 @@
 %% Show the basic quadrature calculation
 %
-% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
-% UTTBSkip
+% SkipFile
 %
 % These are all for the circular shift case, just checking the logic.
 %
@@ -12,8 +11,6 @@
 %    of the spatial frequency and the size of the Gabor window
 %
 % Wandell
-
-% SkipFile
 
 %%
 ieInit

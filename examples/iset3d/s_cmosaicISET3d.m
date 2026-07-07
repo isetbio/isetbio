@@ -3,8 +3,7 @@
 % See also
 %   ISET3d and sceneEye
 %
-% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
-% UTTBSkip
+% SkipFile
 
 %%
 ieInit;

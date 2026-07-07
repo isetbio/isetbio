@@ -8,8 +8,7 @@
 % We can adjust the viewing situation, the size of the retina, and then
 % calculate a cone mosaic and cone excitations
 %
-% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
-% UTTBSkip
+% SkipFile
 %
 % See also
 %   ISET3d/tutorials/sceneEye/t_eye*

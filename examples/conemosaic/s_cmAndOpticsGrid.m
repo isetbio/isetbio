@@ -105,8 +105,8 @@ for subjectRankOrder = 1
     for iEcc = 1:numel(R)
 
         % Obtain subject IDs ranking in decreasing foveal resolution
-        rankedSujectIDs = PolansOptics.constants.subjectRanking;
-        testSubjectID = rankedSujectIDs(subjectRankOrder);
+        rankedSubjectIDs = PolansOptics.constants.subjectRanking;
+        testSubjectID = rankedSubjectIDs(subjectRankOrder);
 
         % Determine if we need to subtract the subject's central refraction
         subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);

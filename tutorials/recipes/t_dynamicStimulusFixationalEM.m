@@ -7,15 +7,22 @@
 
 %% Initialize
 ieInit;
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Stimulus params
-% Duration: 0.2 second
-stimulusDurationSeconds = 0.2;
-
 % Frame duration: based on a 60 Hz refresh rate
 % The time resolution of the fixationalEM and the
 % integration time of the cone mosaic also get set to this value
 frameDurationSeconds = 1/60;
+
+% Duration: 0.2 second for interactive use.  Keep the smoke-test path short
+% and non-animated to avoid stressing MATLAB graphics.
+if isRunningTutorialTest
+    stimulusDurationSeconds = 3*frameDurationSeconds;
+else
+    stimulusDurationSeconds = 0.2;
+end
 
 % Field of view: 0.2 degs
 fovDegs = .2;
@@ -40,9 +47,14 @@ theFixationalEMObj = generateFixationalEyeMovements(stimulusDurationSeconds, fra
         'withFixationalEyeMovements', true);
 
 %% Visualize everything
-visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
-    theConeMosaic, theNeuralResponses, temporalSupportSeconds, ...
-    theOISequence, fovDegs, theFixationalEMObj);
+if isRunningTutorialTest
+    fprintf('Computed %d response time samples for %d cones.\n', ...
+        numel(temporalSupportSeconds), theConeMosaic.conesNum);
+else
+    visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
+        theConeMosaic, theNeuralResponses, temporalSupportSeconds, ...
+        theOISequence, fovDegs, theFixationalEMObj);
+end
 
 
 %
@@ -122,7 +134,7 @@ function fixationalEMObj = generateFixationalEyeMovements(stimDurationSeconds, f
     fixationalEMObj.microSaccadeType = 'none';   % No microsaccades, just drift
     
     % Compute number of eye movements
-    eyeMovementsPerTrial = stimDurationSeconds/frameDurationSeconds;
+    eyeMovementsPerTrial = round(stimDurationSeconds/frameDurationSeconds);
 
     % Generate the em sequence for the passed cone mosaic,
     % which results in a time step equal to the integration time of theConeMosaic

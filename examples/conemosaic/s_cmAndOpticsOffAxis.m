@@ -72,11 +72,11 @@ whichEye = 'right eye';
 switch (opticsZernikeCoefficientsDataBase)
     case 'Polans2015'
         % Obtain subject IDs ranking in decreasing foveal resolution
-        rankedSujectIDs = PolansOptics.constants.subjectRanking;
-        if (subjectRankOrder > length(rankedSujectIDs))
+        rankedSubjectIDs = PolansOptics.constants.subjectRanking;
+        if (subjectRankOrder > length(rankedSubjectIDs))
             testSubjectID = rankedSubjectIDs(end);
         else
-            testSubjectID = rankedSujectIDs(subjectRankOrder);
+            testSubjectID = rankedSubjectIDs(subjectRankOrder);
         end
 
         % Determine if we need to subtract the subject's central refraction
@@ -84,11 +84,11 @@ switch (opticsZernikeCoefficientsDataBase)
 
     case 'Artal2012'
         % Obtain subject IDs ranking in decreasing foveal resolution
-        rankedSujectIDs = ArtalOptics.constants.subjectRanking(whichEye);
-        if (subjectRankOrder > length(rankedSujectIDs))
+        rankedSubjectIDs = ArtalOptics.constants.subjectRanking(whichEye);
+        if (subjectRankOrder > length(rankedSubjectIDs))
             testSubjectID = rankedSubjectIDs(end);
         else
-            testSubjectID = rankedSujectIDs(subjectRankOrder);
+            testSubjectID = rankedSubjectIDs(subjectRankOrder);
         end
 
         % Determine if we need to subtract the subject's central refraction
@@ -96,11 +96,11 @@ switch (opticsZernikeCoefficientsDataBase)
    
     case 'Thibos2002'
         % Obtain subject IDs ranking in decreasing foveal resolution
-        rankedSujectIDs = ThibosOptics.constants.subjectRanking(whichEye);
-        if (subjectRankOrder > length(rankedSujectIDs))
+        rankedSubjectIDs = ThibosOptics.constants.subjectRanking(whichEye);
+        if (subjectRankOrder > length(rankedSubjectIDs))
             testSubjectID = rankedSubjectIDs(end);
         else
-            testSubjectID = rankedSujectIDs(subjectRankOrder);
+            testSubjectID = rankedSubjectIDs(subjectRankOrder);
         end
 
         % Determine if we need to subtract the subject's central refraction

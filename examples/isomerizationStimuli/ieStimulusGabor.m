@@ -1,9 +1,5 @@
 function iStim = ieStimulusGabor(varargin)
 % Creates a movie/dynamic of the cone absorptions of a drifting Gabor patch 
-% 
-% DHB: 2026-03-07. This is a function and should not really be in the scripts directory.
-% Adding UTTBSkip so it isn't run by the autovalidation.
-% UTTBSkip
 %
 %    ieStimulusGabor(varargin)
 %
@@ -56,6 +52,8 @@ function iStim = ieStimulusGabor(varargin)
 % 3/2016 JRG (c) isetbio team
 %
 % 08/16/17  dhb  Fix call to coneDensity -> coneDensityReadData.
+%
+% This is a utility function, not an s_* example smoke-test source.
 
 %% Parse inputs
 p = inputParser;
@@ -135,7 +133,7 @@ coneD = coneDensityReadData('eccentricity',1e-3*eccMM, 'angle',params.theta, 'wh
 coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 
-if strcmpi(osType, 'biophys');
+if strcmpi(osType, 'biophys')
     osCM = osBioPhys();            % peripheral (fast) cone dynamics
     osCM.set('noise flag','none');
 %     osCM = osBioPhys('eccentricity',0);  % foveal (slow) cone dynamics
@@ -196,7 +194,7 @@ grayStart = 50; grayEnd = 20;
 
 %%%%%%%%
 % This is the mean oi that we use at the start and end
-params.ph = 0
+params.ph = 0;
 scene    = sceneCreate('harmonic', params);
 oiMean   = oiCompute(oi,scene,'pad value','mean');
 
@@ -241,7 +239,7 @@ cm.absorptions = absorptionsMat;
 cm.emPositions=zeros(nSteps,2);
 cm.os.noiseFlag = osNoiseFlag;
 
-if strcmpi(osType, 'biophys');
+if strcmpi(osType, 'biophys')
     
     cm.absorptions = cm.integrationTime*cm.absorptions;
     osBParams.bgR = 10*mean(cm.absorptions(:)./cm.os.timeStep);

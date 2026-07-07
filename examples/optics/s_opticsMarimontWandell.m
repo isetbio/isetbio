@@ -1,7 +1,6 @@
 % s_OpticsMarimontWandell
 %
-% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
-% UTTBSkip
+% SkipFile
 %
 % Description:
 %    This script shows the Marimont-Wandell OTF and corresponding PSF.
@@ -24,15 +23,11 @@
 %    than those in the current "correct" method. I am not sure if that has
 %    any significance.
 %
-% This is very old and should be updated. It doesn't run correctly any
-% more. (BW).
+% This is old and should be updated before it is returned to the automated
+% example run.
 %
 % 03/31/18  dhb  Wrote it.
 % 10/26/18  dhb  Another try.
-
-%
-% SkipFile
-%
 %% Clear
 ieInit;
 
@@ -204,7 +199,6 @@ fprintf('Maximum fractional mismatch between current and original method: %f at 
 for ww = 1:size(OTFMarimontWandell.OTF,3)
     figure(index(ww));
 end
-
 
 
 

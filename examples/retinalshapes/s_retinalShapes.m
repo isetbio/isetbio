@@ -7,8 +7,7 @@
 % layer of the retina.  This might be from diseases in the retinal
 % pigment epithelium that displace the photoreceptor layer.
 %
-% DHB: 2026-03-07.  Broken on autovalidate.  Adding UTTBSkip
-% UTTBSkip
+% SkipFile
 %
 % Amsler grid -  Used in diagnosis
 % https://www.google.com/search?q=ansler+grid&rlz=1C5GCEM_enUS991US991&oq=ansler+grid&aqs=chrome..69i57j0i10i131i433i512l2j0i10i512l7.1889j0j4&sourceid=chrome&ie=UTF-8 
@@ -52,7 +51,7 @@ s.FaceColor = 'flat';
 %% Control the mesh in some interesting ways
 sigma = 5;
 T = [20 20];
-gaussianBump = exp(-[(X-T(1)).^2 + (Y-T(2)).^2]/(2*sigma^2));
+gaussianBump = exp(-((X-T(1)).^2 + (Y-T(2)).^2)/(2*sigma^2));
 sFactor = 1e3;
 s = mesh(X,Y,Z-sFactor*gaussianBump,img2);
 s.FaceColor = 'flat';
@@ -112,7 +111,8 @@ surf(x,y,z,'edgecolor',[1 1 1]*0.8)
 line(x1,y1,z1,'color','red','linewidth',2)
 
 % The distance along the surface
-L = sum(sqrt(diff(x1).^2+diff(y1).^2+diff(z1).^2))
+L = sum(sqrt(diff(x1).^2+diff(y1).^2+diff(z1).^2));
 
 % The distance along the plane underneath
-D = norm(pt2 - pt1)
+D = norm(pt2 - pt1);
+fprintf('Surface path length: %.3f; planar distance: %.3f\n', L, D);

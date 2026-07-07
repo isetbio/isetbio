@@ -1,9 +1,5 @@
 function iStim = ieStimulusBar(varargin)
 % Creates a dynamic cone mosaic response to a moving bar stimulus
-% 
-% DHB: 2026-03-07. This is a function and should not really be in the scripts directory.
-% Adding UTTBSkip so it isn't run by the autovalidation.
-% UTTBSkip
 %
 % Inputs: a parameter structure that defines
 %   * the bar stimulus properties
@@ -37,6 +33,8 @@ function iStim = ieStimulusBar(varargin)
 % 3/2016 JRG (c) isetbio team
 %
 % 08/16/17  dhb  Fix call to coneDensity -> coneDensityReadData.
+%
+% This is a utility function, not an s_* example smoke-test source.
 
 %% Parse inputs
 p = inputParser;
@@ -97,7 +95,7 @@ coneD = coneDensityReadData('eccentricity',1e-3*eccMM, 'angle',params.theta, 'wh
 coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 
-if strcmpi(osType, 'biophys');
+if strcmpi(osType, 'biophys')
     osCM = osBioPhys();            % peripheral (fast) cone dynamics
     osCM.set('noise flag','none');
 %     osCM = osBioPhys('eccentricity',0);  % foveal (slow) cone dynamics
@@ -200,7 +198,7 @@ cm.absorptions = absorptionsMat;
 cm.emPositions=zeros(nSteps,2);
 cm.os.noiseFlag = osNoiseFlag;
 
-if strcmpi(osType, 'biophys');
+if strcmpi(osType, 'biophys')
     
     cm.absorptions = cm.integrationTime*cm.absorptions;
     osBParams.bgR = 10*mean(cm.absorptions(:)./cm.os.timeStep);
