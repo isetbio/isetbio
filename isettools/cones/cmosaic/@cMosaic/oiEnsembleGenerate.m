@@ -178,15 +178,6 @@ switch (zernikeDataBase)
         end
 
     case 'Artal2012'
-        % Looks like Artal optics now accepts refractive error in diopters.
-        % Commented out this warning. DHB.
-        %
-        % % Make sure refractive error is zero, because Artal version of
-        % % oiForSubjectAtEccentricity doesn't understand the
-        % % 'refractiveErrorMicrons' key/value pair.
-        % if (p.Results.refractiveErrorDiopters ~= 0)
-        %     error('Artal optics does not currently accept refractiveErrorDiopters key/value pair');
-        % end
 
         % Artal optics
         for oiIndex = 1:oiNum
