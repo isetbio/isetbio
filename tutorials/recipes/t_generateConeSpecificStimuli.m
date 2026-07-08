@@ -172,7 +172,10 @@ end
 function visualizeDisplayImage(figNo, RGBimage, LMSimage, presentationDisplay)
 
     hFig = figure(figNo);
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [400 10 560 850]);
+    hFig.Units = originalFigureUnits;
     % Generate axes in a [2x2] layout
     posVectors =  NicePlot.getSubPlotPosVectors(...
         'rowsNum', 2, 'colsNum', 2, ...
@@ -243,7 +246,10 @@ function visualizeContrastImages(figNo, outputLMScontrastImage, inputLMScontrast
         ]) * [-1 1];
     
     hFig = figure(figNo); clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Position', [1000 10 560 850]);
+    hFig.Units = originalFigureUnits;
     % Generate axes in a [3x3] layout
     posVectors =  NicePlot.getSubPlotPosVectors(...
         'rowsNum', 3, 'colsNum', 3, ...

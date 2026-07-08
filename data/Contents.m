@@ -1,6 +1,6 @@
 % isetbio/data
 %
-% Main data tree for isetbio (under development).
+% Main data tree for ISETBio.
 %
-% datafiles                     - Files containing data.
-% dataroutines                  - Callable routines for delivering specific data
+% datafiles                     - Canonical directory for bundled data files.
+% dataroutines                  - Callable routines for delivering specific data.

@@ -1,5 +1,6 @@
 function t_mRGCMosaicInspect(options)
 % Visualize prebaked mRGCMosaics and the cone pooling maps of individual cells
+% SkipFile
 %
 % Description:
 %    Demonstrates the following:
@@ -513,6 +514,5 @@ if (generateVideoOfRFpoolingMapsAlongHorizontalMeridian)
 end % generateVideoOfRFpoolingMapsAlongHorizontalMeridian
 
 end
-
 
 

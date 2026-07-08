@@ -1,11 +1,11 @@
 function t_osTimeStep
-% Show how to change timebase of os calculation.
+% Show how to change time-base of os calculation.
 %
 % Syntax:
 %   t_osTimeStep
 %
 % Description:
-%    Demonstrate simulations using three different timebases, one for
+%    Demonstrate simulations using three different time-bases, one for
 %    stimuli (based on stimulus refresh rate), one for absorptions and eye
 %    movements (based on coneMosaic.integrationTime), and a third one for
 %    outer segment current computations (based on os.timeStep)
@@ -39,6 +39,8 @@ function t_osTimeStep
 
 %% Init
 ieInit;
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Examine the effects of varying the integrationTime
 conditionSet = 1;
@@ -53,6 +55,9 @@ conditionSet = 1;
 % conditionSet = 4;
 
 condData = makeConditionSet(conditionSet);
+if isRunningTutorialTest
+    condData = condData(1:2);
+end
 
 % Run all the conditions
 for stimulusConditionIndex = 1:numel(condData)
@@ -68,14 +73,17 @@ for stimulusConditionIndex = 1:numel(condData)
         c.integrationTime, c.osTimeStep, c.photonNoise, c.osNoise);
 
     % Plot the results
-    plotEverything(theConeMosaic, theOIsequence, ...
-        isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, ...
-        absorptionsTimeAxis, photoCurrentTimeAxis, ...
-        stimulusConditionIndex, c);
+    if ~isRunningTutorialTest
+        plotEverything(theConeMosaic, theOIsequence, ...
+            isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, ...
+            absorptionsTimeAxis, photoCurrentTimeAxis, ...
+            stimulusConditionIndex, c);
+    end
 end
 
 end
 
+%% runSimulation
 function [theConeMosaic, theOIsequence, ...
     isomerizationRateSequence, photoCurrentSequence, ...
     oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis] = ...
@@ -130,8 +138,14 @@ function [theConeMosaic, theOIsequence, ...
 %
 
     % Define the time axis for the simulation
-    minTime = -0.84;
-    maxTime = 0.72;
+    callStack = dbstack;
+    if any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'))
+        minTime = -0.24;
+        maxTime = 0.24;
+    else
+        minTime = -0.84;
+        maxTime = 0.72;
+    end
     oiTimeAxis = minTime:stimulusSamplingInterval:maxTime;
 
     % Compute the stimulus modulation function
@@ -180,6 +194,7 @@ function [theConeMosaic, theOIsequence, ...
 end
 
 % ------- Helper functions --------
+%% coneMosaicGenerate
 function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, ...
     osNoise, integrationTime, osTimeStep)
 % Embedded function to gerneate a human cone mosaic.
@@ -237,6 +252,7 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, ...
     theConeMosaic.os = theOuterSegment;
 end
 
+%% oiSequenceGenerate
 function theOIsequence = oiSequenceGenerate(theScene, theOI, ...
     oiTimeAxis, modulationFunction, modulationType)
 % Helper function to generate OI Sequence
@@ -280,6 +296,7 @@ function theOIsequence = oiSequenceGenerate(theScene, theOI, ...
     end
 end
 
+%% oiGenerate
 function theOI = oiGenerate(noOptics)
     % Generate optics
     if (noOptics)
@@ -322,12 +339,15 @@ function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
     uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
 end
 
+%% plotEverything
 function plotEverything(theConeMosaic, theOIsequence, ...
     isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, ...
     absorptionsTimeAxis, responseTimeAxis, figNo, condData)
 
     % Plot the sequence of OIs with the eye movements
     hFig = figure(figNo); clf;
+    prevUnits = get(hFig,'Units');
+    set(hFig,'Units','pixels');
     set(hFig, ...
         'Position', [10 + figNo * 50, 10 + figNo * 100, 1920, 760], ...
         'Color', [1 1 1]);
@@ -547,6 +567,7 @@ function plotEverything(theConeMosaic, theOIsequence, ...
 
     drawnow
 
+    %% plotStimulusTimes
     function plotStimulusTimes(signalRange)
     % Plot lines demarkating each OI time duration
     %

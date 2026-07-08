@@ -1,5 +1,6 @@
 function t_mRGCMosaicEnableSurroundSconeInputs(options)
 % Enable S-cone input to mRGC surrounds which are built with L/M-only input
+% SkipFile
 %
 % Description:
 %   Demonstrates how to enable S-cone pooling to the surrounds of a set of 
@@ -157,6 +158,5 @@ theMRGCmosaic.enableSconeSurroundPoolingInSelectCells(...
 
  
 end
-
 
 

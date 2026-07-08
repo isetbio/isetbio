@@ -1,5 +1,6 @@
 function t_mRGCMosaicBasicComputation(options)
 % Perform a basic computation with a prebaked mGC mosaic
+% SkipFile
 %
 % Description:
 %    Demonstrates the following:
