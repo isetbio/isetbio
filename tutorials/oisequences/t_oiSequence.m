@@ -98,7 +98,7 @@ theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, ...
     oiTimeAxis, modulationFunction1, 'composition', 'blend');
 theOIsequence(4).visualize('movie illuminance');
 
-%%
+%% Blending with a different modulation function
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground  over an 250 micron radius
 % using a biphasic modulation function
@@ -107,8 +107,18 @@ theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, ...
     'modulationRegion', modulationRegion);
 theOIsequence(5).visualize('movie illuminance');
 
-%%
-% Render a montage of the 5th oisequence
-theOIsequence(5).visualize('montage');
+%% Render a montage of the 5th oisequence
+
+% This code needs debugging by hand.  The montage call creates zombie windows,
+% although the montage does appear.
+
+%{
+try
+    theOIsequence(5).visualize('montage');
+catch ME
+    disp(ME.getReport());
+end
+%}
+
 
 %% END

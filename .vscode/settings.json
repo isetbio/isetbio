@@ -1,7 +1,14 @@
 {
-    "MATLAB.installPath": "/Applications/MATLAB_R2025b.app",
-    "MATLAB.matlabConnectionTiming": "onStart",
-    "files.associations": {
-        "*.m": "matlab"
+  "[matlab]": {
+    "editor.tabCompletion": "on",
+    "editor.quickSuggestions": {
+      "other": "on",
+      "comments": "off",
+      "strings": "on"
     }
+  },
+  "MATLAB.matlabConnectionTiming": "onDemand",
+  "chat.tools.terminal.autoApprove": {
+    "/Applications/MATLAB_R2025b.app/bin/matlab": true
+  }
 }

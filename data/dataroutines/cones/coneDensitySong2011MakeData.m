@@ -23,7 +23,7 @@
 ieInit;
 
 %% Where the data will be saved
-chdir(fullfile(isetbioRootPath,'data','datafiles','human','cones'));
+chdir(fullfile(isetbioDataPath,'human','cones'));
 
 %% Young subject data
 %

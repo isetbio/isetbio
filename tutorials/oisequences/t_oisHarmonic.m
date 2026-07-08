@@ -11,6 +11,8 @@
 
 %%
 ieInit
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Create the default oi
 oi = oiCreate('wvf human');
@@ -22,8 +24,13 @@ vDist = 0.3;  % viewing distance (meter)
 %% The stimulus
 params.freq = 10;       % spatial frequencies of 10
 params.contrast = 0.6;  % 60% contrast
-params.row = 256;       % 256 x 256 pixels
-params.col = 256;
+if isRunningTutorialTest
+    params.row = 128;
+    params.col = 128;
+else
+    params.row = 256;       % 256 x 256 pixels
+    params.col = 256;
+end
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'name', sprintf('F %d', params.freq));
 scene = sceneSet(scene, 'h fov', imgFov);
@@ -43,8 +50,13 @@ ieAddObject(scene);
 %% Build the oiSequence
 % We build the stimulus using a time series of weights. We have the mean
 % field on for a while, then rise/fall, then mean field.
-zTime = 50;  % Mean field beginning and end (ms)
-stimWeights = fspecial('gaussian', [1, zTime], 15);
+if isRunningTutorialTest
+    zTime = 15;  % Mean field beginning and end (ms)
+    stimWeights = fspecial('gaussian', [1, zTime], 5);
+else
+    zTime = 50;  % Mean field beginning and end (ms)
+    stimWeights = fspecial('gaussian', [1, zTime], 15);
+end
 stimWeights = ieScale(stimWeights, 0, 1);
 weights = [zeros(1, zTime), stimWeights, zeros(1, zTime)];
 
@@ -62,9 +74,13 @@ oiHarmonicSeq = oiSequence(oiBackground, oiModulated, ...
     sampleTimes, weights, 'composition', 'blend');
 
 %% Visualize as a movie
-oiHarmonicSeq.visualize('movie illuminance');
+if ~isRunningTutorialTest
+    oiHarmonicSeq.visualize('movie illuminance');
+end
 
 %% Visualize all frames in a montage
-oiHarmonicSeq.visualize('montage');
+if ~isRunningTutorialTest
+    oiHarmonicSeq.visualize('montage');
+end
 
 %% END

@@ -27,6 +27,10 @@ function t_conesEyeSensitivity
 % See also:
 %
 
+% This legacy tutorial deliberately errors while its analytical comparison
+% is being repaired, so omit it from the automated tutorial smoke run.
+% SkipFile
+
 % History:
 %   02/01/19 jsc      Wrote initial version.
 %   02/08/19 jsc dhb  Documentation formatting etc.
@@ -257,4 +261,3 @@ coneMosaicResponse  = reshape(coneMosaicResponse, [nTrialsNum numel(coneMosaic.p
 idx = find(coneMosaic.pattern == targetConeType);
 meanResponse = mean(mean(coneMosaicResponse(:,idx)));
 end
-

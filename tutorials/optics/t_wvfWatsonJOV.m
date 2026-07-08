@@ -9,13 +9,17 @@
 
 %%
 ieInit;
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %%
 d = displayCreate;
 font = fontCreate('Z','Georgia',14,96);
 scene = sceneCreate('letter', font, d);
 scene = sceneSet(scene,'fov',0.5);
-sceneWindow(scene);
+if ~isRunningTutorialTest
+    sceneWindow(scene);
+end
 
 %%
 % These are the indices and Values that Beau put in his first example.
@@ -46,27 +50,40 @@ zcoeffs = wvfGet(wvf,'zcoeffs');
 %%  Not the same as his published figure
 % Scale the errors up
 
-for sFactor = [1, 2, 5]
+if isRunningTutorialTest
+    scaleFactors = 1;
+else
+    scaleFactors = [1, 2, 5];
+end
+for sFactor = scaleFactors
     wvf = wvfSet(wvf,'zcoeffs',sFactor*zcoeffs);
     wvf = wvfSet(wvf,'lcaMethod','human');
     wvf = wvfCompute(wvf);
-    wvfPlot(wvf,'psf','unit','um','wave',550,'plotrange',20);
-    xlim = get(gca,'xlim');
-    ylim = get(gca,'ylim');
+    if ~isRunningTutorialTest
+        wvfPlot(wvf,'psf','unit','um','wave',550,'plotrange',20);
+    end
+    if ~isRunningTutorialTest
+        xlim = get(gca,'xlim');
+        ylim = get(gca,'ylim');
+    end
     oi = wvf2oi(wvf,'humanlens',true);
     oi.optics.lens.density = 0;
     oi = oiCompute(oi,scene,'pad value','mean');
     oi = oiSet(oi,'name',sprintf('Watson x %d',sFactor));
-    oiWindow(oi);
-    oiPlot(oi,'psf',550); set(gca,'xlim',xlim,'ylim',ylim);
+    if ~isRunningTutorialTest
+        oiWindow(oi);
+        oiPlot(oi,'psf',550); set(gca,'xlim',xlim,'ylim',ylim);
+    end
 end
 
 % There is a numerical mis-match for DHB and me to figure out.
 % The Z coefficients in Beau's paper and our calculations are off by
 % about a factor of 5 somehow.  This is based on the amount of blur in
 % the ImagePlot[blurredletter] figure with respect to arc min ('E')
-wvfPlot(wvf,'psf','unit','min','wave',550,'plotrange',10);
-wvfPlot(wvf,'image psf','unit','min','wave',550,'plotrange',10);
+if ~isRunningTutorialTest
+    wvfPlot(wvf,'psf','unit','min','wave',550,'plotrange',10);
+    wvfPlot(wvf,'image psf','unit','min','wave',550,'plotrange',10);
+end
 
 %% Diffraction limited approximation to eye
 oi = oiCreate('diffraction limited');
@@ -74,13 +91,17 @@ oi = oiSet(oi,'optics fnumber', 5.67);
 oi = oiSet(oi,'optics focal length',0.016);
 oi = oiCompute(oi,scene,'pad value','mean');
 name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('Diff %s',name));
-oiWindow(oi);
+if ~isRunningTutorialTest
+    oiWindow(oi);
+end
 
 %% Marimont Wandell eye model
 oi = oiCreate('human mw');
 oi = oiCompute(oi,scene,'pad value','mean');
 name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('MW %s',name));
-oiWindow(oi);
+if ~isRunningTutorialTest
+    oiWindow(oi);
+end
 
 %% Thibos standard human
 %
@@ -93,10 +114,14 @@ oi.optics.lens.density = 0;
 
 oi = oiCompute(oi,scene,'pad value','mean');
 name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('Thibos %s',name));
-oiWindow(oi);
+if ~isRunningTutorialTest
+    oiWindow(oi);
+end
 
-wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550);
-wvfGet(wvf,'zcoeffs')
+if ~isRunningTutorialTest
+    wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550);
+end
+zcoeffs = wvfGet(wvf,'zcoeffs');
 
 %% Notice that this does not match aberration value in Watson
 
@@ -112,20 +137,30 @@ wvfGet(wvf,'zcoeffs')
 wvf = wvfCreate;
 jIndex = wvfZernikeNMToOSAIndex(2,-2);
 wvf = wvfSet(wvf,'zcoeff',0.63,jIndex);
-disp(wvfGet(wvf,'zcoeff'));
+if ~isRunningTutorialTest
+    disp(wvfGet(wvf,'zcoeff'));
+end
 wvf = wvfSet(wvf,'lcaMethod','human');
 wvf = wvfCompute(wvf);
-wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550)
-colormap("gray");
+if ~isRunningTutorialTest
+    wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550)
+    colormap("gray");
+end
 
 %% Show the wavefront aberrations for each Z coefficient up to 8s
-for ii=2:8
+if isRunningTutorialTest
+    zernikeIndices = 2:3;
+else
+    zernikeIndices = 2:8;
+end
+for ii=zernikeIndices
     wvf = wvfCreate;
     wvf = wvfSet(wvf,'zcoeff',1,ii);
     wvf = wvfSet(wvf,'lcaMethod','human');
     wvf = wvfCompute(wvf);
     [n,m] = wvfOSAIndexToZernikeNM(ii);
-    wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550);
-    colormap("gray"); title(sprintf('Z_%d^%d',n,m));
+    if ~isRunningTutorialTest
+        wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550);
+        colormap("gray"); title(sprintf('Z_%d^%d',n,m));
+    end
 end
-

@@ -201,6 +201,9 @@ else
     hFig = figure(figNo);
     legendsToUse = legends;
 end
+
+set(hFig,'Units','pixels');
+
 if (resetFigure)
     clf;
     set(hFig, ...

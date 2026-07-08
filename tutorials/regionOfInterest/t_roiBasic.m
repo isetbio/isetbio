@@ -63,7 +63,7 @@ indicesOfClosestPointsNearROI = theROI.indicesOfPointsAround(randomPoints, 1, sa
 indicesOfPointsWithinThickLineROI = theThickLineROI.indicesOfPointsInside(randomPoints);
 
 % Visualize
-hFig = figure();
+hFig = ieFigure(); set(hFig,'Units','pixel')
 
 ax = subplot(3,1,1);
 % Visualize the lineROI
@@ -97,3 +97,4 @@ scatter(ax,randomPoints(:,1), randomPoints(:,2), 64, ...
 scatter(ax,randomPoints(indicesOfPointsWithinThickLineROI,1), randomPoints(indicesOfPointsWithinThickLineROI,2), 64, ...
     'o', 'filled', 'MarkerFaceColor', [1 0.3 0.0], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3);
 legend({'roi', 'all points', 'points inside thick line ROI'}); 
+

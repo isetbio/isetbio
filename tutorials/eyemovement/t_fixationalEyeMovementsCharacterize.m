@@ -35,10 +35,10 @@ function t_fixationalEyeMovementsCharacterize
 
     close all
 
-    % Generate 512 3-second emPaths with a sample time of 1 msec
-    emDurationSeconds = 3;
-    sampleTimeSeconds = 1 / 1000;
-    nTrials = 512;
+    % Generate a compact set of emPaths for the tutorial smoke run.
+    emDurationSeconds = 1;
+    sampleTimeSeconds = 2 / 1000;
+    nTrials = 32;
 
     % Examine different microsaccade types
     microSaccadeTypes = {'none', 'heatmap/fixation based', 'stats based'};
@@ -222,8 +222,11 @@ function visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
     % Plot the results
     hFig = figure();
     clf;
+    originalFigureUnits = hFig.Units;
+    hFig.Units = 'pixels';
     set(hFig, 'Name', figureName, 'Position', [0 0 1150 950], ...
         'Color', [1 1 1]);
+    hFig.Units = originalFigureUnits;
 
     % emPlots - position (last trial)
     subplot(3, 3, [1 2]);
@@ -352,14 +355,18 @@ function visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
         'k-', 'LineWidth', 1.5);
     hold on;
     plot(displacement.timeLagsMilliseconds, ...
-    displacement.D2degsScrambedIntervals, 'k--', 'LineWidth', 1.5);
-hold off;
+        displacement.D2degsScrambedIntervals, 'k--', 'LineWidth', 1.5);
+    hold off;
     grid on
-    minD2 = min([min(displacement.D2degs(:)), ...
-        min(displacement.D2degsScrambedIntervals(:))]);
-    D2range = [minD2 minD2 * 1000];
-    set(gca, 'XLim', [1 1000], 'YLim', D2range, ...
-        'XTick', [1 3 10 30 100 300 1000], ...
+    d2Values = [displacement.D2degs(:); ...
+        displacement.D2degsScrambedIntervals(:)];
+    D2range = positiveLogRange(d2Values, 1000);
+    displacementTimeRange = positiveLogRange(displacement.timeLagsMilliseconds, 1);
+    displacementTicks = [1 3 10 30 100 300 1000];
+    displacementTicks = displacementTicks(displacementTicks >= displacementTimeRange(1) & ...
+        displacementTicks <= displacementTimeRange(2));
+    set(gca, 'XLim', displacementTimeRange, 'YLim', D2range, ...
+        'XTick', displacementTicks, ...
         'YTick', [1e-4 1e-3 1e-2 1e-1], ...
         'XScale', 'log', 'YScale', 'log', 'FontSize', 14);
     axis 'square'
@@ -379,12 +386,17 @@ hold off;
         displacement.xScrambledIntervals, 'k--', 'LineWidth', 1.5);
     hold off;
     grid on
-    minD = min([min(displacement.x(:)), ...
-        min(displacement.xScrambledIntervals(:))]);
-    Drange = [minD minD * 100];
+    dValues = [displacement.x(:); displacement.y(:); ...
+        displacement.xScrambledIntervals(:)];
+    Drange = positiveLogRange(dValues, 100);
+    linearDisplacementTimeRange = positiveLogRange(displacement.timeLagsMilliseconds, 1);
+    linearDisplacementTicks = [3 10 30 100 300 1000];
+    linearDisplacementTicks = linearDisplacementTicks( ...
+        linearDisplacementTicks >= linearDisplacementTimeRange(1) & ...
+        linearDisplacementTicks <= linearDisplacementTimeRange(2));
 
-    set(gca, 'XLim', [2 1000], 'YLim', Drange, ...
-        'XTick', [3 10 30 100 300 1000], ...
+    set(gca, 'XLim', linearDisplacementTimeRange, 'YLim', Drange, ...
+        'XTick', linearDisplacementTicks, ...
         'YTick', [0.03 0.1 0.3 1 3 10], ...
         'XScale', 'log', 'YScale', 'log', 'FontSize', 14);
     axis 'square'
@@ -394,4 +406,18 @@ hold off;
         'Location', 'SouthEast');
     title(sprintf('mean displacement\n(%d trials)', nTrials));
     drawnow;
+end
+
+function theRange = positiveLogRange(values, scaleFactor)
+    scaleFactor = max(scaleFactor, 10);
+    values = values(isfinite(values) & values > 0);
+    if isempty(values)
+        theRange = [eps eps * scaleFactor];
+        return;
+    end
+
+    theRange = [min(values) max(values)];
+    if theRange(2) <= theRange(1)
+        theRange(2) = theRange(1) * scaleFactor;
+    end
 end

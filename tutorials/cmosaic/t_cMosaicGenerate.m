@@ -1,7 +1,5 @@
 % Demo different ways of generating a @cMosaic object
 %
-% Warning:  This script takes a while (few minutes) to run
-%
 % Description:
 %    Shows 3 different ways of generating a @cMosaic object. Also shows how
 %    to visualize the generated mosaic.
@@ -25,8 +23,9 @@ ieInit;
 % lattice. This is the fastest way to generate a @cMosaic at any
 % eccentricity
 cm = cMosaic(...
-    'size degs', [4 3], ...            % SIZE: x=4.0 degs, y=3.0 degs
-    'position degs', [20 -15] ...  % ECC:  x=20 deg, y= -15 deg, near the edge of the precomputed 45x45 mosaic
+    'size degs', [1 1], ...        % A small crop keeps the tutorial quick
+    'position degs', [20 -15], ... % Near the edge of the precomputed lattice
+    'use parfor', false ...        % Avoid parpool startup for this small crop
     );
 
 %% Visualize it (spatial support in degrees)
@@ -47,14 +46,13 @@ drawnow;
 % Generating from scratch can be slow, especially
 % if the mosaic eccentricity is off-axis
 cm = cMosaic(...
-    'size degs', [1 0.5], ...               % SIZE: x=1 degs, y=0.5 degs
-    'position degs', [2.0 0], ...           % ECC:  x=3.0 degs, y= 0.0 degs
-    'sourceLatticeSizeDegs', 6, ...         % To generate a 1 x 0.5 deg mosaic at ecc = (3.0,0.0), we set the source to be 4x4
-    'compute mesh from scratch', true, ...  % generate mesh on-line, will take some time
-    'random seed', randi(9999999), ...      % set the random seed, so at to generate a different mosaic each time
-    'max mesh iterations', 60, ...         % stop iterative procedure after this many iterations
-    'visualizeMeshConvergence', true, ...   % visualize the lattice convergence progress
-    'eccentricityLookUpTableSamplesNum', 16 ...  % entries in the ecc lookup table, the higher, the better the lattice quality
+    'size degs', [0.2 0.2], ...            % Small enough for interactive use
+    'position degs', [0.4 0], ...          % Slightly off-axis
+    'source lattice size degs', 1.2, ...   % Bound the online lattice around the ROI
+    'compute mesh from scratch', true, ...   % generate mesh on-line, will take some time
+    'use parfor', false, ...               % Avoid parpool startup for this tiny example
+    'random seed', 1, ...                   % deterministic tutorial output
+    'max mesh iterations', 3 ...            % limit the iterative procedure
     );
 
 %% Visualize in a ieNewGraphWin

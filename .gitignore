@@ -1,19 +1,26 @@
-*DS_Store*
+# Operating system and editor files
+.DS_Store
+Thumbs.db
 *~
-isetbio.wiki/*
-wiki/*
-/README.md
-isettools/local/*
-/isettools/scene/deleteMePlease.mat
+*.swp
+.idea/
 
-/tutorials/t_hyperspectral/PSF.png
-/tutorials/t_recipes/right_temporal_group1.pdf
-/tutorials/t_recipes/right_temporal_group2.pdf
-/tutorials/t_recipes/right_temporal_group3.pdf
-/tutorials/t_recipes/right_temporal_group4.pdf
-/tutorials/t_recipes/right_temporal_group5.pdf
-isetbio.wiki/
-wiki/
+# MATLAB editor, build, and generated files
 *.asv
-/tutorials/mrgc/theMRGCMosaic.pdf
-/tutorials/mrgc/theRetinalOpticalImage.pdf
+*.autosave
+*.m~
+*.mex*
+*.slxc
+codegen/
+slprj/
+
+# Python caches used by helper scripts
+__pycache__/
+*.py[cod]
+.venv/
+
+# Repository-local content
+/isetbio.wiki/
+/wiki/
+
+# Personal files belong under local/. Its own .gitignore keeps the placeholder.

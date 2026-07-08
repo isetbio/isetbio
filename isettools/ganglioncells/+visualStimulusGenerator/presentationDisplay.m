@@ -5,9 +5,9 @@ function [theDisplay, backgroundChromaticity, backgroundLuminanceCdM2] = present
     wavelengthSupport, desiredPixelSizeDegs, viewingDistanceMeters, varargin)
 
     p = inputParser;
-    p.addParameter('bitDepth', 20, @isscalar);
-    p.addParameter('meanLuminanceCdPerM2', 50, @isscalar);
-    p.addParameter('luminanceHeadroom', 0.1, @isscalar);
+    p.addParameter('bitDepth', 20, @(x)(isscalar(x) && x > 0));
+    p.addParameter('meanLuminanceCdPerM2', 50, @(x)(isscalar(x) && x > 0));
+    p.addParameter('luminanceHeadroom', 0.1, @(x)(isscalar(x) && x >= 0 && x < 1));
     p.addParameter('displayType', '', @ischar);
     p.addParameter('adjustBackgroundChromaticityToEqualizeLandMconeExcitations', false, @islogical);
     p.addParameter('backgroundChromaticity', [], @(x)(isempty(x)||numel(x)==2));
@@ -16,15 +16,10 @@ function [theDisplay, backgroundChromaticity, backgroundLuminanceCdM2] = present
     p.parse(varargin{:});
 
 
-    displayParams = generateConventionalxyYDisplayDefaultParams;
-
-    if (~isempty(p.Results.displayType))
-        displayParams.whichDisplay = p.Results.displayType;
+    displayType = p.Results.displayType;
+    if (isempty(displayType))
+        displayType = 'LCD-Apple';
     end
-    displayParams.viewingDistanceMeters = viewingDistanceMeters;
-    displayParams.spectralSupport = wavelengthSupport;
-    displayParams.meanLuminanceCdPerM2 = p.Results.meanLuminanceCdPerM2;
-    displayParams.luminanceHeadroom = p.Results.luminanceHeadroom;
 
     adjustBackgroundChromaticityToEqualizeLandMconeExcitations = p.Results.adjustBackgroundChromaticityToEqualizeLandMconeExcitations;
     backgroundChromaticity = p.Results.backgroundChromaticity;
@@ -33,7 +28,13 @@ function [theDisplay, backgroundChromaticity, backgroundLuminanceCdM2] = present
     coneFundamentalsToEmploy = p.Results.coneFundamentalsToEmploy;
 
     % Generate display
-    theDisplay = generateConventionalxyYDisplay(displayParams);
+    theDisplay = displayCreate(displayType, 'wave', wavelengthSupport);
+    theDisplay = displaySet(theDisplay, 'viewing distance', viewingDistanceMeters);
+
+    % Scale the white point so the requested mean luminance leaves the
+    % requested fraction of display range above it.
+    targetPeakLuminanceCdM2 = p.Results.meanLuminanceCdPerM2/(1-p.Results.luminanceHeadroom);
+    theDisplay = localSetPeakLuminance(theDisplay, targetPeakLuminanceCdM2);
 
     % Linear LUT
     bitDepth = p.Results.bitDepth;
@@ -55,7 +56,7 @@ function [theDisplay, backgroundChromaticity, backgroundLuminanceCdM2] = present
     theDisplay = displaySet(theDisplay, 'dpi', dpiDesired);
 
     % 5. Adjust background chromaticity to enable equal L and M cone excitations
-    if (~isempty(adjustBackgroundChromaticityToEqualizeLandMconeExcitations)) && ...
+    if (adjustBackgroundChromaticityToEqualizeLandMconeExcitations) && ...
        (~isempty(backgroundChromaticity)) && (~isempty(backgroundLuminanceCdM2)) 
         beforexyY = backgroundChromaticity;
         beforexyY(3) = backgroundLuminanceCdM2;
@@ -67,4 +68,15 @@ function [theDisplay, backgroundChromaticity, backgroundLuminanceCdM2] = present
         fprintf(2,'Adjusted background chromaticity from (%2.2f, %2.2f, lum = %2.1f cd/m2) to (%2.2f,%2.2f, lum = %2.1f cd/m2) to achieve equal L and M cone excitations\n', ...
             beforexyY(1), beforexyY(2), beforexyY(3), backgroundChromaticity(1), backgroundChromaticity(2), backgroundLuminanceCdM2)
     end
+end
+
+function theDisplay = localSetPeakLuminance(theDisplay, targetPeakLuminanceCdM2)
+
+    currentPeakLuminanceCdM2 = displayGet(theDisplay, 'peak luminance');
+    assert(currentPeakLuminanceCdM2 > 0, ...
+        'Display %s has non-positive peak luminance.', displayGet(theDisplay, 'name'));
+
+    spdScaleFactor = targetPeakLuminanceCdM2/currentPeakLuminanceCdM2;
+    theDisplay = displaySet(theDisplay, 'spd', spdScaleFactor*displayGet(theDisplay, 'spd'));
+
 end

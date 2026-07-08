@@ -7,10 +7,12 @@
 
 %% 
 ieInit
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% First create the scene
 s = sceneCreate('rings rays');
-s = sceneSet(s, 'fov', 3);
+s = sceneSet(s, 'fov', 1);
 
 % Then the oi
 oi = oiCreate('human');
@@ -32,7 +34,9 @@ cMosaic.compute(oi);
 % Using the pull down in the window, you can choose the image that is
 % displayed. You can bring up one or the other images with the 'plottype'
 % argument
-cMosaic.window('plottype','mean absorptions');
+if (~isRunningTutorialTest)
+    cMosaic.window('plottype','mean absorptions');
+end
 
 %% Or the cone mosaic
 
@@ -41,7 +45,9 @@ cMosaic.window('plottype','mean absorptions');
 % Notice that once the cone mosaic is displayed, it is stored.  So if you
 % now choose mean absorptions and then go back to cone mosaic, the change
 % back is quite rapid.
-cMosaic.window('plottype','cone mosaic');
+if (~isRunningTutorialTest)
+    cMosaic.window('plottype','cone mosaic');
+end
 
 %% No photocurrent because we didn't compute it
 

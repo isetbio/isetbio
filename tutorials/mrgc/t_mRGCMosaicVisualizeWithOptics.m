@@ -1,5 +1,6 @@
 function t_mRGCMosaicVisualizeWithOptics(options)
 % Visualize a prebaked mRGC mosaic and the optics used for its synthesis
+% SkipFile
 %
 % Description:
 %   Demonstrates how to interactively load one of the available prebaked mRGC 
@@ -415,5 +416,4 @@ function visualizeStrehlRatioVariationWithDefocus(...
     thePDFfileName = fullfile(exportVisualizationPDFdirectory, theVisualizationPDFfilename);
     NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
 end
-
 

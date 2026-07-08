@@ -19,6 +19,8 @@
 
 %%
 ieInit
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Harmonic - monochrome
 % This code uses sceneCreate('harmonic', ...) function to create harmonics.
@@ -43,7 +45,11 @@ sparams.fov = 1;
 
 % And then we make a Gaussian temporal modulation that brings the stimulus
 % on and off
-stimWeights = ieScale(fspecial('gaussian', [1, 50], 15), 0, 1);
+if isRunningTutorialTest
+    stimWeights = ieScale(fspecial('gaussian', [1, 20], 6), 0, 1);
+else
+    stimWeights = ieScale(fspecial('gaussian', [1, 50], 15), 0, 1);
+end
 
 % The two harmonics are 'blended', which means at each moment in time we
 % have a weighted sum of the two where the weights sum to one.
@@ -51,7 +57,9 @@ ois = oisCreate('harmonic', 'blend', stimWeights, ...
     'testParameters', hparams, 'sceneParameters', sparams);
 
 vname = fullfile(isetbioRootPath, 'local', 'oisVideo1.mp4');
-ois.visualize('movieilluminance', 'vname', vname);
+if ~isRunningTutorialTest
+    ois.visualize('movieilluminance', 'vname', vname);
+end
 
 % Save as a gif for the wiki page.
 % gifName = fullfile(isetbioRootPath, 'wiki', 'images', 'oisHarmonic.gif');
@@ -68,7 +76,9 @@ hparams(1).contrast = 0;
 ois = oisCreate('harmonic', 'blend', stimWeights, ...
     'testParameters', hparams, ...
     'sceneParameters', sparams);
-ois.visualize('movie illuminance');
+if ~isRunningTutorialTest
+    ois.visualize('movie illuminance');
+end
 
 %% A little phase shifting, causing apparent motion
 
@@ -80,7 +90,9 @@ hparams(1).ph = 0;
 ois = oisCreate('harmonic', 'blend', stimWeights, ...
     'testParameters', hparams, 'sceneParameters', sparams);
 
-ois.visualize('movie illuminance');
+if ~isRunningTutorialTest
+    ois.visualize('movie illuminance');
+end
 
 %% A color Gabor patch
 
@@ -108,7 +120,9 @@ ois = oisCreate('harmonic', 'blend', stimWeights, ...
     'testParameters', hparams, 'sceneParameters', sparams);
 
 vname = fullfile(isetbioRootPath, 'local', 'oisVideo2.mp4');
-ois.visualize('movie rgb', 'vname', vname);
+if ~isRunningTutorialTest
+    ois.visualize('movie rgb', 'vname', vname);
+end
 
 %% Vernier
 % The line offset case is managed using the sceneCreate('vernier', ...).
@@ -133,12 +147,18 @@ vparams(1).name = 'uniform';
 sparams.fov = 1;
 
 % The temporal modulation
-stimWeights = ieScale(fspecial('gaussian', [1, 50], 15), 0, 1);
+if isRunningTutorialTest
+    stimWeights = ieScale(fspecial('gaussian', [1, 20], 6), 0, 1);
+else
+    stimWeights = ieScale(fspecial('gaussian', [1, 50], 15), 0, 1);
+end
 
 % You can return the scenes, if you like.
 [vernier, scenes] = oisCreate('vernier', 'add', stimWeights, ...
     'testParameters', vparams, 'sceneParameters', sparams);
-vernier.visualize('movie illuminance');
+if ~isRunningTutorialTest
+    vernier.visualize('movie illuminance');
+end
 
 % To see the scenes, prior to creating the optical image
 % ieAddObject(scenes{1});
@@ -150,17 +170,26 @@ vparams(2).barColor = 0.5;
 
 vernier = oisCreate('vernier', 'add', stimWeights, ...
     'testParameters', vparams, 'sceneParameters', sparams);
-vernier.visualize('movie illuminance');
+if ~isRunningTutorialTest
+    vernier.visualize('movie illuminance');
+end
 
 %% Impulse (temporal)
 clear iparams
 
 sparams.fov = 1;
 sparams.meanluminance = 100;
-stimWeights = zeros(1, 50);
-stimWeights(20:23) = 1;
+if isRunningTutorialTest
+    stimWeights = zeros(1, 20);
+    stimWeights(8:9) = 1;
+else
+    stimWeights = zeros(1, 50);
+    stimWeights(20:23) = 1;
+end
 
 impulse = oisCreate('impulse', 'add', stimWeights, ...
     'sceneParameters', sparams);
 
-impulse.visualize('movie illuminance');
+if ~isRunningTutorialTest
+    impulse.visualize('movie illuminance');
+end

@@ -20,18 +20,25 @@ ieInit;
 clear;
 close all;
 
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
+
 
 % Load an fMRI stimulus image
 theImageIndex = 1;
-[spatialSupportXDegs, spatialSupportYDegs, theSelectedImage] = loadSampleImages(theImageIndex);
+stimulusHeightDegs = 2.25;
+stimulusPixelsNum = 192;
+[spatialSupportXDegs, spatialSupportYDegs, theSelectedImage] = loadSampleImages(...
+    theImageIndex, stimulusHeightDegs, stimulusPixelsNum);
 
 
 % Generate a cone mosaic that extends over the entire stimulus
 % area (and beyond)
 mosaicEccDegs = [5.5 0];
 theConeMosaic = cMosaic(...
-        'sizeDegs', [4 18], ...
-        'eccentricityDegs',  mosaicEccDegs);
+        'sizeDegs', [1 2.25], ...
+        'eccentricityDegs',  mosaicEccDegs, ...
+        'useParfor', false);
 
 
 
@@ -43,9 +50,9 @@ theConeMosaic = cMosaic(...
 
 oiSamplingGridData = struct(...
     'eccentricityDegs', mosaicEccDegs, ...
-    'widthDegs', 3, ...
-    'heightDegs', 16, ...
-    'spacingDegs', 2, ...                % sampling grid spacing
+    'widthDegs', 1, ...
+    'heightDegs', 1.5, ...
+    'spacingDegs', 1.5, ...              % sampling grid spacing
     'weightingType', 'raised cosine' ... % choose between {'Gaussian', 'raised cosine'};
     );
 
@@ -87,34 +94,40 @@ end
     'subtractCentralRefraction', subtractCentralRefraction, ...
     'zeroCenterPSF', false, ...
     'withZeroedPistonAndTiltZernikeCoefficients', false, ...
-    'wavefrontSpatialSamples', 601, ...
+    'wavefrontSpatialSamples', 151, ...
     'pupilDiameterMM', 3.0, ...
     'refractiveErrorDiopters', 0.0, ...
     'visualizedSamplingGrid', ~true);
 
 % Visualize the cone mosaic, marking with white 'x' the positions where the
 % optics are sampled
-hFig = figure(10); clf;
-set(hFig, 'Position', [10 10 700 1300], 'Color', [1 1 1]);
-ax = subplot('Position', [0.05 0.05 0.94 0.94]);
-theConeMosaic.visualize(...
-    'figureHandle', hFig, ...
-    'axesHandle', ax, ...
-    'plotTitle', ' ');
-hold(ax, 'on');
-plot(ax, oiSamplingGridDegs(:,1), oiSamplingGridDegs(:,2), 'wx', 'MarkerSize', 12, 'LineWidth', 1.5);
+if (~isRunningTutorialTest)
+    hFig = figure(10); clf;
+    set(hFig, 'Position', [10 10 700 1300], 'Color', [1 1 1]);
+    ax = subplot('Position', [0.05 0.05 0.94 0.94]);
+    theConeMosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax, ...
+        'plotTitle', ' ');
+    hold(ax, 'on');
+    plot(ax, oiSamplingGridDegs(:,1), oiSamplingGridDegs(:,2), 'wx', 'MarkerSize', 12, 'LineWidth', 1.5);
+end
 
 
 % Visualize the PSFs of the sampled optics
-visualizeThePSFs(theConeMosaic, psfEnsemble, oiSamplingGridDegs);
+if (~isRunningTutorialTest)
+    visualizeThePSFs(theConeMosaic, psfEnsemble, oiSamplingGridDegs);
+end
 
 if (isstruct(oiSamplingGridData))
     % Multiple position optics
 
     % Visualize the merging weights with which weighted averages of cone
     % mosaic activations from the same scene but different optics are computed
-    for oiPosIndex = 1:size(theMergingWeights,1)
-        visualizeTheMergingWeights(theConeMosaic, theMergingWeights(oiPosIndex,:), oiSamplingGridDegs);
+    if (~isRunningTutorialTest)
+        for oiPosIndex = 1:size(theMergingWeights,1)
+            visualizeTheMergingWeights(theConeMosaic, theMergingWeights(oiPosIndex,:), oiSamplingGridDegs);
+        end
     end
 
     % Compute cone mosaic activations to the retinal images of the scene computed for
@@ -154,7 +167,9 @@ else
 end
 
 % Visualized the loaded weightedConeMosaicModulations
-visualizeConeMosaicActivation(theConeMosaic, coneMosaicModulations);
+if (~isRunningTutorialTest)
+    visualizeConeMosaicActivation(theConeMosaic, coneMosaicModulations);
+end
 
 
 %
@@ -278,14 +293,39 @@ function [theScene, theBackgroundScene] = ISETBioSceneFromGrayScaleImageOnDispla
 end
 
 
-function [spatialSupportXDegs, spatialSupportYDegs, theSelectedImage, imageHeightDegs] = loadSampleImages(theImageIndex)
+function [spatialSupportXDegs, spatialSupportYDegs, theSelectedImage, imageHeightDegs] = loadSampleImages(...
+    theImageIndex, imageHeightDegs, imagePixelsNum)
+
+    if (nargin < 2)
+        imageHeightDegs = 18;
+    end
+    if (nargin < 3)
+        imagePixelsNum = [];
+    end
 
     load('fMRIsampleImages', 'sample_images');
-    
-    imageHeightDegs = 18;
+
+    fullImageHeightDegs = 18;
     rowsNum = size(sample_images,1);
     colsNum = size(sample_images,2);
 
+    if (~isempty(imagePixelsNum)) || (imageHeightDegs < fullImageHeightDegs)
+        if (isempty(imagePixelsNum))
+            rowsToKeep = round(rowsNum * imageHeightDegs/fullImageHeightDegs);
+            colsToKeep = round(colsNum * imageHeightDegs/fullImageHeightDegs);
+        else
+            rowsToKeep = min(imagePixelsNum, rowsNum);
+            colsToKeep = min(imagePixelsNum, colsNum);
+        end
+        rowStart = floor(0.5*(rowsNum-rowsToKeep)) + 1;
+        colStart = floor(0.5*(colsNum-colsToKeep)) + 1;
+        sample_images = sample_images(...
+            rowStart:(rowStart+rowsToKeep-1), ...
+            colStart:(colStart+colsToKeep-1), :);
+    end
+
+    rowsNum = size(sample_images,1);
+    colsNum = size(sample_images,2);
     
     pixelSizeDegs = imageHeightDegs/rowsNum;
     spatialSupportYpixels = 1:rowsNum;
@@ -298,4 +338,3 @@ function [spatialSupportXDegs, spatialSupportYDegs, theSelectedImage, imageHeigh
 
     theSelectedImage = sample_images(:,:, theImageIndex);
 end
-

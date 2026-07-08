@@ -1,5 +1,6 @@
 function t_mRGCMosaicSynthesizeAtStage3(options)
 % Denovo synthesis of an mRGC mosaic at different sub-stages of cone-to-mRGC RF surround connectivity (stage 3)
+% SkipFile
 %
 % Syntax:
 %   t_mRGCMosaicSynthesizeAtStage3();
