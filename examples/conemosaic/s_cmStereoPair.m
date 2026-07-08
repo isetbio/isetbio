@@ -19,56 +19,62 @@ ieInit;
 clear;
 close all;
 
-% Whether to generate new mosaics from scratch (can take a very long time for large mosaicFOVs)
+% Whether to generate new mosaics from scratch. Keep the default false for
+% routine example smoke tests.
 generateNewMosaicLattices = false;
 if (generateNewMosaicLattices)
-    mosaicFOV = [1 1];
-    mosaicEccInVisualSpace = [0 0];
+    mosaicFOV = [0.3 0.3];
+    mosaicEccInVisualSpace = [-1 0];
+    stimOffsetRelativeToMosaicCenter = [0.05 0.05];
     % Generate left mosaic
     cmLeft = cMosaic(...
-        'sourceLatticeSizeDegs', 64, ...                % Use the 64-deg wide lattices
+        'sourceLatticeSizeDegs', 1.0, ...               % Bound the online lattice around the ROI
         'whichEye', 'left eye', ...                     % Generate mosaic for the left eye
         'sizeDegs', mosaicFOV, ...                      % SIZE: x,y in degs
         'eccentricityDegs', mosaicEccInVisualSpace, ... % ECC:  x=0.0 degs, y= 0.0 degs
         'computeMeshFromScratch', true, ...             % generate mesh on-line, will take some time
-        'maxMeshIterations', 300, ...                   % stop iterative procedure after this many iterations
-        'visualizeMeshConvergence', ~true ...           % visualize the convergence
+        'maxMeshIterations', 5, ...                     % stop iterative procedure after this many iterations
+        'visualizeMeshConvergence', ~true, ...          % visualize the convergence
+        'useParfor', false ...
         );
 
     % Generate right mosaic
     cmRight = cMosaic(...
-        'sourceLatticeSizeDegs', 64, ...                % Use the 64-deg wide lattices
+        'sourceLatticeSizeDegs', 1.0, ...               % Bound the online lattice around the ROI
         'whichEye', 'right eye', ...                    % Generate mosaic for the right eye
         'sizeDegs', mosaicFOV, ...                      % SIZE: x,y in degs
         'eccentricityDegs', mosaicEccInVisualSpace, ... % ECC:  x=0.0 degs, y= 0.0 degs
         'computeMeshFromScratch', true, ...             % generate mesh on-line, will take some time
-        'maxMeshIterations', 300, ...                   % stop iterative procedure after this many iterations
-        'visualizeMeshConvergence', ~true ...            % visualize the convergence
+        'maxMeshIterations', 5, ...                     % stop iterative procedure after this many iterations
+        'visualizeMeshConvergence', ~true, ...          % visualize the convergence
+        'useParfor', false ...
         );
 
 else
     % Mosaic size
-    mosaicFOV = [5 3];
+    mosaicFOV = [1.2 0.8];
 
-    % Generate a cone mosaic at a negativ e horizontal eccentricity in visual space
-    mosaicEccInVisualSpace = [-12 0];
+    % Generate a cone mosaic at a negative horizontal eccentricity in visual space
+    mosaicEccInVisualSpace = [-4 0];
 
     % Where to place the stimulus relative to the mosaic's center (offset in visual degrees)
-    stimOffsetRelativeToMosaicCenter = [1 1];
+    stimOffsetRelativeToMosaicCenter = [0.2 0.15];
 
     % Generate the left eye cone mosaic
     cmLeft = cMosaic(...
         'sourceLatticeSizeDegs', 58, ...                % Use the 58-deg wide lattices
         'whichEye', 'left eye', ...                    
         'sizeDegs', mosaicFOV, ...
-        'eccentricityDegs', mosaicEccInVisualSpace);
+        'eccentricityDegs', mosaicEccInVisualSpace, ...
+        'useParfor', false);
 
     % Generate the right eye cone mosaic
     cmRight = cMosaic(...
         'sourceLatticeSizeDegs', 58, ...                % Use the 58-deg wide lattices
         'whichEye', 'right eye', ...                      
         'sizeDegs', mosaicFOV, ...
-        'eccentricityDegs', mosaicEccInVisualSpace);
+        'eccentricityDegs', mosaicEccInVisualSpace, ...
+        'useParfor', false);
 end
 
 hFig = figure(1000);

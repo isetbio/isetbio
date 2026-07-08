@@ -1,7 +1,5 @@
 %% Show the quadrature calculation at the cone excitations for a harmonic
 %
-% SkipFile
-%
 % On the cone excitations. When the shift is within a few cones the
 % response stays within a couple of percent. But for a shift of five
 % or so cones, the value changes more than a couple of percent.

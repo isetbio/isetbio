@@ -23,28 +23,30 @@ clear;
 close all;
 
 %% Mosaic size
-mosaicSizeDegs = [1 1]*0.7;
+mosaicSizeDegs = [1 1]*0.4;
+wavefrontSpatialSamples = 201;
+useParforForMosaicGeneration = false;
 
 %% Generate the linegrid stimulus
-scene = sceneCreate('distortiongrid', 512, 100, 'ep');
+scene = sceneCreate('distortiongrid', 256, 60, 'ep');
 scene = sceneSet(scene, 'fov', max(mosaicSizeDegs)*1.1);
 
 %% Set up figures and subfigs
 hFig1 = figure(1);
 originalFigureUnits = hFig1.Units;
 hFig1.Units = 'pixels';
-set(hFig1, 'Position', [10 10 1400 1200], 'Name', 'optics');
+set(hFig1, 'Position', [10 10 1000 820], 'Name', 'optics');
 hFig1.Units = originalFigureUnits;
 
 hFig2 = figure(2);
 originalFigureUnits = hFig2.Units;
 hFig2.Units = 'pixels';
-set(hFig2, 'Position', [1000 10 1400 1200], 'Name', 'mosaic responses');
+set(hFig2, 'Position', [900 10 1000 820], 'Name', 'mosaic responses');
 hFig2.Units = originalFigureUnits;
 
 sv = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 3, ...
-       'colsNum', 3, ...
+       'rowsNum', 2, ...
+       'colsNum', 2, ...
        'heightMargin',  0.07, ...
        'widthMargin',    0.05, ...
        'leftMargin',     0.05, ...
@@ -59,9 +61,9 @@ PolansSubject2 = 8;  % subject with  horizontally-elongated PSFs
 PolansSubject = PolansSubject1;
 
 %% Generate mosaics and compute responses on a 3x3 grid of eccentricities
-deltaDeg = 1.0;
-for xOffset = 1:3
-for yOffset = 1:3
+deltaDeg = 1.5;
+for xOffset = 1:2
+for yOffset = 1:2
 
     % Mosaic eccentricity
     mosaicEcc = [(xOffset-1)*deltaDeg (yOffset-1)*deltaDeg];
@@ -70,7 +72,8 @@ for yOffset = 1:3
     cm = cMosaic(...
         'sizeDegs', mosaicSizeDegs, ...    % SIZE in degs
         'eccentricityDegs', mosaicEcc, ...  % ECC in degs
-        'opticalImagePositionDegs', 'mosaic-centered' ...
+        'opticalImagePositionDegs', 'mosaic-centered', ...
+        'useParfor', useParforForMosaicGeneration ...
         );
 
     % Generate optics appropriate for the mosaic's eccentricity
@@ -78,7 +81,9 @@ for yOffset = 1:3
         'zernikeDataBase', 'Polans2015', ...
         'subjectID', PolansSubject, ...
         'pupilDiameterMM', 3.0, ...
-        'subtractCentralRefraction', true);
+        'subtractCentralRefraction', true, ...
+        'withZeroedPistonAndTiltZernikeCoefficients', true, ...
+        'wavefrontSpatialSamples', wavefrontSpatialSamples);
     
     % Compute the optical image of the scene
     oi = oiCompute(oiEnsemble{1},scene,'pad value','mean');

@@ -110,7 +110,8 @@ end
 %% Generate mosaic centered at target eccentricity
 cm = cMosaic(...
     'sizeDegs', [1 1]*fovDegs, ...                 % Mosaic size in degrees
-    'eccentricityDegs', mosaicEccDegs ...  % Mosaic location in degrees
+    'eccentricityDegs', mosaicEccDegs, ...          % Mosaic location in degrees
+    'useParfor', false ...
     );
 
 %% Generate the optics for the right retinal location.

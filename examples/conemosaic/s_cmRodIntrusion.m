@@ -1,9 +1,12 @@
 % Demo usage of rodIntrusionAdjustedConeAperture flag in new @cMosaic object
+% SkipFile
 %
 % Description:
 %    Shows how to generate @cMosaics in which the cone aperture takes into
 %    account rod intrusion as a function of eccentricity. Also compares the
 %    generated mosaics with those of Curcio 1990. (Fig 3).
+%    This is a multi-panel reproduction workflow. Use s_cmRodIntrusion2 for
+%    the compact automated example smoke run.
 %
 
 % History:

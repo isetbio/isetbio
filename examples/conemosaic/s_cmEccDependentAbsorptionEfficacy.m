@@ -20,8 +20,8 @@ ieInit;
 %% Generate a harmonic stimulus and its retinal image
 % The scene resolution is high enough for the 20 cycles/degree stimulus
 % without using the former 2048-by-2048 image.
-pixelsNum = 1024;
-fovDegs = 3.0;
+pixelsNum = 512;
+fovDegs = 1.5;
 stimFreqCyclesPerDeg = 20;
 
 sceneParams.freq = stimFreqCyclesPerDeg*fovDegs;
@@ -43,8 +43,9 @@ oi = oiCompute(oi, scene, 'pad value', 'mean');
 % the two efficacy flags change, which makes the comparison easier to read
 % and avoids loading or cropping another large source lattice.
 cm = cMosaic(...
-    'sizeDegs', [1 1], ...
+    'sizeDegs', [0.5 0.5], ...
     'eccentricityDegs', [1 0], ...
+    'useParfor', false, ...
     'randomSeed', 1);
 
 %% Condition 1: eccentricity-varying efficacy

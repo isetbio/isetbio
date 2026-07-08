@@ -21,8 +21,8 @@ parms.freq = 30;
 parms.contrast = 1;
 parms.ph = 90;
 parms.ang = 0;
-parms.row = 512;
-parms.col = 512;
+parms.row = 256;
+parms.col = 256;
 parms.GaborFlag = 0;
 scene = sceneCreate('harmonic', parms);
 scene = sceneSet(scene, 'fov', 0.7);
@@ -31,9 +31,10 @@ scene = sceneSet(scene, 'fov', 0.7);
 %% Generate a @cMosaic object by cropping a region from a large (45x45 deg)
 %% precomputed lattice. This is the fastest way to generate a @cMosaic at any eccentricity
 cm = cMosaic(...
-    'sizeDegs', [0.4 0.4], ...     % SIZE: x=0.2 degs, y=0.2 degs
+    'sizeDegs', [0.25 0.25], ...   % SIZE: x,y in degs
     'eccentricityDegs', [0 0], ...  % ECC:  x=0 deg, y= 1 deg, near the edge of the precomputed 45x45 mosaic
-    'integrationTime', 1000/1000 ...
+    'integrationTime', 1000/1000, ...
+    'useParfor', false ...
     );
 cm.eccVaryingConeBlur = true;
     
@@ -57,7 +58,7 @@ sv = NicePlot.getSubPlotPosVectors(...
 hFig = figure(1);
 originalFigureUnits = hFig.Units;
 hFig.Units = 'pixels';
-set(hFig, 'Position', [10 10 2500 1200]);
+set(hFig, 'Position', [10 10 1600 900]);
 hFig.Units = originalFigureUnits;
 
 

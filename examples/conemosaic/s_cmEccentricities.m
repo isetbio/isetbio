@@ -1,7 +1,11 @@
 % s_coneEccentricities
+% SkipFile
 % 
 % Estimate the cone apertures as a function of eccentricity.
 % Uses the cMosaic
+%
+% This intentionally builds a very wide mosaic to survey eccentricity. Keep it
+% out of routine example smoke tests.
 %
 % See also
 %   cMosaic,

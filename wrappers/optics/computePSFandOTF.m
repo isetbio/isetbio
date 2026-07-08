@@ -11,6 +11,15 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
 % OTFs returned by wvfGet.  We are currently thinking this is all that is
 % needed.  Comments about those places are below.
 
+    withZeroedPistonAndTiltZernikeCoefficientsSpecified = false;
+    for ii = 1:2:numel(varargin)
+        if ((ischar(varargin{ii}) || isstring(varargin{ii})) && ...
+                strcmpi(varargin{ii}, 'withZeroedPistonAndTiltZernikeCoefficients'))
+            withZeroedPistonAndTiltZernikeCoefficientsSpecified = true;
+            break;
+        end
+    end
+
     p = inputParser;
     p.addParameter('doNotZeroCenterPSF', false, @islogical);
     p.addParameter('withZeroedPistonAndTiltZernikeCoefficients', false, @islogical);
@@ -52,9 +61,12 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
             % instead.
             fprintf('\n\ncomputePSFandOTF(): the passed value ''doNotZeroCenterPSF'' is set to false and ''withZeroedPistonAndTiltZernikeCoefficients'' is also false.\n Consider setting ''withZeroedPistonAndTiltZernikeCoefficients'' to true instead.\n\n');
         else
-            % Old behavior. Notidy user that
+            % Old behavior. Notify callers only when they have not made the
+            % future-changing parameter explicit.
             % ''withZeroedPistonAndTiltZernikeCoefficients''  will default to true in the future.
-            fprintf('\n\ncomputePSFandOTF(): ''withZeroedPistonAndTiltZernikeCoefficients'' still defaults to false, but soon will default to true.\n\n');
+            if (~withZeroedPistonAndTiltZernikeCoefficientsSpecified)
+                fprintf('\n\ncomputePSFandOTF(): ''withZeroedPistonAndTiltZernikeCoefficients'' still defaults to false, but soon will default to true.\n\n');
+            end
         end
     end
 

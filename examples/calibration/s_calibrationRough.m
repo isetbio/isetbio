@@ -38,14 +38,14 @@ oi = oiCreate('human');
 % The aperture size, and thus number of absorptions, varies with
 % eccentricity.
 cm = coneMosaicRect('eccentricity units','deg','center',[0,0]);
-cm.setSizeToFOV(2);      % Small FOV
+cm.setSizeToFOV(0.5);    % Small FOV
 cm.integrationTime = 1;  % One second
 
 %% Set variables
 cTemp = 5000;   % Color temperature
 scene = sceneCreate('uniform bb',128,cTemp);
 scene = sceneAdjustLuminance(scene,lum);
-scene = sceneSet(scene,'fov',10);
+scene = sceneSet(scene,'fov',1);
 oi = oiCompute(oi,scene,'pad value','mean');
 oi = oiCrop(oi,'border');
 % oiShowImage(oi);

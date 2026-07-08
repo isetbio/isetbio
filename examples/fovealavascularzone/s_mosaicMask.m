@@ -1,8 +1,10 @@
 %% Mask out specific cones
+% SkipFile
 %
 % Work with David to create a simple function that masks (zeros out?) 
 % specific functions, perhaps defined as a spatial mask over the cone
 % mosaic.
+% Exploratory mask prototype with GUI windows and local resource assumptions.
 %
 % One approach is to put a scalar mask in the scene.
 % Another is to place a scalar mask over the OI.
