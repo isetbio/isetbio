@@ -1,4 +1,4 @@
-%% t_eyeMovement3D.m
+%% s_eyeMovement3D.m
 % SkipFile
 % ISETBio-dependent human-eye motion sweep uses obsolete sceneEye properties
 % and many CPU renders; keep it out of smoke tests pending API decisions.

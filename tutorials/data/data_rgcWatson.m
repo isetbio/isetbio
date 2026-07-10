@@ -7,7 +7,7 @@
 %       http://jov.arvojournals.org/article.aspx?articleid=2279458
 %
 % See Also:
-%    t_rgcEccData
+%    data_rgcEccData
 %
 
 % History:

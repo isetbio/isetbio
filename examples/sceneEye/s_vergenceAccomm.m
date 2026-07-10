@@ -1,4 +1,7 @@
-%% t_vergenceAccomm.m
+%% s_vergenceAccomm.m
+% SkipFile
+% Depends on legacy ISET3d/PBRT helpers that are not available in routine
+% tutorial smoke-test sessions.
 % 
 % We can do a simple simulation of vergence and accommodation by having the
 % eyes converge and accommodate to a "moving" red sphere.

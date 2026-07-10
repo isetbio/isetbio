@@ -1,4 +1,4 @@
-function t_cMosaicSuperimposeArbitraryRGBimageOnTopOfConeMosaic
+function s_cMosaicSuperimposeArbitraryRGBimageOnTopOfConeMosaic
 %% Illustrate how to superimpose an arbitrary RGB image on a @cMosaic
 
 %   10/09/24  NPC      Wrote it.

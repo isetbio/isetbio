@@ -96,25 +96,25 @@ if ~isRunningTutorialTest
 end
 
 %% Marimont Wandell eye model
-oi = oiCreate('human mw');
-oi = oiCompute(oi,scene,'pad value','mean');
-name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('MW %s',name));
 if ~isRunningTutorialTest
+    oi = oiCreate('human mw');
+    oi = oiCompute(oi,scene,'pad value','mean');
+    name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('MW %s',name));
     oiWindow(oi);
 end
 
 %% Thibos standard human
 %
-% Sharper than the Marimont/Wandell version
-oi = oiCreate('wvf human');
-
-% Needs a better interface. The lens transmittance is set to 1, but
-% still we are getting blur due to chromatic aberration.
-oi.optics.lens.density = 0;
-
-oi = oiCompute(oi,scene,'pad value','mean');
-name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('Thibos %s',name));
 if ~isRunningTutorialTest
+    % Sharper than the Marimont/Wandell version
+    oi = oiCreate('wvf human');
+
+    % Needs a better interface. The lens transmittance is set to 1, but
+    % still we are getting blur due to chromatic aberration.
+    oi.optics.lens.density = 0;
+
+    oi = oiCompute(oi,scene,'pad value','mean');
+    name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('Thibos %s',name));
     oiWindow(oi);
 end
 
@@ -149,7 +149,7 @@ end
 
 %% Show the wavefront aberrations for each Z coefficient up to 8s
 if isRunningTutorialTest
-    zernikeIndices = 2:3;
+    zernikeIndices = 2;
 else
     zernikeIndices = 2:8;
 end

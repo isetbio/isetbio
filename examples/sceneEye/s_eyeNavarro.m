@@ -1,4 +1,7 @@
-%% t_eyeNavarro.m
+%% s_eyeNavarro.m
+% SkipFile
+% Depends on legacy ISET3d/PBRT helpers that are not available in routine
+% tutorial smoke-test sessions.
 %
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.
@@ -16,7 +19,7 @@
 % Wandell, 2020
 %
 % See also
-%   t_eyeArizona, t_eyeLeGrand
+%   s_eyeArizona, s_eyeLeGrand
 %
 
 %% Check ISETBIO and initialize

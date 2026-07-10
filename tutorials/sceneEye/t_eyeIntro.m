@@ -1,4 +1,7 @@
 %% t_eyeIntro.m
+% SkipFile
+% Depends on legacy ISET3d/PBRT helpers that are not available in routine
+% tutorial smoke-test sessions.
 %
 % This brief tutorial is a (mainly) textual, introduction to modeling the
 % optics of the human eye using ray-tracing in ISETBio and ISET3d.  
@@ -222,5 +225,4 @@ oiWindow(oi);
 % physiological optics model.
 
 %% END
-
 

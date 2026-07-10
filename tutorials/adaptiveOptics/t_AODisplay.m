@@ -29,6 +29,8 @@
 
 %% Initialize
 ieInit;
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Stimulus spectral properties
 %
@@ -64,9 +66,9 @@ end
 nWls = length(wls);
 
 %% Stimulus spatial parameters
-backgroundSizeDegs = 0.85;                  % Linear side of square background field.  This can be the imaging field.
-testDiameterDegs = 0.1;                     % Diameter of circular test spot.
-nPixels = 512;                              % Number of h and v pixels in background field (aka full field)
+backgroundSizeDegs = 0.5;                   % Linear side of square background field.  This can be the imaging field.
+testDiameterDegs = 0.08;                    % Diameter of circular test spot.
+nPixels = 256;                              % Number of h and v pixels in background field (aka full field)
 
 % Make relative spectral power distributions. Each is approximated by a
 % Gaussian with specified center wavlength and FWHM, and with total power
@@ -182,18 +184,15 @@ spatialParams.backgroundSizeDegs = backgroundSizeDegs;
 spatialParams.spotSizeDegs = testDiameterDegs;
 spotPattern = drawSpot(spatialParams);
 
-% Then fill in appropriate radiance at each pixel
-radianceEnergySpot = zeros(spatialParams.row,spatialParams.col,nWls);
-for i = 1:spatialParams.row
-    for j = 1:spatialParams.col
-        % Background pixels are 1, spot pixels are 2
-        if (spotPattern(i,j) == 1)
-            radianceEnergySpot(i,j,:) = bgSpdRadiance;
-        elseif (spotPattern(i,j) == 2)
-            radianceEnergySpot(i,j,:) = bgSpdRadiance + testSpdRadiance;
-        end
-    end
-end
+% Then fill in appropriate radiance at each pixel.
+backgroundEnergy = reshape(bgSpdRadiance, 1, 1, []);
+spotEnergy = reshape(testSpdRadiance, 1, 1, []);
+radianceEnergySpot = repmat(backgroundEnergy, ...
+    spatialParams.row, spatialParams.col, 1);
+spotMask = repmat(spotPattern == 2, 1, 1, nWls);
+testEnergySpot = repmat(spotEnergy, spatialParams.row, spatialParams.col, 1);
+radianceEnergySpot(spotMask) = radianceEnergySpot(spotMask) + ...
+    testEnergySpot(spotMask);
 
 % Convert radiance to quantal units
 radiancePhotonsSpot = Energy2Quanta(wls,radianceEnergySpot);
@@ -202,7 +201,9 @@ radiancePhotonsSpot = Energy2Quanta(wls,radianceEnergySpot);
 theScene = sceneSet(theScene,'photons',radiancePhotonsSpot);
 
 % Visualize scene
-sceneWindow(theScene);
+if ~isRunningTutorialTest
+    sceneWindow(theScene);
+end
 
 %% Build the oi
 %
@@ -269,7 +270,9 @@ theOI   = oiSet(theOI,'optics',opticsP);
 % an image when you convolve, unless you think hard about how to extend
 % beyond the image.
 theOI = oiCompute(theOI,theScene,'pad value','mean');
-oiWindow(theOI);
+if ~isRunningTutorialTest
+    oiWindow(theOI);
+end
 
 %% Create the coneMosaic object
 %

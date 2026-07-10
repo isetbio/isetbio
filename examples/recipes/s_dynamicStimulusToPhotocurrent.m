@@ -1,8 +1,8 @@
-function t_dynamicStimulusToPhotocurrent
+function s_dynamicStimulusToPhotocurrent
 % Illustrates how to compute photocurrent responses to a dynamic stimulus.
 %
 % Syntax:
-%   t_dynamicStimulusToPhotocurrent
+%   s_dynamicStimulusToPhotocurrent
 %
 % Description:
 %    Demonstrates how to compute photocurrent responses to a dynamic
@@ -291,7 +291,7 @@ function [spatialParams, temporalParams, colorModulationParams, ...
 %       backgroundParams] = getStimParams(fov, meanLuminance)
 %
 % Description:
-%    A helper function for t_dynamicStimulusToPhotocurrent designed to set
+%    A helper function for s_dynamicStimulusToPhotocurrent designed to set
 %    up the parameters for a stimulus.
 %
 % Inputs:
@@ -369,7 +369,7 @@ function [oiParams, mosaicParams] = getPhysioParams(fov, eccDegs)
 %   [oiParams, mosaicParams] = getPhysioParams(fov, eccDegs)
 %
 % Description:
-%    A helper function for t_dynamicStimulusToPhotocurrent designed to set
+%    A helper function for s_dynamicStimulusToPhotocurrent designed to set
 %    up the parameters for an optical image and mosaic.
 %
 % Inputs:
@@ -447,7 +447,7 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, ...
 %       photocurrentModlulationThresholdForInclusionToMeanResponse)
 %
 % Description:
-%    A helper function for t_dynamicStimulusToPhotocurrent designed to
+%    A helper function for s_dynamicStimulusToPhotocurrent designed to
 %    produce useful visualizations for the tutorial.
 %
 % Inputs:
@@ -765,7 +765,7 @@ function [peakIncrementConeIndices, peakDecrementConeIndices] = ...
 %       coneType)
 %
 % Description:
-%    This is a helper function in t_dynamicStimulusToPhotocurrent, designed
+%    This is a helper function in s_dynamicStimulusToPhotocurrent, designed
 %    to sort cones according to the magnitude of their photocurrent
 %    modulations. At present it only works for rectangular coneMosaics.
 %
@@ -830,7 +830,7 @@ function [sampleTimes, TemporalWindow] = ...
 %       flatTopGaussianWindowCreate(temporalParams)
 %
 % Description:
-%    This is a helper function for t_dynamicStimulusToPhotocurrent designed
+%    This is a helper function for s_dynamicStimulusToPhotocurrent designed
 %    to generate a flat-top gaussian temporal modulation.
 %
 % Inputs:

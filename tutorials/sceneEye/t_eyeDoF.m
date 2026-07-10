@@ -1,4 +1,7 @@
 %% t_eyeDoF.m
+% SkipFile
+% Depends on legacy ISET3d/PBRT helpers that are not available in routine
+% tutorial smoke-test sessions.
 %
 % We suggest reading the t_eyeIntro and perhaps t_eyeFocalDistance before
 % running this tutorial.

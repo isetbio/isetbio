@@ -31,9 +31,11 @@
 
 %% Initialize and clear
 clear; close all; ieInit;
+callStack = dbstack;
+isRunningTutorialTest = any(strcmp({callStack.name}, 'ieRunTutorialExampleTests'));
 
 %% Set sample wavelengths
-wave = 400:5:700;
+wave = 400:10:700;
 
 %% Create scene object from image file
 % 
@@ -63,9 +65,9 @@ wave = 400:5:700;
 % Set parameters
 imgFileName = 'zebra.jpg';              
 dispLCDFile = 'LCD-Apple.mat';
-upsampleFactor = 1;
+upsampleFactor = 0.5;
 viewingDistanceMeters = 1;
-fieldOfViewWidthDegs = 2;
+fieldOfViewWidthDegs = 1;
 sceneLuminanceCdM2 = 200;
 
 % Read and resize the RGB image.  You don't need to resize this,
@@ -103,7 +105,9 @@ fprintf('Retinal image size is %0.1f by %0.1f degrees\n',scSizeDegs(1),scSizeDeg
 % data as the spectra at each pixel.
 %
 % A later tutorial will unpack ISETCam/Bio scenes in more detail.
-sceneWindow(sc);
+if ~isRunningTutorialTest
+    sceneWindow(sc);
+end
 
 %% Set up oi object for computing the retinal image
 %
@@ -128,7 +132,7 @@ oi = oiSet(oi,'wave',wave);
 % Probably we have some way to do this in one simple call, but if
 % so I couldn't easily find it.  So just make the plot we want 
 % by hand
-plotWls = [400 500 550 600 700];
+plotWls = [450 550 650];
 plotLimMinutes = 100;
 hFig = figure;
 originalFigureUnits = hFig.Units;
@@ -164,7 +168,9 @@ fprintf('Scene size is %0.1f by %0.1f degrees\n',oiSizeDegs(1),oiSizeDegs(2));
 
 % As with the scene, we can have a look through a gui.  It looks yellower
 % than the scene because the lens aborbs more light at shorter wavelengths.
-oiWindow(oi);
+if ~isRunningTutorialTest
+    oiWindow(oi);
+end
 
 %% Build a default cone mosaic and compute excitations
 %
@@ -190,7 +196,9 @@ cmParams.micronsPerDegree = oiGet(oi,'distance per degree','um');
 cm = cMosaic(cmParams);
 
 % Visualize how the cones are packed
-cm.visualize;
+if ~isRunningTutorialTest
+    cm.visualize;
+end
 
 %% Compute cone photopigment excitations
 %
@@ -202,24 +210,28 @@ cm.visualize;
 %
 % The plot command commented out here is simple but
 % does not give much flexibility
-cm.plot('excitations',noiseFreeExcitationList,'labelcones',true);
+if ~isRunningTutorialTest
+    cm.plot('excitations',noiseFreeExcitationList,'labelcones',true);
+end
 
 % The visualize command has many options but is more
 % complex to use.
-vParams = cm.visualize('params');
-vParams.activation = noisyExcitationList;
-vParams.activationColorMap = gray(512);
-vParams.verticalActivationColorBar = true;
-vParams.activationRange = [0 max(noisyExcitationList(:))];
-vParams.labelcones = false;
-cm.visualize(vParams);
+if ~isRunningTutorialTest
+    vParams = cm.visualize('params');
+    vParams.activation = noisyExcitationList;
+    vParams.activationColorMap = gray(512);
+    vParams.verticalActivationColorBar = true;
+    vParams.activationRange = [0 max(noisyExcitationList(:))];
+    vParams.labelcones = false;
+    cm.visualize(vParams);
 
-% That image looks low contrast because the S cones occupy
-% a different intensity range than the L and M cones.  We
-% can adjust this by setting the range to the central portion
-% of the cone excitation response range as shown here.
-vParams.activationRange = prctile(noisyExcitationList(:),[5 90]);
-cm.visualize(vParams);
+    % That image looks low contrast because the S cones occupy
+    % a different intensity range than the L and M cones.  We
+    % can adjust this by setting the range to the central portion
+    % of the cone excitation response range as shown here.
+    vParams.activationRange = prctile(noisyExcitationList(:),[5 90]);
+    cm.visualize(vParams);
+end
 
 % Here are some slices through the acivations
 cm.plot('excitations horizontal line',noiseFreeExcitationList, 'y deg',0,'thickness',0.05,'conetype','l');

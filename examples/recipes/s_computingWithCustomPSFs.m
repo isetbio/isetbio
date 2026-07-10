@@ -1,8 +1,8 @@
-function t_computingWithCustomPSFs()
+function s_computingWithCustomPSFs()
 % Illustrate generate optics using custom PSFs
 %
 % Syntax:
-%   t_computingWithCustomPSFs
+%   s_computingWithCustomPSFs
 %
 % Description:
 %    Script that demonstrates how to compute cone excitations using optics

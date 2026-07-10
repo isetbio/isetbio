@@ -1,4 +1,7 @@
-%% t_cropWindowExample.m
+%% s_cropWindowExample.m
+% SkipFile
+% Depends on legacy ISET3d/PBRT helpers that are not available in routine
+% tutorial smoke-test sessions.
 %
 % This demonstrates how to use the crop window functionality. Using the
 % crop window let's you only render a specific portion of the scene. This

@@ -1,4 +1,4 @@
-%% t_eyeAccommodate.m
+%% s_eyeAccommodate.m
 % SkipFile
 % Uses obsolete dockerWrapper human-eye setup; needs sceneEye rewrite.
 %
@@ -21,7 +21,7 @@
 % Depends on: ISETBIO, Docker, ISETCam
 %
 % See also
-%   t_eyeRetinaDistance, t_eyeArizona, t_eyeNavarro
+%   s_eyeRetinaDistance, s_eyeArizona, s_eyeNavarro
 %
 
 %% Check ISETBIO and initialize

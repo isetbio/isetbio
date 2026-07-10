@@ -1,4 +1,7 @@
-%% t_eyeLeGrand.m
+%% s_eyeLeGrand.m
+% SkipFile
+% Depends on legacy ISET3d/PBRT helpers that are not available in routine
+% tutorial smoke-test sessions.
 %
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.

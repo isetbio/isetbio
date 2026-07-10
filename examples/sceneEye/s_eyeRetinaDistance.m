@@ -1,4 +1,4 @@
-%% t_eyeRetinaDistance.m
+%% s_eyeRetinaDistance.m
 % SkipFile
 % Human-eye retinal-distance sweep currently relies on legacy sceneEye/
 % docker setup and many CPU optics renders, so keep it out of smoke tests.
@@ -22,7 +22,7 @@
 %
 %  
 % See also
-%   t_eyeArizona, t_eyeNavarro
+%   s_eyeArizona, s_eyeNavarro
 %
 
 %% Check ISETBIO and initialize

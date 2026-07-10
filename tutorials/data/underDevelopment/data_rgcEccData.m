@@ -1,4 +1,4 @@
-%% Various sources of RGC and eccentricity data (t_rgcEccData)
+%% Various sources of RGC and eccentricity data (data_rgcEccData)
 %
 % This data is used to scale ISETBIO RGC RF sizes as a function of
 % eccentricity.
@@ -12,7 +12,7 @@
 % Dacey, 2004, Figure 2A:
 % https://pdfs.semanticscholar.org/5f15/a3de07ccdbf2ef3763da262ede1c876f6b6a.pdf
 %
-% See also: t_rgcWatson for the Watson 2014 JOV work.
+% See also: data_rgcWatson for the Watson 2014 JOV work.
 % 
 % Data input
 %  Data from the figures were digitized using 'digitize2' and ginput:

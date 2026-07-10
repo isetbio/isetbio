@@ -1,4 +1,4 @@
-%% t_eyeStereo
+%% s_eyeStereo
 % SkipFile
 % Stereo sceneEye tutorial uses obsolete constructor/API patterns and
 % multiple CPU human-eye renders; keep it interactive for now.

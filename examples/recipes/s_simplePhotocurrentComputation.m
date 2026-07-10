@@ -1,8 +1,8 @@
-function t_simplePhotocurrentComputation
+function s_simplePhotocurrentComputation
 % Illustrate how to compute photocurrent responses to a dynamic stimulus.
 %
 % Syntax:
-%   t_simplePhotocurrentComputation
+%   s_simplePhotocurrentComputation
 %
 % Description:
 %    Simple script that demonstrates how to compute photocurrent responses

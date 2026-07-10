@@ -1,15 +1,19 @@
-%% t_retinaShape
+%% s_eyeArizona
 % SkipFile
-% Requires ISETBio; keep out of ISETCam-only smoke runs.
+% Uses obsolete dockerWrapper setup; needs sceneEye rewrite.
 %
-% Run the Arizona eye model with a retina that has an arbitrary shape,
-% in this case a bump in it. 
+% Run the Arizona eye model
+%
+% The script runs the Arizona eye model to show it runs.  But it contains
+% comments to show how to turn on chromatic aberration, narrow the FOV, and
+% look at the spread in more detail.
 %
 % See also
-%   t_eyeArizona, t_eyeNavarro, t_eyeLeGrand
+%   s_eyeNavarro, s_eyeLeGrand
 
-%%
-ieInit
+%% Initialize paths and such
+
+ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 %% Here are the World positions of the letters in the scene
@@ -39,18 +43,13 @@ thisSE.set('use pinhole',true);
 % Given the distance from the scene, this FOV captures everything we want
 thisSE.set('fov',30);             % Degrees
 
-% Render the scene
-thisDocker = isetdocker;
-
-thisSE.recipe.set('render type', {'radiance','depth'});
-
 %%  Render
 
-scene = thisSE.render('docker',thisDocker);
-
-sceneWindow(scene);   
-
+% Summary of status
 thisSE.summary;
+
+thisDocker = isetdocker;
+thisSE.piWRS('docker',thisDocker,'name','pinhole');
 
 %% Now use the optics model with chromatic aberration
 
@@ -66,12 +65,11 @@ thisSE.set('mmUnits', false);
 % slow, but that's what we do here because we are only rendering once. When
 % the GPU work is completed, this will be fast!
 
-%{
-% Needs to work with spectral path integrator.
-% Zhenyi will make that work in V4.
+% This sets the chromaticAberrationEnabled flag and the integrator to
+% spectral path.
+% Now works in V4 - May 28, 2023 (ZL)
 nSpectralBands = 8;
 thisSE.set('chromatic aberration',nSpectralBands);
-%}
 
 % Distance in meters to objects to govern accommodation.
 thisSE.set('to',toA); distA = thisSE.get('object distance');
@@ -79,15 +77,8 @@ thisSE.set('to',toB); distB = thisSE.get('object distance');
 thisSE.set('to',toC); distC = thisSE.get('object distance');
 thisSE.set('to',toB);
 
-% This is the distance we set our accommodation to that. Try distC + 0.5
-% and then distA.  At a resolution of 512, I can see the difference.  I
-% don't really understand the units here, though.  (BW).
-%
-% thisSE.set('accommodation',1/(distC + 0.5));  
-
-thisSE.set('object distance',distC);  
-
-% We can reduce the rendering noise by using more rays. This takes a while.
+% We can reduce the rendering noise by using more rays. Sometimes we
+% use 512 instead of 256.
 thisSE.set('rays per pixel',256);      
 
 % Increase the spatial resolution by adding more spatial samples.
@@ -96,31 +87,21 @@ thisSE.set('spatial samples',256);
 % Ray bounces
 thisSE.set('n bounces',3);
 
-%% Have a at the letters. Lots of things you can plot in this window.
+%% Accommodate to letter A distance (in diopters)
 
-thisSE.recipe.set('render type', {'radiance','depth'});
-
-oi = thisSE.render('docker',thisDocker);
-
-oiWindow(oi);
+thisSE.set('accommodation',1/distA);
+% thisSE.get('accommodation')
 
 % Summarize
 thisSE.summary;
 
+%%
+thisSE.piWRS('docker',thisDocker,'name','arizona-A');
+
 %% Make an oi of the chess set scene using the LeGrand eye model
 
-% thisSE = sceneEye('chess set scaled','human eye','arizona');
-thisSE = sceneEye('chessset','eye model','arizona');
-
-thisSE.set('rays per pixel',256);  % Pretty quick, but not high quality
-
-thisSE.set('render type',{'radiance','depth'});
-
-oi = thisSE.render('docker',thisDocker);  % Render and show
-
-oi = oiSet(oi,'name','Arizona');
-oi = piAIdenoise(oi);
-oiWindow(oi);
+thisSE.set('accommodation',1/distC);  
+thisSE.piWRS('docker',thisDocker,'name','arizona-C');
 
 %% Have a look with the slanted bar scene
 
@@ -130,33 +111,35 @@ oiWindow(oi);
 thisSE = sceneEye('slantedEdge','eye model','arizona');
 thisSE.set('to',[0 0 0]);
 
-thisLight = piLightCreate('spot light 1', 'type','spot','rgb spd',[1 1 1]);
+thisLight = piLightCreate('spot light 1', 'type','spot','rgb spd',[0.5 0.5 1]);
 thisSE.set('light',thisLight, 'add');
 thisSE.set('light',thisLight.name,'specscale',0.5);
-thisSE.set('light',thisLight.name,'spd',[0.5 0.4 0.2]);
 thisSE.set('fov',2);
 
-% Debug something about reading the light.
-% piAssetGeometry(thisSE.recipe);
-
-thisSE.set('render type',{'radiance','depth'});
-thisSE.set('rays per pixel',64);  % Pretty quick, but not high quality
+thisSE.set('rays per pixel',256);  % Pretty quick, but not high quality
 
 thisSE.set('use pinhole',true);
-scene = thisSE.render('docker',thisDocker);  % Render and show
-sceneWindow(scene);
+thisSE.piWRS('docker',thisDocker);  % Render and show
 
-%%
-% CA not working in V4 yet.
-% thisSE.set('chromatic aberration',8);
+%% Now the human eye model
 
 thisSE.set('use pinhole',false);
-thisSE.set('object distance',20);
-oi = thisSE.render('docker',thisDocker);  % Render and show
 
-oi = oiSet(oi,'name','SB Arizona');
-oi = piAIdenoise(oi);
+% This sets the chromaticAberrationEnabled flag and the integrator to
+% spectral path.
+% Now works in V4 - May 28, 2023 (ZL)
+nSpectralBands = 8;
+thisSE.set('chromatic aberration',nSpectralBands);
+
+thisSE.set('object distance',20);
+
+oi = thisSE.piWRS('docker',thisDocker,'show',false,'name','8bands');
+
+% Maybe we should set a denoise flag in piWRS?
+oi = piAIdenoise(oi); 
+
 oiWindow(oi);
+
 
 thisSE.summary;
 

@@ -1,4 +1,7 @@
 %% t_eyeFOV
+% SkipFile
+% Depends on legacy ISET3d/PBRT helpers that are not available in routine
+% tutorial smoke-test sessions.
 %
 % Field of view calculations with the sceneEye model.  This illustrates the
 % relationship between the field of view and the 'semi diam'.

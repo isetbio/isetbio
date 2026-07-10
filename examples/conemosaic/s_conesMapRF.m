@@ -1,7 +1,7 @@
 % Map the visual receptive field of one cone using Hartley patterns
 %
 % Description:
-%    This tutorial illustrates the basic steps of subspace receptive-field
+%    This example illustrates the basic steps of subspace receptive-field
 %    (RF) mapping. A compact set of orthogonal Hartley patterns is presented
 %    at forward and reverse contrast. The difference between the two cone
 %    responses weights each pattern in the reconstructed visual RF.
@@ -15,7 +15,7 @@
 % History:
 %    09/28/22  NPC  ISETBIO Team, Copyright 2022 Wrote it.
 
-function t_conesMapRF
+function s_conesMapRF
 
     % Experiment geometry. Eccentricity locates the mosaic on the retina;
     % mosaic size controls how many cones are simulated; stimulus size sets

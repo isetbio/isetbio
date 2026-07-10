@@ -23,7 +23,7 @@
 
 %% Generate a uniform scene
 meanLuminance = 100;
-uniformScene = sceneCreate('uniform equal photon', 128);
+uniformScene = sceneCreate('uniform equal photon', 64);
 % square scene with desired FOV
 FOV = 2.0;
 uniformScene = sceneSet(uniformScene, 'wAngular', FOV);
@@ -33,7 +33,7 @@ uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
 
 % Generate a gabor scene
 gaborParams = struct('freq', 2, 'contrast', 1.0, 'ph', 0, 'ang',  0, ...
-    'row', 128, 'col', 128, 'GaborFlag', false);
+    'row', 64, 'col', 64, 'GaborFlag', false);
 gaborScene = sceneCreate('harmonic', gaborParams);
 gaborScene = sceneSet(gaborScene, 'wAngular', FOV);
 gaborScene = sceneSet(gaborScene, 'distance', 1.0);
@@ -73,48 +73,36 @@ theOIsequence(1) = oiSequence(oiBackground, oiModulated, ...
     'modulationRegion', modulationRegion);
 theOIsequence(1).visualize('movie illuminance');
 
-%% Blending with a background
-% oiSequence object for computing a sequence of ois where the oiModulated
-% (a grating) is BLENDED with the oiBackground using a monophasic
-% modulation function
-theOIsequence(2) = oiSequence(oiBackground, oiModulated, ...
-    oiTimeAxis, modulationFunction2, 'composition', 'add', ...
-    'modulationRegion', modulationRegion);
-theOIsequence(2).visualize('movie illuminance');
-
-%% Adding a grating
-% This is a oiSequence object for computing a sequence of ois where the
-% oiModulated (a grating) is ADDED with the oiBackground using a monophasic
-% modulation function
-theOIsequence(3) = oiSequence(oiBackground, oiModulatedGabor, ...
-    oiTimeAxis, modulationFunction1, 'composition', 'add');
-theOIsequence(3).visualize('movie illuminance');
-
 %% Blending a grating
 % This is a oiSequence object for computing a sequence of ois where the
 % oiModulated (a grating) is BLENDED with the oiBackground using a
 % monophasic modulation function
-theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, ...
+theOIsequence(2) = oiSequence(oiBackground, oiModulatedGabor, ...
     oiTimeAxis, modulationFunction1, 'composition', 'blend');
-theOIsequence(4).visualize('movie illuminance');
+theOIsequence(2).visualize('movie illuminance');
 
-%% Blending with a different modulation function
-% oiSequence object for computing a sequence of ois where the oiModulated
-% (a grating) is BLENDED with the oiBackground  over an 250 micron radius
-% using a biphasic modulation function
-theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, ...
-    oiTimeAxis, modulationFunction3, 'composition', 'blend', ...
-    'modulationRegion', modulationRegion);
-theOIsequence(5).visualize('movie illuminance');
+%% Additional variants
+% These variants are useful interactively, but duplicate the same
+% oiSequence construction pattern and are left out of the smoke tutorial
+% run:
+%
+%   oiSequence(oiBackground, oiModulated, oiTimeAxis, ...
+%       modulationFunction2, 'composition', 'add', ...
+%       'modulationRegion', modulationRegion);
+%   oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, ...
+%       modulationFunction1, 'composition', 'add');
+%   oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, ...
+%       modulationFunction3, 'composition', 'blend', ...
+%       'modulationRegion', modulationRegion);
 
-%% Render a montage of the 5th oisequence
+%% Render a montage of an oisequence
 
 % This code needs debugging by hand.  The montage call creates zombie windows,
 % although the montage does appear.
 
 %{
 try
-    theOIsequence(5).visualize('montage');
+    theOIsequence(2).visualize('montage');
 catch ME
     disp(ME.getReport());
 end

@@ -1,4 +1,4 @@
-%% t_eyeDiffraction.m
+%% s_eyeDiffraction.m
 % SkipFile
 % Multi-render human-eye diffraction comparison is useful interactively, but
 % currently slow/unstable for routine smoke tests (CPU/remote dependent).
