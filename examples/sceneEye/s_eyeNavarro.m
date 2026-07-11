@@ -47,6 +47,9 @@ toC = [ 0.1458     0.0100     1.6667];
 % infinite depth of field (no focal distance).
 thisSE = sceneEye('letters at depth');
 
+% Increase the spatial resolution by adding more spatial samples.
+thisSE.set('spatial samples',384*2);     
+
 % First render with pinhole
 thisSE.set('use pinhole',true);
 
@@ -68,7 +71,7 @@ thisSE.set('to',toC); distC = thisSE.get('object distance');
 thisSE.set('to',toB);
 
 % To just see the 'B' at higher resolution use a small FOV
-thisSE.set('fov',3);
+analysisFOV = 10; thisSE.set('fov',analysisFOV);
 
 % Render the scene
 thisSE.set('render type', {'radiance','depth'});
@@ -104,16 +107,13 @@ thisSE.set('chromatic aberration',nSpectralBands);
 % We can reduce the rendering noise by using more rays. This takes a while.
 thisSE.set('rays per pixel',256);      
 
-% Increase the spatial resolution by adding more spatial samples.
-thisSE.set('spatial samples',384);     
-
 % Ray bounces
 thisSE.set('n bounces',3);
 
 % We want the scene to be around 5-10 deg so we do not need a lot of
 % samples to resolve the blur.  This renders only the region around
 % the 'B'.
-thisSE.set('fov',7);             % Degrees
+% thisSE.set('fov',7);             % Degrees
 
 sampleSpacing = thisSE.get('sample spacing');
 if ~isempty(sampleSpacing)
@@ -137,7 +137,7 @@ fprintf('Accommodation A lens file: %s\n',thisSE.recipe.get('lens file'));
 
 %% Change the accommodation.  But look at 'B'.
 
-%{
+% {
 % Focus on the B
 thisSE.set('accommodation',1/distB);  
 
@@ -150,7 +150,8 @@ fprintf('Accommodation B lens file: %s\n',thisSE.recipe.get('lens file'));
 
 %% Set accommodation to a different distance.
 
-% Focus on the C
+%{
+%  Focus on the C
 thisSE.set('accommodation',1/distC);  
 
 thisSE.summary;
@@ -158,5 +159,6 @@ oiC = thisSE.render('docker',thisDocker);
 oiC = oiSet(oiC,'name','Navarro C');
 oiWindow(oiC);
 fprintf('Accommodation C lens file: %s\n',thisSE.recipe.get('lens file'));
+%}
 
 %% END
