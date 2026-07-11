@@ -20,9 +20,16 @@ function localVerifyOptimizationUsesZernikeDataBase(testCase, opticsParams)
 examinedDefocus = [-0.25 0 0.25];
 fakeMosaic = FakeConeMosaicForStrehlTest('Polans2015');
 
+poolBefore = gcp('nocreate');
 [theOI, thePSF, optimalDefocus, optimalRatio, strehlRatio] = ...
     RGCMosaicConstructor.helper.optics.optimizedStrehlRatioPSF(...
-    examinedDefocus, fakeMosaic, [0 0], opticsParams, 3, 1, false, false);
+    examinedDefocus, fakeMosaic, [0 0], opticsParams, 3, 1, false, false, false);
+poolAfter = gcp('nocreate');
+
+if isempty(poolBefore)
+    testCase.verifyEmpty(poolAfter, ...
+        'The serial unit-test path should not start a parallel pool.');
+end
 
 testCase.verifyEqual(optimalDefocus, 0.25);
 testCase.verifyEqual(optimalRatio, 0.5, 'AbsTol', 1e-12);
