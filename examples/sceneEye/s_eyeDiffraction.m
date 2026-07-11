@@ -32,6 +32,8 @@ end
 
 %% Set up the slanted edge scene
 
+thisDocker = isetdocker;
+
 thisSE = sceneEye('slanted edge');
 
 thisSE.set('rays per pixel',32);
@@ -43,7 +45,9 @@ thisSE.get('lookat')
 
 thisSE.set('use pinhole',true);
 
-scene = thisSE.piWRS('name','pinhole');
+scene = thisSE.render('docker',thisDocker);
+scene = sceneSet(scene,'name','pinhole');
+sceneWindow(scene);
 
 % piAssetGeometry(thisSE.recipe);
 
@@ -63,7 +67,8 @@ thisSE.set('diffraction',true);
 thisSE.set('pupil diameter',4);
 thisSE.set('film diagonal',10);
 
-oi = thisSE.piWRS('name','navarro');
+oi = thisSE.render('docker',thisDocker);
+oi = oiSet(oi,'name','navarro');
 
 %%
 oi = oiSet(oi,'name','4mm-diffractionOn');
@@ -76,14 +81,16 @@ thisSE.set('diffraction',false);
 thisSE.set('rays per pixel',512);
 thisSE.set('pupil diameter',1);
 
-oi = thisSE.piWRS('name','navarro');
+oi = thisSE.render('docker',thisDocker);
+oi = oiSet(oi,'name','navarro');
 oiPlot(oi,'illuminance hline',[128 128]);
-title('4 mm off')
+title('1 mm off')
 
 %% Diffraction should matter
 
 thisSE.set('diffraction',true);
-oi = thisSE.piWRS('name','navarro-diffraction');
+oi = thisSE.render('docker',thisDocker);
+oi = oiSet(oi,'name','navarro-diffraction');
 
 oiPlot(oi,'illuminance hline',[128 128]);
 title('1 mm on')
@@ -91,6 +98,7 @@ title('1 mm on')
 
 % Make a direct comparison
 thisSE.set('diffraction',false);
+oi = thisSE.render('docker',thisDocker);
 oi = oiSet(oi,'name','1mm-diffractionOff');
 oiWindow(oi);
 thisSE.summary;
@@ -104,6 +112,7 @@ thisSE.set('rays per pixel',4096);
 thisSE.set('pupil diameter',0.5);
 
 thisSE.set('diffraction',true);
+oi = thisSE.render('docker',thisDocker);
 oi = oiSet(oi,'name','Halfmm-diffractionOn');
 oiWindow(oi);
 
@@ -113,6 +122,7 @@ title('Half mm on')
 %%
 
 thisSE.set('diffraction',false);
+oi = thisSE.render('docker',thisDocker);
 oi = oiSet(oi,'name','Halfmm-diffractionOff');
 oiWindow(oi);
 

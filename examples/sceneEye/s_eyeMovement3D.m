@@ -30,6 +30,7 @@ end
 % This scene consists of several chess pieces on a chess set. The
 % dimensions match a real world chess set.
 myScene = sceneEye('chessSet');
+thisDocker = isetdocker;
 
 % Since we will be rendering many images, let's keep the quality fairly low
 myScene.resolution = 128;
@@ -49,7 +50,7 @@ for ii = 1:length(xShift)
     myScene.eyePos = originalPos + [xShift(ii) 0 0];
     myScene.name = sprintf('eyePos_%0.2f',xShift(ii));
 
-    oi = myScene.render;
+    oi = myScene.render('docker',thisDocker);
     imageFrames{ii} = oiGet(oi,'rgb');
 
     vcAddAndSelectObject(oi);
@@ -75,7 +76,7 @@ for ii = 1:length(xShift)
     myScene.eyeTo = originalTo + [xShift(ii) 0 0];
     myScene.name = sprintf('eyeTo_%0.2f',xShift(ii));
 
-    oi = myScene.render;
+    oi = myScene.render('docker',thisDocker);
     imageFrames{ii} = oiGet(oi,'rgb');
 
     vcAddAndSelectObject(oi);

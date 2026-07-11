@@ -1,7 +1,7 @@
 %% s_eyeLeGrand.m
 % SkipFile
-% Depends on legacy ISET3d/PBRT helpers that are not available in routine
-% tutorial smoke-test sessions.
+% LeGrand eye examples use CPU optics renders, so keep them out of routine
+% smoke-test sessions.
 %
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.
@@ -80,7 +80,9 @@ thisSE.summary;
 
 %% Render the pinhole
 thisDocker = isetdocker;
-thisSE.piWRS('docker',thisDocker,'name','legrand-pinhole');
+scene = thisSE.render('docker',thisDocker);
+scene = sceneSet(scene,'name','legrand-pinhole');
+sceneWindow(scene);
 
 % You can see the depth map if you like
 %   scene = ieGetObject('scene');
@@ -108,6 +110,8 @@ thisSE.set('film resolution',384);
 thisSE.summary;
 
 % Render
-thisSE.piWRS('docker',thisDocker,'name','legrand');
+oi = thisSE.render('docker',thisDocker);
+oi = oiSet(oi,'name','legrand');
+oiWindow(oi);
 
 %% END

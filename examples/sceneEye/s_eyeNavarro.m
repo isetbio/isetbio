@@ -1,7 +1,7 @@
 %% s_eyeNavarro.m
 % SkipFile
-% Depends on legacy ISET3d/PBRT helpers that are not available in routine
-% tutorial smoke-test sessions.
+% Navarro eye examples use CPU optics renders, so keep them out of routine
+% smoke-test sessions.
 %
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.
@@ -143,8 +143,9 @@ thisSE.set('accommodation',1/distB);
 
 % Summarize
 thisSE.summary;
-
-piWrite(thisSE.recipe);
+oiB = thisSE.render('docker',thisDocker);
+oiB = oiSet(oiB,'name','Navarro B');
+oiWindow(oiB);
 fprintf('Accommodation B lens file: %s\n',thisSE.recipe.get('lens file'));
 %}
 

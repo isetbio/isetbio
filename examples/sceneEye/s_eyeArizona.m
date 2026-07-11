@@ -1,6 +1,7 @@
 %% s_eyeArizona
 % SkipFile
-% Uses obsolete dockerWrapper setup; needs sceneEye rewrite.
+% Arizona eye examples use several CPU optics renders, so keep them out of
+% routine smoke tests.
 %
 % Run the Arizona eye model
 %
@@ -36,6 +37,9 @@ toC = [ 0.1458     0.0100     1.6667];
 % infinite depth of field (no focal distance).
 thisSE = sceneEye('letters at depth','eye model','arizona');
 
+% Increase the spatial resolution by adding more spatial samples.
+thisSE.set('spatial samples',512);     
+
 % Position the eye off to the side so we can see the 3D easily
 from = [0.25,0.3,-0.2];
 thisSE.set('from',from);
@@ -48,7 +52,7 @@ thisSE.set('to',toB);
 thisSE.set('use pinhole',true);
 
 % Given the distance from the scene, this FOV captures everything we want
-thisSE.set('fov',30);             % Degrees
+analysisFOV = 15; thisSE.set('fov',15);             % Degrees
 
 %%  Render
 
@@ -56,7 +60,9 @@ thisSE.set('fov',30);             % Degrees
 thisSE.summary;
 
 thisDocker = isetdocker;
-thisSE.piWRS('docker',thisDocker,'name','pinhole');
+scene = thisSE.render('docker',thisDocker);
+scene = sceneSet(scene,'name','pinhole');
+sceneWindow(scene);
 
 %% Now use the optics model with chromatic aberration
 
@@ -88,9 +94,6 @@ thisSE.set('to',toB);
 % use 512 instead of 256.
 thisSE.set('rays per pixel',256);      
 
-% Increase the spatial resolution by adding more spatial samples.
-thisSE.set('spatial samples',256);     
-
 % Ray bounces
 thisSE.set('n bounces',3);
 
@@ -103,14 +106,18 @@ thisSE.set('accommodation',1/distA);
 thisSE.summary;
 
 %%
-thisSE.piWRS('docker',thisDocker,'name','arizona-A');
+oiA = thisSE.render('docker',thisDocker);
+oiA = oiSet(oiA,'name','arizona-A');
+oiWindow(oiA);
 
 %% Make an oi of the chess set scene using the LeGrand eye model
 
 thisSE.set('accommodation',1/distC);  
-thisSE.piWRS('docker',thisDocker,'name','arizona-C');
+oiC = thisSE.render('docker',thisDocker);
+oiC = oiSet(oiC,'name','arizona-C');
+oiWindow(oiC);
 
-%% Have a look with the slanted bar scene
+%% Have a look with the slanted edge scene
 
 % Commented out because it takes a while to run.  But in a way, seeing the
 % chromatic aberration is the point.  So, I put it in here.  The slanted
@@ -126,7 +133,9 @@ thisSE.set('fov',2);
 thisSE.set('rays per pixel',256);  % Pretty quick, but not high quality
 
 thisSE.set('use pinhole',true);
-thisSE.piWRS('docker',thisDocker);  % Render and show
+scene = thisSE.render('docker',thisDocker);
+scene = sceneSet(scene,'name','arizona-slanted-pinhole');
+sceneWindow(scene);
 
 %% Now the human eye model
 
@@ -140,9 +149,10 @@ thisSE.set('chromatic aberration',nSpectralBands);
 
 thisSE.set('object distance',20);
 
-oi = thisSE.piWRS('docker',thisDocker,'show',false,'name','8bands');
+oi = thisSE.render('docker',thisDocker);
+oi = oiSet(oi,'name','8bands');
 
-% Maybe we should set a denoise flag in piWRS?
+% Maybe we should set a denoise flag in sceneEye.render?
 oi = piAIdenoise(oi); 
 
 oiWindow(oi);

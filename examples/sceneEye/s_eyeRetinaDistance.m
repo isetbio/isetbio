@@ -1,7 +1,7 @@
 %% s_eyeRetinaDistance.m
 % SkipFile
-% Human-eye retinal-distance sweep currently relies on legacy sceneEye/
-% docker setup and many CPU optics renders, so keep it out of smoke tests.
+% Human-eye retinal-distance sweep uses many CPU optics renders, so keep it
+% out of routine smoke tests.
 %
 % This tutorial renders a retinal image of "slanted edge." We can use
 % this slanted bar to estimate the modulation transfer function of the
@@ -104,7 +104,9 @@ for rr =  16.1:0.05:16.75
         oDistance,...
         thisSE.get('retina distance','mm'));
     thisSE.summary;
-    oi = thisSE.piWRS('name',name,'docker',thisDocker,'show',true);
+    oi = thisSE.render('docker',thisDocker);
+    oi = oiSet(oi,'name',name);
+    oiWindow(oi);
 end
 
 % If you want to reduce the rendering noise:

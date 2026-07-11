@@ -1,6 +1,7 @@
 %% s_eyeAccommodate.m
 % SkipFile
-% Uses obsolete dockerWrapper human-eye setup; needs sceneEye rewrite.
+% Human-eye accommodation sweep uses several CPU optics renders, so keep it
+% out of routine smoke tests.
 %
 % This tutorial renders a retinal image of "slanted edge" to check how
 % close the accommodation parameters match
@@ -68,7 +69,8 @@ thisSE.set('object distance',oDistance);
 fprintf('Object distance %.2f m\n',oDistance);
 
 %{
-thisSE.piWRS;
+oi = thisSE.render;
+oiWindow(oi);
 %}
 %{
  piAssetGeometry(thisSE.recipe);
@@ -102,9 +104,11 @@ thisDocker = isetdocker;
 for aa =  0.8:.2:1.2
     thisSE.set('accommodation',aa);
     name = sprintf('%s Foc %.2f Obj %.2f (D)',modelName{mm}(1:2),...
-        thisSE.get('accommodation'));
+        thisSE.get('accommodation'),oDistance);
     thisSE.summary;
-    oi = thisSE.piWRS('name',name,'docker',thisDocker,'show',true);
+    oi = thisSE.render('docker',thisDocker);
+    oi = oiSet(oi,'name',name);
+    oiWindow(oi);
 end
 
 % oi = ieGetObject('oi'); oi = piAIdenoise(oi); ,oiWindow(oi);

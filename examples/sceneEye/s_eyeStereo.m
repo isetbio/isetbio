@@ -30,7 +30,9 @@ thisSE.set('lens density',0);   % Just because I can
 
 thisSE.set('rays per pixel',512);  % Pretty quick, but not high quality
 
-oiLeft = thisSE.render;  % Render radiance and depth, and then show
+thisDocker = isetdocker;
+
+oiLeft = thisSE.render('docker',thisDocker);  % Render radiance and depth, and then show
 oiWindow(oiLeft);
 
 %% Shift the eye position
@@ -43,7 +45,7 @@ fromLeft = thisSE.get('from');         % Current camera location
 fromRight = fromLeft + [6,0,0]*1e-2;   % Shift it 6 cm
 thisSE.set('from',fromRight);  
 
-oiRight = thisSE.render('render type','radiance');
+oiRight = thisSE.render('docker',thisDocker,'render type','radiance');
 oiWindow(oiRight);
 
 %% END
