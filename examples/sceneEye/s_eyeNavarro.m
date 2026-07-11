@@ -25,7 +25,14 @@
 %% Check ISETBIO and initialize
 
 ieInit;
-if ~piDockerExists, piDockerConfig; end
+try
+    if ~piDockerExists
+        piDockerConfig;
+    end
+catch
+    warning('ISET3d not found on path. ISET3d must be your path.');
+    return;
+end
 
 %% Here are the World positions of the letters in the scene
 
@@ -61,7 +68,7 @@ thisSE.set('to',toC); distC = thisSE.get('object distance');
 thisSE.set('to',toB);
 
 % To just see the 'B' at higher resolution use a small FOV
-thisSE.set('fov',40);
+thisSE.set('fov',3);
 
 % Render the scene
 thisSE.set('render type', {'radiance','depth'});
@@ -69,9 +76,11 @@ thisSE.set('render type', {'radiance','depth'});
 %% Render as a scene with isetdocker
 
 thisDocker = isetdocker;
-scene = thisSE.piWRS('docker',thisDocker,'name','pinhole');
+scene = thisSE.render('docker',thisDocker);
+scene = sceneSet(scene,'name','pinhole');
+sceneWindow(scene);
 
-% You can see the depth map if you like
+% You can see the depth map using
 %   scenePlot(scene,'depth map');
 
 %% Now use the optics model with chromatic aberration
@@ -89,7 +98,6 @@ thisSE.set('pupil diameter',3);
 
 % This sets the chromaticAberrationEnabled flag and the integrator to
 % spectral path.
-% Now works in V4 - May 28, 2023 (ZL)
 nSpectralBands = 8;
 thisSE.set('chromatic aberration',nSpectralBands);
 
@@ -120,16 +128,16 @@ thisSE.set('accommodation',1/distA);
 thisSE.summary;
 
 
-%% Write the Navarro lens model for this accommodation
+%% Render with the Navarro lens model for this accommodation
 
-% The pinhole render above is reliable and fast.  The optical sceneEye
-% rendering path still needs work in isetdocker, so here we write the
-% updated Navarro lens and IOR files without rendering.
-piWrite(thisSE.recipe);
+oiA = thisSE.render('docker',thisDocker);
+oiA = oiSet(oiA,'name','Navarro A');
+oiWindow(oiA);
 fprintf('Accommodation A lens file: %s\n',thisSE.recipe.get('lens file'));
 
 %% Change the accommodation.  But look at 'B'.
 
+%{
 % Focus on the B
 thisSE.set('accommodation',1/distB);  
 
@@ -138,6 +146,7 @@ thisSE.summary;
 
 piWrite(thisSE.recipe);
 fprintf('Accommodation B lens file: %s\n',thisSE.recipe.get('lens file'));
+%}
 
 %% Set accommodation to a different distance.
 
@@ -145,7 +154,9 @@ fprintf('Accommodation B lens file: %s\n',thisSE.recipe.get('lens file'));
 thisSE.set('accommodation',1/distC);  
 
 thisSE.summary;
-piWrite(thisSE.recipe);
+oiC = thisSE.render('docker',thisDocker);
+oiC = oiSet(oiC,'name','Navarro C');
+oiWindow(oiC);
 fprintf('Accommodation C lens file: %s\n',thisSE.recipe.get('lens file'));
 
 %% END
