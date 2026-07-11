@@ -14,7 +14,14 @@
 %% Initialize paths and such
 
 ieInit;
-if ~piDockerExists, piDockerConfig; end
+try
+    if ~piDockerExists
+        piDockerConfig;
+    end
+catch
+    warning('ISET3d not found on path. ISET3d must be your path.');
+    return;
+end
 
 %% Here are the World positions of the letters in the scene
 

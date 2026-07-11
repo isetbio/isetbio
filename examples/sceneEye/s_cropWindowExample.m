@@ -12,12 +12,15 @@
 % TL ISETBIO Team, 2017  
 
 %% Initialize
-if piCamBio
-    fprintf('%s: requires ISETBIO, not ISETCam\n',mfilename); 
+ieInit;
+try
+    if ~piDockerExists
+        piDockerConfig;
+    end
+catch
+    warning('ISET3d not found on path. ISET3d must be your path.');
     return;
 end
-    
-ieInit;
 
 %% Load a scene
 

@@ -9,8 +9,15 @@
 %   s_eyeArizona, s_eyeNavarro, s_eyeLeGrand
 
 %%
-ieInit
-if ~piDockerExists, piDockerConfig; end
+ieInit;
+try
+    if ~piDockerExists
+        piDockerConfig;
+    end
+catch
+    warning('ISET3d not found on path. ISET3d must be your path.');
+    return;
+end
 
 %% Here are the World positions of the letters in the scene
 

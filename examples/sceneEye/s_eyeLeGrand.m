@@ -24,12 +24,15 @@
 
 %% Check ISETBIO and initialize
 
-if piCamBio
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
+ieInit;
+try
+    if ~piDockerExists
+        piDockerConfig;
+    end
+catch
+    warning('ISET3d not found on path. ISET3d must be your path.');
     return;
 end
-ieInit;
-if ~piDockerExists, piDockerConfig; end
 
 %% Here are the World positions of the letters in the scene
 

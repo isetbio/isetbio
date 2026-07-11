@@ -11,6 +11,16 @@
 %   t_eyeCrop2Cones
 %
 
+%%
+ieInit;
+try
+    if ~piDockerExists
+        piDockerConfig;
+    end
+catch
+    warning('ISET3d not found on path. ISET3d must be your path.');
+    return;
+end
 
 %% Make an oi of the chess set scene using the LeGrand eye model
 
