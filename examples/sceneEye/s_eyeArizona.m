@@ -66,21 +66,20 @@ sceneWindow(scene);
 
 %% Now use the optics model with chromatic aberration
 
-% Turn off the pinhole.  The model eye (by default) is the Navarro model.
-thisSE.set('use optics',true);
-
-% True by default anyway
-thisSE.set('mmUnits', false);
-
 % We turn on chromatic aberration.  That slows down the calculation, but
 % makes it more accurate and interesting.  We often use only 8 spectral
 % bands for speed and to get a rought sense. You can use up to 31.  It is
 % slow, but that's what we do here because we are only rendering once. When
 % the GPU work is completed, this will be fast!
 
+% Turn off the pinhole.  The model eye (by default) is the Navarro model.
+thisSE.set('use optics',true);
+
+% True by default anyway
+thisSE.set('mmUnits', false);
+
 % This sets the chromaticAberrationEnabled flag and the integrator to
 % spectral path.
-% Now works in V4 - May 28, 2023 (ZL)
 nSpectralBands = 8;
 thisSE.set('chromatic aberration',nSpectralBands);
 
@@ -100,15 +99,17 @@ thisSE.set('n bounces',3);
 %% Accommodate to letter A distance (in diopters)
 
 thisSE.set('accommodation',1/distA);
-% thisSE.get('accommodation')
-
-% Summarize
-thisSE.summary;
-
-%%
 oiA = thisSE.render('docker',thisDocker);
 oiA = oiSet(oiA,'name','arizona-A');
 oiWindow(oiA);
+thisSE.summary;
+
+%% Accomodate to B
+thisSE.set('accommodation',1/distB);  
+oiB = thisSE.render('docker',thisDocker);
+oiB = oiSet(oiB,'name','arizona-B');
+oiWindow(oiB);
+thisSE.summary;
 
 %% Make an oi of the chess set scene using the LeGrand eye model
 
@@ -116,12 +117,12 @@ thisSE.set('accommodation',1/distC);
 oiC = thisSE.render('docker',thisDocker);
 oiC = oiSet(oiC,'name','arizona-C');
 oiWindow(oiC);
+thisSE.summary;
 
 %% Have a look with the slanted edge scene
 
-% Commented out because it takes a while to run.  But in a way, seeing the
-% chromatic aberration is the point.  So, I put it in here.  The slanted
-% bar is at the focal distance.
+% Seeing the chromatic aberration is the point.  Easiest to see with this edge
+% The slanted bar is at the focal distance.
 thisSE = sceneEye('slantedEdge','eye model','arizona');
 thisSE.set('to',[0 0 0]);
 
@@ -132,6 +133,7 @@ thisSE.set('fov',2);
 
 thisSE.set('rays per pixel',256);  % Pretty quick, but not high quality
 
+%% First just the pinhole
 thisSE.set('use pinhole',true);
 scene = thisSE.render('docker',thisDocker);
 scene = sceneSet(scene,'name','arizona-slanted-pinhole');
@@ -143,7 +145,6 @@ thisSE.set('use pinhole',false);
 
 % This sets the chromaticAberrationEnabled flag and the integrator to
 % spectral path.
-% Now works in V4 - May 28, 2023 (ZL)
 nSpectralBands = 8;
 thisSE.set('chromatic aberration',nSpectralBands);
 
@@ -154,9 +155,7 @@ oi = oiSet(oi,'name','8bands');
 
 % Maybe we should set a denoise flag in sceneEye.render?
 oi = piAIdenoise(oi); 
-
 oiWindow(oi);
-
 
 thisSE.summary;
 
