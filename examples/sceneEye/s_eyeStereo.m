@@ -24,7 +24,7 @@ end
 
 %% Make an oi of the chess set scene using the LeGrand eye model
 
-thisSE = sceneEye('chess set scaled','human eye','navarro');
+thisSE = sceneEye('chessset','human eye','navarro');
 
 thisSE.set('lens density',0);   % Just because I can
 
@@ -45,7 +45,7 @@ fromLeft = thisSE.get('from');         % Current camera location
 fromRight = fromLeft + [6,0,0]*1e-2;   % Shift it 6 cm
 thisSE.set('from',fromRight);  
 
-oiRight = thisSE.render('docker',thisDocker,'render type','radiance');
+oiRight = thisSE.render('docker',thisDocker);
 oiWindow(oiRight);
 
 %% END

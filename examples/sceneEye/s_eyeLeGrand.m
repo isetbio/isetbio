@@ -34,6 +34,30 @@ catch
     return;
 end
 
+%% Try just the slanted edge
+
+%{
+% I need to figure out the accommodation for this case.
+% It is way too blurry, as if I don't know the proper distance
+%
+thisSE = sceneEye('slantededge','eye model','legrand');
+thisSE.set('to',[0 0 0]);
+
+thisLight = piLightCreate('spot light 1', 'type','spot','rgb spd',[0.5 0.5 1]);
+thisSE.set('light',thisLight, 'add');
+thisSE.set('light',thisLight.name,'specscale',0.5);
+thisSE.set('fov',12);
+
+thisSE.set('rays per pixel',256);  % Pretty quick, but not high quality
+thisSE.set('use pinhole',true);
+scene = thisSE.render('docker',thisDocker);
+sceneWindow(scene);
+
+thisSE.set('use pinhole',false);
+oi = thisSE.render();
+oiWindow(oi);
+%}
+
 %% Here are the World positions of the letters in the scene
 
 % The units are in meters
@@ -46,7 +70,9 @@ toC = [ 0.1458     0.0100     1.6667];
 % This is rendered using a pinhole so the rendering is fast.  It has
 % infinite depth of field (no focal distance).
 thisSE = sceneEye('letters at depth','eye model','legrand');
-% thisSE.summary;
+
+% Given the distance from the scene, this FOV captures everything we want
+thisSE.set('fov',15);             % Degrees
 
 % Position the eye off to the side so we can see the 3D easily
 from = [0.25,0.3,-1.3];
@@ -60,7 +86,7 @@ thisSE.set('to',toB);
 thisSE.set('rays per pixel',32);      
 
 % Increase the spatial resolution by adding more spatial samples.
-thisSE.set('film resolution',384);  
+thisSE.set('film resolution',512);  
 
 %% Have a quick check with the pinhole
 thisSE.set('use pinhole',true);
@@ -69,9 +95,6 @@ thisSE.set('use pinhole',true);
 % If we make it further, we can narrow the FOV, I think
 % thisSE.set('object distance',6);
 % thisSE.set('fov',6);
-
-% Given the distance from the scene, this FOV captures everything we want
-thisSE.set('fov',15);             % Degrees
 
 thisSE.set('render type',{'radiance','depth'});
 
@@ -84,8 +107,7 @@ scene = thisSE.render('docker',thisDocker);
 scene = sceneSet(scene,'name','legrand-pinhole');
 sceneWindow(scene);
 
-% You can see the depth map if you like
-%   scene = ieGetObject('scene');
+% To see the depth map 
 %   scenePlot(scene,'depth map');
 
 %% Now use the optics model with chromatic aberration
@@ -96,7 +118,6 @@ thisSE.set('use pinhole',false);
 
 % This sets the chromaticAberrationEnabled flag and the integrator to
 % spectral path.
-% Now works in V4 - May 28, 2023 (ZL)
 nSpectralBands = 8;
 thisSE.set('chromatic aberration',nSpectralBands);
 

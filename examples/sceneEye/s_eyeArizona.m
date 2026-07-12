@@ -59,6 +59,7 @@ analysisFOV = 15; thisSE.set('fov',15);             % Degrees
 % Summary of status
 thisSE.summary;
 
+% When rendering as a pinhole, we get the scene
 thisDocker = isetdocker;
 scene = thisSE.render('docker',thisDocker);
 scene = sceneSet(scene,'name','pinhole');
