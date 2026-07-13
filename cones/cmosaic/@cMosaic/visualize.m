@@ -933,6 +933,9 @@ if (isempty(domainVisualizationTicks))
     domainVisualizationTicks.y = signY .* domainVisualizationTicks.y;
 end
 
+domainVisualizationTicks.x = domainVisualizationTicks.x(isfinite(domainVisualizationTicks.x));
+domainVisualizationTicks.y = domainVisualizationTicks.y(isfinite(domainVisualizationTicks.y));
+
 if (strcmp(domain, 'microns'))
     domainVisualizationTicks.x = sign(domainVisualizationTicks.x) .* round(abs(domainVisualizationTicks.x));
     domainVisualizationTicks.y = sign(domainVisualizationTicks.y) .* round(abs(domainVisualizationTicks.y));
@@ -970,7 +973,7 @@ switch (domain)
                 ylabel(axesHandle, 'eccentricity, y (degrees)');
             end
         end
-        minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
+        minTickIncrement = visualizationTickMinIncrement(domainVisualizationTicks);
 
         if (minTickIncrement >= 0.1)
             set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
@@ -1006,7 +1009,7 @@ switch (domain)
                 ylabel(axesHandle, 'eccentricity, y (microns)');
             end
         end
-        minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
+        minTickIncrement = visualizationTickMinIncrement(domainVisualizationTicks);
         if (minTickIncrement >= 1)
             set(axesHandle, 'XTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.x), ...
                 'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
@@ -1065,6 +1068,15 @@ end
 
 
 drawnow;
+end
+
+function minTickIncrement = visualizationTickMinIncrement(domainVisualizationTicks)
+tickIncrements = [abs(diff(domainVisualizationTicks.x(:)')) abs(diff(domainVisualizationTicks.y(:)'))];
+if (isempty(tickIncrements))
+    minTickIncrement = inf;
+else
+    minTickIncrement = min(tickIncrements);
+end
 end
 
 %% Method to superimpose an optical PSF on top of the mosaic
@@ -1210,4 +1222,3 @@ S.EdgeAlpha = edgeAlpha;
 S.LineWidth = lineWidth;
 patch(S, 'Parent', axesHandle);
 end
-

@@ -1,11 +1,12 @@
+% s_cmEccVaryingOptics
+%
 % Demo using off-axis optics from different data sets
 %
-% Description:
-% Demonstrate usage of @cMosaic, +PolansOptics and +ArtalOptics to generate  
-%    eccentricity-varying optics from two different data sets 
-%    namely Jaeken and Artal, 2012 (measurements along the horizontal
-%    meridian only) and Polans et al, 2015 (measurements along both
-%    horizontal and vertical meridians).
+% Description: Demonstrate usage of @cMosaic, +PolansOptics and
+% +ArtalOptics to generate eccentricity-varying optics from two
+% different data sets namely Jaeken and Artal, 2012 (measurements
+% along the horizontal meridian only) and Polans et al, 2015
+% (measurements along both horizontal and vertical meridians).
 %
 % See Also:
 %   t_cMosaicOffAxisDistortion
@@ -16,14 +17,11 @@
 
 %% Initialize
 ieInit;
-clear;
-close all;
 
 %% Control parameters below
 %
-% Setting fastParamters to true does
-% a more limited set of calculations
-% and the whole thing runs more quickly.
+% Setting fastParameters to true does a more limited set of
+% calculations and the whole thing runs more quickly.
 fastParameters = true;
 if (fastParameters)
     wavefrontSpatialSamples = 201;
@@ -65,33 +63,32 @@ whichEye = 'right eye';
 %% choose between {'Polans2015', and 'Artal2012'}
 opticsZernikeCoefficientsDataBase = 'Polans2015';            
 
-%% Select ranking of displayed subject
+
+%% Generate eccentricity mesh
+
+% Select ranking of displayed subject
 subjectRankOrder = 1;
 
-%% Setup figure
-hFig = figure(1); clf;
-originalFigureUnits = hFig.Units;
-hFig.Units = 'pixels';
-set(hFig, 'Position', [10 10 2400 1100], 'Color', [1 1 1]);
-hFig.Units = originalFigureUnits;
-rowsNum = 4;
-colsNum = 10;
-sv = NicePlot.getSubPlotPosVectors(...
-       'colsNum', colsNum, ...
-       'rowsNum', rowsNum, ...
-       'heightMargin',  0.08, ...
-       'widthMargin',    0.01, ...
-       'leftMargin',     0.04, ...
-       'rightMargin',    0.04, ...
-       'bottomMargin',   0.04, ...
-       'topMargin',      0.04);
-   
-%% Generate eccentricity mesh
 [X,Y] = meshgrid(mosaicEccDegsX, mosaicEccDegsY);
 X = X(:);
 Y = Y(:);
 R = sqrt(X.^2+Y.^2);
 
+% Setup figure
+hFig = ieFigure([],'wide'); clf;
+rowsNum = 1;
+colsNum = numel(R);
+sv = NicePlot.getSubPlotPosVectors(...
+    'colsNum', colsNum, ...
+    'rowsNum', rowsNum, ...
+    'heightMargin',  0.08, ...
+    'widthMargin',    0.01, ...
+    'leftMargin',     0.04, ...
+    'rightMargin',    0.04, ...
+    'bottomMargin',   0.04, ...
+    'topMargin',      0.04);
+
+%%
 for iEcc = 1:numel(R)
     switch (opticsZernikeCoefficientsDataBase)
         case 'Polans2015'
@@ -153,7 +150,7 @@ for iEcc = 1:numel(R)
         
     % Ticks and visualization limits
     domainUnits = 'microns';
-    domainVisualizationTicks = struct('x',  [nan], 'y', [nan]);
+    domainVisualizationTicks = struct('x', [], 'y', []);
     % Visualize half of the mosaic
     visualizedFraction = 0.3;
     w = cm.sizeDegs(1)*cm.micronsPerDegree;
@@ -179,7 +176,9 @@ for iEcc = 1:numel(R)
     axis(ax, 'square');
 end   
 
-% Optional figure save
+%% Optional figure save
 if (saveFigures)
     NicePlot.exportFigToPDF(fullfile(sprintf('%s_subject%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID)), hFig, 300);
 end
+
+%%
