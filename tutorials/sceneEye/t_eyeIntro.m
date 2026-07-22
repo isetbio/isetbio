@@ -2,8 +2,12 @@
 % SkipFile
 %
 % We are skipping files that rely on the ISET3d rendering.  This
-% tutorial runs for BW at Stanford. We should check for others who
-% have ISET3d properly configured.
+% script needs some debugging.  Other renderings do work, but not this
+% one.
+% 
+% After BW fixes, we should check for others who have ISET3d properly
+% configured. 
+%%%%%%%%%%%%%%%%%%%%%%
 %
 % This brief tutorial is a (mainly) textual, introduction to modeling the
 % optics of the human eye using ray-tracing in ISETBio and ISET3d.  
@@ -167,7 +171,7 @@ oiWindow(oi);
 
 % The number at 200 is in good focus, while the others are not.
 
-%% Set the accomodation to the 100 mm target
+%% Set the accommodation to the 100 mm target
 
 % Set the focal distance to 100 mm (0.1 m).  We will set 'accommodation'
 % again, but you could set the 'focal distance' parameter if you prefer.
