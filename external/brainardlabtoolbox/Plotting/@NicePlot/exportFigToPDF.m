@@ -39,14 +39,7 @@ function exportFigToPDF(pdfFileName,figHandle,dpi, varargin)
         if ismember('noui', varargin{:})
             print(figHandle,'-dpdf', '-noui', pdfFileName,sprintf('-r%d',dpi));
         else
-            if ismember('employExportGraphicsCall', varargin{:})
-                fprintf('Employing export call\n')
-                exportgraphics(figHandle,pdfFileName, ...
-                'padding', 'figure', ...
-                'resolution',dpi);
-            else
-                print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));
-            end
+            print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));
         end
     else
         print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));

@@ -1,4 +1,4 @@
-function [T,T_energy,T_quantal] = ComputeObserverFundamentals(coneParams,S)
+function [T,T_energy,T_quantalIsomerizations,adjIndDiffParams,params,staticParams] = ComputeObserverFundamentals(coneParams,S)
 % Compute cone fundamentals from cone parameter structure
 %
 % Syntax:
@@ -22,13 +22,20 @@ function [T,T_energy,T_quantal] = ComputeObserverFundamentals(coneParams,S)
 %     T                               - Matrix of fundamentals, PTB matrix
 %                                       format with each fundamental in a
 %                                       row.  Normalized in energy units.
-%     T_energy                        - Matrix of fundamentals, PTB matrix
+%     T_energy                  - Matrix of fundamentals, PTB matrix
 %                                       format with each fundamental in a
 %                                       row.  Not normalized, in energy units.
-%     T_quantal                       - Matrix of fundamentals, PTB matrix
+%     T_quantal                 - Matrix of fundamentals, PTB matrix
 %                                       format with each fundamental in a row.
 %                                       Not normalized, and in quantal
 %                                       units.
+%     adjIndDiffParams          - The Asano adjusted individual difference
+%                                       parameters returned by
+%                                       CIEComputeConeFundamentals.
+%     params                    - Parameters structure returned by
+%                                       CIEComputeConeFundamentals.
+%     staticParams              - Static parameters structure returned by
+%                                       CIEComputeConeFundamentals.
 %
 % Optional key/value pairs:
 %    None.
@@ -51,21 +58,41 @@ function [T,T_energy,T_quantal] = ComputeObserverFundamentals(coneParams,S)
     xlabel('Wavelength (nm)');
     ylabel('Fundamental');
 %}
+%{
+    coneParams = DefaultConeParams('cie_asano');
+    S = [400 1 301];
+    [~,~,~,adjIndDiffParams,params,staticParams] = ComputeObserverFundamentals(coneParams,S);	
+%}
 
 switch (coneParams.type)
     case 'cie_asano'
-        
         % Get cone spectral sensitivities
-        [~,T_quantal] = ...
+        [~,~,T_quantalIsomerizations,adjIndDiffParams,params,staticParams] = ...
             ComputeCIEConeFundamentals(MakeItS(S),coneParams.fieldSizeDegrees,coneParams.ageYears,coneParams.pupilDiamMM, ...
             [],[],[], ...
             [],[],[],coneParams.indDiffParams);
-        T_energy = EnergyToQuanta(S,T_quantal')';
+        T_energy = EnergyToQuanta(S,T_quantalIsomerizations')';
         for ii = 1:3
             T(ii,:) = T_energy(ii,:)/max(T_energy(ii,:));
-        end        
-     
+        end
+
+    case {'cie_govardovskii', 'cie_dawis', 'cie_baylor', 'cie_lamb', 'cie_stockmansharpe', 'cie_stockmanrider', 'cie_carrollneitz'}
+        % Pop in one of the standard photopigment nomograms, along with the other ind
+        % difference parameters.
+        useLambdaMax = coneParams.lambdaMax + coneParams.indDiffParams.lambdaMaxShift(:);
+        useIndDiffParams = coneParams.indDiffParams;
+        useIndDiffParams.lambdaMaxShift = zeros(size(coneParams.indDiffParams.lambdaMaxShift(:)));
+        [~,~,T_quantalIsomerizations,adjIndDiffParams,params,staticParams] = ...
+            ComputeCIEConeFundamentals(MakeItS(S),coneParams.fieldSizeDegrees,coneParams.ageYears,coneParams.pupilDiamMM, ...
+            useLambdaMax,coneParams.nomogram,[], ...
+            [],[],[],useIndDiffParams);
+        T_energy = EnergyToQuanta(S,T_quantalIsomerizations')';
+        for ii = 1:3
+            T(ii,:) = T_energy(ii,:)/max(T_energy(ii,:));
+        end
+
     otherwise
         error('Unknown cone parameters type passed.');
 end
+
 
