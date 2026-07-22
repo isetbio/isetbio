@@ -1,3 +1,4 @@
+
 function T_absorbance = StockmanSharpeNomogram(S,lambdaMax)
 % T_absorbance = StockmanSharpeNomogram(S,lambdaMax)
 %
@@ -35,6 +36,13 @@ function T_absorbance = StockmanSharpeNomogram(S,lambdaMax)
 % are working in the land of the CIE 170-1:2006 fundamentals, this is the
 % probably the best current nomogram to use.
 %
+% Good lambda max values (L, M, S): 558.9, 530.3, 420.7 nm.
+% These are the values at which this template best fits the Stockman &
+% Sharpe (2000) tabulated photopigment absorbance spectra, as stated in
+% the function header and used in the CIE 170-1:2006 fundamentals. The
+% agreement is loose, which is why the Asano model shifts the tabulated
+% absorbance and why there is now a better fitting StockmanRider nomogram.
+%
 % See ComputeCIEConeFundamentals, CIEConeFundamentalsTest,
 % FitConeFundamentalsFromNomogram, FitConeFundamentalsTest
 %
@@ -54,6 +62,7 @@ g = 12.487558618387;
 h = -0.289541500599;
 
 % Set up and apply formula
+S = MakeItS(S);
 wls = MakeItWls(S)';
 nWls = length(wls);
 nT = length(lambdaMax);
@@ -74,7 +83,15 @@ for i = 1:nT
 							 f*logWlsNorm.^10 + ...
 							 g*logWlsNorm.^12 + ...
 							 h*logWlsNorm.^14;
-	logDensity = logDensity;
 	T_absorbance(i,:) = 10.^logDensity;
+
+    % If wavelength spacing is sufficiently fine, normalize explicitly
+    % to a max of 1.  Seems like a good idea since this should always
+    % be true of absorbance functions.  Don't want to do it if
+    % wavelength spacing is coarse, because the peak may be between the
+    % samples.
+    if (S(2) <= 1)
+        T_absorbance(i,:) = T_absorbance(i,:)/max(T_absorbance(i,:));
+    end
 end
 

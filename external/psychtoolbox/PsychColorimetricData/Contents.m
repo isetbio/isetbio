@@ -18,6 +18,7 @@
 %   BaylorNomogram            - Baylor et al. photopigment nomogram.
 %   ComputeCIEConeFundamentals - Compute cone fundamentals according to CIE 170-1:2006
 %   ComputeRawConeFundamentals - Compute cone fundamentals from specification of various components
+%   CarrollNeitzNomogram      - Carroll-Neitz (2000) photopigment nomogram.
 %   DawisNomogram             - Dawis (1981) photopigment nomogram.
 %   DefaultPhotoreceptors     - Set default values for photoreceptors structure.
 %   DegreesToRetinalMM        - Convert foveal retinal extents from degrees to mm of retina.
@@ -30,6 +31,7 @@
 %   LambNomogram              - Lamb's (1995) photopigment nomogram.
 %   LensTransmittance         - Return transmittance of human lens.
 %   MacularTransmittance      - Return transmittance of human macular pigment.
+%   ODToTransmission          - Convert optical density to transmission.
 %   PhotopigmantAxialDensity  - Estimate of peak optical density.
 %   PhotopigmantNomogram      - Encapsulate available nomogram computations.
 %   PhotopigmentSpecificDensity - Estimates of specific density.
@@ -40,7 +42,9 @@
 %   RetinalEccentricityMMToDegrees - Convert retinal eccentricities from mm of retina to degrees.
 %   RetinalMMToDegrees        - Convert foveal retinal extents from mm of retina to degrees.
 %   ShiftPhotopigmentAbsorbance - Shift an absorbance along a log wavelength axis.
-%   StockmanSharpeNomogram    - Stockman/Sharpe photopigment nomogram (not finished).
+%   StockmanRiderNomogram     - Stockman/Rider photopigment nomogram and associated functions
+%   StockmanSharpeNomogram    - Stockman/Sharpe photopigment nomogram.
+%   TransmissionToOD          - Convert transmission to OD.
 %   ValetonVanNorrenParams    - Return parameters of the Valeton-Van Norren model.
   
 % Copyright (c) 1996-2003 by Denis Pelli & David Brainard
