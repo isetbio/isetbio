@@ -1,7 +1,9 @@
 %% t_eyeIntro.m
 % SkipFile
-% Depends on legacy ISET3d/PBRT helpers that are not available in routine
-% tutorial smoke-test sessions.
+%
+% We are skipping files that rely on the ISET3d rendering.  This
+% tutorial runs for BW at Stanford. We should check for others who
+% have ISET3d properly configured.
 %
 % This brief tutorial is a (mainly) textual, introduction to modeling the
 % optics of the human eye using ray-tracing in ISETBio and ISET3d.  
