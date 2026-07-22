@@ -26,10 +26,6 @@
 %   t_eyeIntro, t_eyeFocalDistance, 
 
 %% Initialize ISETBIO
-if piCamBio
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
-    return;
-end
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
@@ -95,7 +91,7 @@ thisSE.set('pupil diameter',2);
 % number of rays.  This will slow the calculation.
 thisSE.set('rays per pixel',512);
 
-oi = thisSE.render('render type','radiance');    % Radiance and depth
+oi = thisSE.render;    % Radiance and depth
 oiWindow(oi);
 
 thisSE.summary;
