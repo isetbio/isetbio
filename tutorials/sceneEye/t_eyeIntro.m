@@ -81,13 +81,6 @@
 
 %% Initialize ISETBIO
 
-% We switch between ISETBio and ISETCam often. We use this little header to
-% make sure the user is on the ISETBio path needed for sceneEye.
-if piCamBio
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
-    return;
-end
-
 % General ISET initialization
 ieInit;
 
