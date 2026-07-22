@@ -18,6 +18,7 @@ function [LMS, factorsLMS] = MacBoynToLMS(lsY,T_cones,T_lum)
 %   06/xx/25 fh   Wrote it
 %   06/16/25 dhb  Adjusted LMSToMacBoyn and this to mesh together more
 %                 smoothly.
+%   07/22/26 dhb  Handle case where lsY is passed as empty.
     
     % Magic call into LMSToMacBoyn to get the scaling factors
     % we need to invert.  See LMSToMacBoyn.
@@ -27,8 +28,10 @@ function [LMS, factorsLMS] = MacBoynToLMS(lsY,T_cones,T_lum)
     % because we have the luminance returned by LMSToMacBoyn as well as the
     % ls coordinates.
     LMS = zeros(size(lsY));
-    LMS(1,:) = lsY(1,:).*lsY(3,:)/factorsLMS(1);
-    LMS(2,:) = (1-lsY(1,:)).*lsY(3,:)/factorsLMS(2);
-    LMS(3,:) = lsY(2,:).*lsY(3,:)/factorsLMS(3);
+    if (~isempty(LMS))
+        LMS(1,:) = lsY(1,:).*lsY(3,:)/factorsLMS(1);
+        LMS(2,:) = (1-lsY(1,:)).*lsY(3,:)/factorsLMS(2);
+        LMS(3,:) = lsY(2,:).*lsY(3,:)/factorsLMS(3);
+    end
    
 end
