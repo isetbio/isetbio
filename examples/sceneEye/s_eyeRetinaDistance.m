@@ -1,4 +1,12 @@
 %% s_eyeRetinaDistance.m
+%
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
 % SkipFile
 % Human-eye retinal-distance sweep uses many CPU optics renders, so keep it
 % out of routine smoke tests.

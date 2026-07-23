@@ -1,6 +1,14 @@
 % SkipFile
 %% t_chessSet_cloud.m
 %
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
+%
 % Render a very nice view of the chess set using the cloud. 
 % 
 % Depends on: iset3d, isetbio, Docker, isetcloud
@@ -8,10 +16,6 @@
 % TL ISETBIO Team, 2017
 
 %% Initialize ISETBIO
-if piCamBio
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
-    return;
-end
 ieInit;
 if ~mcDockerExists, mcDockerConfig; end % check whether we can use docker
 if ~mcGcloudExists, mcGcloudConfig; end % check whether we can use google cloud sdk;

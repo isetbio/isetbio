@@ -1,4 +1,12 @@
 %% s_eyeDiffraction.m
+%
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
 % SkipFile
 % Multi-render human-eye diffraction comparison is useful interactively, but
 % currently slow/unstable for routine smoke tests (CPU/remote dependent).

@@ -1,4 +1,12 @@
 %% t_eyeFocalDistance.m
+%
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
 % SkipFile
 % Depends on legacy ISET3d/PBRT helpers that are not available in routine
 % tutorial smoke-test sessions.
@@ -23,10 +31,6 @@
 
 %% Check ISETBIO and initialize
 
-if piCamBio
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
-    return;
-end
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 

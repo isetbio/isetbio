@@ -1,4 +1,12 @@
 %% s_retinaShape
+%
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
 % SkipFile
 % Requires ISETBio; keep out of ISETCam-only smoke runs.
 %

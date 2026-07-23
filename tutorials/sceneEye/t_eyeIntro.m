@@ -1,8 +1,15 @@
 %% t_eyeIntro.m
+%
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
 % SkipFile
 %
-% We are skipping files that rely on the ISET3d rendering.  This
-% script needs some debugging.  Other renderings do work, but not this
+% This script needs some debugging.  Other renderings do work, but not this
 % one.
 % 
 % After BW fixes, we should check for others who have ISET3d properly

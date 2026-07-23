@@ -1,4 +1,12 @@
 %% t_eyeFOV
+%
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
 % SkipFile
 % Depends on legacy ISET3d/PBRT helpers that are not available in routine
 % tutorial smoke-test sessions.
@@ -15,11 +23,7 @@
 
 %% Check ISETBIO and initialize
 
-% The sceneEye modeling uses ISETBio and ISET3d.  So we check.
-if piCamBio
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
-    return;
-end
+% The sceneEye modeling uses both ISETBio and ISET3d.
 
 % Then we initialize ISETBio and make sure the user has Docker configured.
 ieInit;

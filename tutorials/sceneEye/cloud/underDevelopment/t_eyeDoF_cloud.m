@@ -1,6 +1,14 @@
 % SkipFile
 %% t_eyeDoF.m
 %
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
+%
 % This tutorial shows the effect of pupil diameter on the depth of field in
 % the scene.
 % 
@@ -9,10 +17,6 @@
 % TL ISETBIO Team, 2017 
 
 %% Initialize ISETBIO
-if isequal(piCamBio,'isetcam')
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
-    return;
-end
 ieInit;
 if ~mcDockerExists, mcDockerConfig; end % check whether we can use docker
 if ~mcGcloudExists, mcGcloudConfig; end % check whether we can use google cloud sdk;
