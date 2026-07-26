@@ -1,6 +1,6 @@
-%% Introduction to the midget RGC mosaic (mRGCMosaic) object.
+function t_mRGCMosaicBasic(options)
+% Introduction to the midget RGC mosaic (mRGCMosaic) object.
 %
-
 % Requires locally configured precomputed mRGC resources.
 % SkipFile
 % Description:
@@ -11,12 +11,90 @@
 %        - how to visualize different aspects of the mRGCMosaic
 %        - how to visualize its response
 %
-
-
 % History:
 %    10/25/23  NPC  Wrote it.
+%    7/26/2026 NPC  Modernized it
 
-function t_mRGCMosaicBasic
+% Examples:
+%{
+
+    t_mRGCMosaicBasic();
+
+    t_mRGCMosaicBasic(...
+        'rgcMosaicName', 'JCNpaperTemporal7DegsMosaic', ...
+        'opticsSubjectName', 'JCNpaperDefaultSubject');
+
+%}
+
+arguments
+
+    % ---- Mosaic specifiers for selecting a prebaked mRGC mosaic ---
+
+    % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
+    % for what is available and to add new mosaics
+    options.rgcMosaicName (1,:) char = 'JCNpaperNasal2DegsTinyMosaic';
+
+
+    % ---- Which species to employ ----
+    % Choose between {'macaque', 'human'}. If 'macaque' is chosen, the input
+    % cone mosaic has a 1:1 L/M cone ratio.
+    options.coneMosaicSpecies  (1,:) char {mustBeMember(options.coneMosaicSpecies,{'human','macaque'})} = 'human';
+
+     % ----- Which subject optics to employ -----
+    options.opticsSubjectName (1,:) ...
+        char ...
+        {...
+        mustBeMember(options.opticsSubjectName, ...
+            { ...
+            'JCNpaperDefaultSubject' ...
+            'JCNpaperSecondSubject' ...
+            'VSS2024TalkFirstSubject' ...
+            'VSS2024TalkSecondSubject' ...
+            'JCNpaperStrehlRatio_0.87' ...
+            'JCNpaperStrehlRatio_0.72' ...
+            'JCNpaperStrehlRatio_0.59' ...
+            'JCNpaperStrehlRatio_0.60' ...
+            'JCNpaperStrehlRatio_0.27' ...
+            'JCNpaperStrehlRatio_0.23' ...
+            'JCNpaperStrehlRatio_0.21' ...
+            'JCNpaperStrehlRatio_0.19' ...
+            'JCNpaperStrehlRatio_0.09' ...
+            } ...
+            ) ...
+        } ...
+        = 'JCNpaperDefaultSubject';
+
+
+    % ------ targetVisualSTF options ----
+    % Options are : {'default', 'x1.3 RsRcRatio'}
+    % These are with respect to the macaque data of the Croner & Kaplan '95 study
+    % 'default': target the mean Rs/Rc, and the mean Ks/Kc (Rs/Rc)^2
+    % See RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct
+    % for all existing options
+    options.targetVisualSTFdescriptor (1,:) char = 'default';
+
+
+    % ------ Visualization options ----
+    % Visualize cone pooling maps for a target RGC
+    options.targetRGCindexForVisualizingConePoolingMaps (1,:) double = [];
+
+    % Whether to generate a video of RFpooling maps along the horizontal meridian
+    options.generateVideoOfRFpoolingMapsAlongHorizontalMeridian (1,1) logical = false;
+
+    % Whether to close previously open figures
+    options.closePreviouslyOpenFigures (1,1) logical = true;
+end
+
+
+    % Set flags from key/value pairs
+    
+    % Mosaic specifiers for selecting a prebaked mRGC mosaic
+    rgcMosaicName = options.rgcMosaicName;
+    coneMosaicSpecies = options.coneMosaicSpecies;
+    opticsSubjectName = options.opticsSubjectName;
+    targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
+
+
     %% Close all figures
     close all;
 
@@ -34,28 +112,20 @@ function t_mRGCMosaicBasic
     saveFigures = true;
     figureDir = figExporter.figureDir(mfilename, saveFigures);
 
-    %% Display available mRGCMosaics
-    rgcMosaicType = 'ONcenterMidgetRGC';
-    mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
-
-    %% Specify the desired eccentricity of the precomputed mRGC mosaic
-    % Choose the x-eccentricity from one of the available mosaics displayed above
-    % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
-    %
-    % Better to code one we know should be there, because asking user for
-    % input in a tutorial hangs the autorun validations.
-    horizontalEccDegs = 0; % input('Enter mRGCMosaic''s horizontal eccentricity: ');
-
-    %% Load precomputed mRGCMosaic
-    theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);
+    %% Load the mRGCMosaic and the optics that were used to optimize it
+    [theMRGCMosaic, theOI] = mRGCMosaic.loadPrebakedMosaic(...
+            coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
+            'computeTheMosaicOptics', true);
+    
 
     %% Set the presentation display on which the stimulus must be realized
     presentationDisplay = generateCRTDisplay();
 
+
     %% Set stimulus parameters
     sinusoidalStimulusParams = struct(...
-        'sizeDegs', 2.0, ...
-        'positionDegs',[horizontalEccDegs 0.], ...
+        'sizeDegs', max(theMRGCMosaic.sizeDegs), ...
+        'positionDegs', theMRGCMosaic.eccentricityDegs, ...
         'spatialFrequencyCyclesPerDeg', 10.0, ...
         'orientationDegs', 0, ...               
         'phaseDegs', 0, ...  
@@ -69,10 +139,6 @@ function t_mRGCMosaicBasic
     [theStimulusScene, theBackgroundScene] = generateSinusoidalStimulusAndBackgroundScene(...
         presentationDisplay, sinusoidalStimulusParams);
 
-    %% Retrieve the native optics
-    % These are the optics under which the connections from the input cone
-    % mosaic to the mRGC mosaic were optimized
-    theOI = theMRGCMosaic.theNativeOptics;
 
     %% Compute the retinal image of the stimulus and background scenes
     theStimulusRetinalImage = oiCompute(theOI, theStimulusScene);
