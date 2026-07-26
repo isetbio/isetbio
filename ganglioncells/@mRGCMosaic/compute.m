@@ -77,7 +77,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         mRGCMosaicNoisyResponseInstancesNum = inputConeMosaicResponseInstancesNum;
     else
         % 'nTrials' for mRGCMosaic responses is passed
-        if (coneMosaicResponseInstancesNum > 1)
+        if (inputConeMosaicResponseInstancesNum > 1)
             % We also have more than 1 input cone mosaic response.
             % Must be noisy cone mosaic responses instances. 
             % Ensure that mRGCMosaicNoisyResponseInstancesNum == inputConeMosaicResponseInstancesNum
