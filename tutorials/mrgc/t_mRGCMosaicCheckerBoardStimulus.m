@@ -1,7 +1,93 @@
-function t_mRGCMosaicCheckerBoardStimulus
+function t_mRGCMosaicCheckerBoardStimulus(options)
+% Compute the response of an mRGCmosaic to a checkerboard stimulus
+%
 % Requires locally configured precomputed mRGC resources.
 % SkipFile
+%
+% History:    
+%    7/26/2026 NPC  Modernized it
+
+% Examples:
+%{
+
+    t_mRGCMosaicCheckerBoardStimulus();
+
+    t_mRGCMosaicCheckerBoardStimulus(...
+        'rgcMosaicName', 'JCNpaperTemporal7DegsMosaic', ...
+        'opticsSubjectName', 'JCNpaperDefaultSubject');
+
+%}
+
+arguments
+
+    % ---- Mosaic specifiers for selecting a prebaked mRGC mosaic ---
+
+    % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
+    % for what is available and to add new mosaics
+    options.rgcMosaicName (1,:) char = 'JCNpaperNasal2DegsTinyMosaic';
+
+
+    % ---- Which species to employ ----
+    % Choose between {'macaque', 'human'}. If 'macaque' is chosen, the input
+    % cone mosaic has a 1:1 L/M cone ratio.
+    options.coneMosaicSpecies  (1,:) char {mustBeMember(options.coneMosaicSpecies,{'human','macaque'})} = 'human';
+
+     % ----- Which subject optics to employ -----
+    options.opticsSubjectName (1,:) ...
+        char ...
+        {...
+        mustBeMember(options.opticsSubjectName, ...
+            { ...
+            'JCNpaperDefaultSubject' ...
+            'JCNpaperSecondSubject' ...
+            'VSS2024TalkFirstSubject' ...
+            'VSS2024TalkSecondSubject' ...
+            'JCNpaperStrehlRatio_0.87' ...
+            'JCNpaperStrehlRatio_0.72' ...
+            'JCNpaperStrehlRatio_0.59' ...
+            'JCNpaperStrehlRatio_0.60' ...
+            'JCNpaperStrehlRatio_0.27' ...
+            'JCNpaperStrehlRatio_0.23' ...
+            'JCNpaperStrehlRatio_0.21' ...
+            'JCNpaperStrehlRatio_0.19' ...
+            'JCNpaperStrehlRatio_0.09' ...
+            } ...
+            ) ...
+        } ...
+        = 'JCNpaperDefaultSubject';
+
+
+    % ------ targetVisualSTF options ----
+    % Options are : {'default', 'x1.3 RsRcRatio'}
+    % These are with respect to the macaque data of the Croner & Kaplan '95 study
+    % 'default': target the mean Rs/Rc, and the mean Ks/Kc (Rs/Rc)^2
+    % See RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct
+    % for all existing options
+    options.targetVisualSTFdescriptor (1,:) char = 'default';
+
+
+    % ------ Visualization options ----
+    % Visualize cone pooling maps for a target RGC
+    options.targetRGCindexForVisualizingConePoolingMaps (1,:) double = [];
+
+    % Whether to generate a video of RFpooling maps along the horizontal meridian
+    options.generateVideoOfRFpoolingMapsAlongHorizontalMeridian (1,1) logical = false;
+
+    % Whether to close previously open figures
+    options.closePreviouslyOpenFigures (1,1) logical = true;
+end
+
+
+    % Set flags from key/value pairs
     
+    % Mosaic specifiers for selecting a prebaked mRGC mosaic
+    rgcMosaicName = options.rgcMosaicName;
+    coneMosaicSpecies = options.coneMosaicSpecies;
+    opticsSubjectName = options.opticsSubjectName;
+    targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
+
+
+
     %% Close all figures
     close all;
 
@@ -19,11 +105,11 @@ function t_mRGCMosaicCheckerBoardStimulus
     saveFigures = true;
     figureDir = figExporter.figureDir(mfilename, saveFigures);
 
-    % Specify the precomputed mosaic's eccentricity
-    horizontalEccDegs = 0;
-
-    % Load the precomputed mRGCMosaic
-    theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs);
+    % Load the mRGCMosaic and the optics that were used to optimize it
+    [theMRGCMosaic, theOI] = mRGCMosaic.loadPrebakedMosaic(...
+            coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
+            'computeTheMosaicOptics', true);
+   
 
     % Noise-free responses
     theMRGCMosaic.inputConeMosaic.noiseFlag = 'none';
@@ -39,13 +125,12 @@ function t_mRGCMosaicCheckerBoardStimulus
     theStimulusScene = sceneSet(theStimulusScene, 'fov', imageFOVdegs);
 
     % Compute the retinal image
-    theOI = theMRGCMosaic.theNativeOptics;
     theStimulusRetinalImage = oiCompute(theOI,theStimulusScene);
 
     % Compute the cone mosaic response
     theConeMosaicResponse = theMRGCMosaic.inputConeMosaic.compute(...
         theStimulusRetinalImage, ...
-        'opticalImagePositionDegs', [horizontalEccDegs 0]);
+        'opticalImagePositionDegs', theMRGCMosaic.eccentricityDegs);
 
     % Compute the mRGC mosaic response using the default RGCRGgains
     theConeMosaicResponseTemporalSupportSeconds = [0];
@@ -54,7 +139,7 @@ function t_mRGCMosaicCheckerBoardStimulus
 
 
     % Retrieve the default rgcRFgains
-    defaultRGCRFgains = theMRGCMosaic.rgcRFgains;
+    defaultRGCRFgains = theMRGCMosaic.responseGains;
 
     % Set the rgcRFgains as 1 / center-integrated retinal cone apertures
     method = '1/integrated center retinal cone apertures';
