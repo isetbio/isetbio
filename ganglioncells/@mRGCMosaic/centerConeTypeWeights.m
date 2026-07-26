@@ -1,9 +1,9 @@
 function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes, theCenterConeIndices] = centerConeTypeWeights(obj, theRGCindex)
     % Retrieve this cell's # of center cone indices
-    if (isempty(obj.rgcRFcenterConePoolingMatrix))
-        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theRGCindex)));
-    else
+    if (isfield(obj, 'rgcRFcenterConePoolingMatrix'))&&(~isempty(obj.rgcRFcenterConePoolingMatrix))
         connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, theRGCindex)));
+    else
+        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theRGCindex)));
     end
 
     theCenterConeIndices = find(connectivityVector > 0.0001);

@@ -32,8 +32,12 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
     xSupport = [];
     ySupport = []; 
     centerSubregionContourSamples = 32;
+    minConeWeightIncluded = [];
+    visualizedRGCindices = 1:obj.theRGCMosaic.rgcsNum;
     contourGenerationMethod = 'ellipseFitToPooledConeApertureImage';
-    obj.theRGCMosaic.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
+    obj.theRGCMosaic.generateVisualizationCache(xSupport, ySupport, ...
+        centerSubregionContourSamples, contourGenerationMethod, ...
+        visualizedRGCindices, minConeWeightIncluded);
 
     inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         opticsParams, ...

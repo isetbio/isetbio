@@ -28,7 +28,11 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
         ySupport = []; 
         centerSubregionContourSamples = 32;
         contourGenerationMethod = 'ellipseFitToPooledConeApertureImage';
-        obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
+        minConeWeightIncluded = [];
+        visualizedRGCindices = 1:obj.rgcsNum;
+        obj.generateVisualizationCache(xSupport, ySupport, ...
+            centerSubregionContourSamples, contourGenerationMethod, ...
+            visualizedRGCindices, minConeWeightIncluded);
     end
 
     theContourData = obj.visualizationCache.rfCenterContourData{theRGCindex};
@@ -37,12 +41,22 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
     theCurrentRGCposition = obj.rgcRFpositionsDegs(theRGCindex,:);
 
     % Retrieve this cell's  center cone indices and weights
-    connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, theRGCindex)));
+    if (isfield(obj, 'rgcRFcenterConePoolingMatrix'))&&(~isempty(obj.rgcRFcenterConePoolingMatrix))
+        connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, theRGCindex)));
+    else
+        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theRGCindex)));
+    end
+
     centerConeIndicesForCurrentRGC = find(connectivityVector > 0.0001);
     centerConeWeightsForCurrentRGC = connectivityVector(centerConeIndicesForCurrentRGC);
 
     % Retrieve this cell's surround cone indices and weights
-    connectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix(:, theRGCindex)));
+    if (isfield(obj, 'rgcRFsurroundConePoolingMatrix'))&&(~isempty(obj.rgcRFsurroundConePoolingMatrix))
+        connectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix(:, theRGCindex)));
+    else
+        connectivityVector = full(squeeze(obj.rgcRFsurroundConeConnectivityMatrix(:, theRGCindex)));
+    end
+
     surroundConeIndicesForCurrentRGC = find(connectivityVector > 0.0001);
     surroundConeWeightsForCurrentRGC = connectivityVector(surroundConeIndicesForCurrentRGC);
 
