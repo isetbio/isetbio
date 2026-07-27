@@ -42,6 +42,17 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, ...
         end
     end
 
+    % If the user has not passed
+    % opticsParams.withZeroedPistonAndTiltZernikeCoefficients,
+    % set it to false, to get the old behavior where the PSF centering is
+    % controlled by opticsParams.zeroCenterPSF. However, for applications
+    % where the zero-centering is crutial, the user must set
+    % opticsParams.withZeroedPistonAndTiltZernikeCoefficients = true
+    %
+    if (~isfield(opticsParams, 'withZeroedPistonAndTiltZernikeCoefficients'))
+        opticsParams.withZeroedPistonAndTiltZernikeCoefficients = false;
+    end
+
 	examinedRefractionErrorDiopters = [];
 	StrehlRatioAsAFunctionOfDefocus = [];
 	theOptimalStrehlRatioDefocusDiopters = [];
