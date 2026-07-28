@@ -120,7 +120,11 @@ end
 
     % Input stimulus
     imageFOVdegs = 7.0;
-    pixelsPerCheck = 256;
+    % 128 pixels per check gives a 1024x1024 scene, i.e. ~146 pixels/deg at
+    % the 7 deg FOV set below. Raising this to 256 quadruples the scene and
+    % costs about 8 seconds more in oiCompute and cone excitation, while
+    % changing the mRGC responses by ~0.3%.
+    pixelsPerCheck = 128;
     numberOfChecks = 4;
 
     % Compute the stimulus scene
