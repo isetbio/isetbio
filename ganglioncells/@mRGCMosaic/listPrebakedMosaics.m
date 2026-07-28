@@ -12,7 +12,7 @@ function [theRGCmosaicFileNames, prebakedRGCMosaicDir] = listPrebakedMosaics(var
     end
 
 
-    prebakedRGCMosaicDir = fullfile('isettools/ganglioncells/mosaics', rgcTypeSubDirectory);
+    prebakedRGCMosaicDir = fullfile('ganglioncells', 'mosaics', rgcTypeSubDirectory);
     prebakedRGCMosaicDir = fullfile(isetbioRootPath, prebakedRGCMosaicDir);
     listing = dir(prebakedRGCMosaicDir);
 

@@ -40,7 +40,7 @@ function testCmosaic
         minPixelSizeDegs * 60);
     
     % Load scene
-    d = load(fullfile(isetbioRootPath, sprintf('isettools/ganglioncells/demos/scene%dcpd_025.mat', stimFrequencyCPD)), 'theScene');
+    d = load(fullfile(isetbioRootPath, 'ganglioncells', 'demos', sprintf('scene%dcpd_025.mat', stimFrequencyCPD)), 'theScene');
     theScene = d.theScene;
     
     
