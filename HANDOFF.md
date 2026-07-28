@@ -72,7 +72,7 @@ These changes are included at the anchor commit above.
 
 ### Missing helper fix
 
-- `isettools/ganglioncells/+visualStimulusGenerator/presentationDisplay.m`
+- `ganglioncells/+visualStimulusGenerator/presentationDisplay.m`
   - Removed dependency on missing `generateConventionalxyYDisplayDefaultParams`
     and `generateConventionalxyYDisplay`.
   - Uses ISETCam display constructors/setters instead.

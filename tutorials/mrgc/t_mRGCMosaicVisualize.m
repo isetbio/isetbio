@@ -112,10 +112,14 @@ end
     figureDir = figExporter.figureDir(mfilename, saveFigures);
     
 
-    %% Load the mRGCMosaic and the optics that were used to optimize it
-    [theMRGCMosaic, theOI] = mRGCMosaic.loadPrebakedMosaic(...
+    %% Load the mRGCMosaic
+    % This tutorial only visualizes mosaic structure, so we skip generating
+    % the optics. Doing so avoids the Strehl ratio defocus search, which
+    % dominates the run time. See t_mRGCMosaicVisualizeWithOptics for
+    % visualizations that do require the optics.
+    theMRGCMosaic = mRGCMosaic.loadPrebakedMosaic(...
             coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
-            'computeTheMosaicOptics', true);
+            'computeTheMosaicOptics', false);
    
 
     %% Visualize the mRGCMosaic
