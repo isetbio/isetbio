@@ -1,6 +1,11 @@
 function t_mRGCMosaicSynthesizeAtStage1(options)
 % Denovo synthesis of the spatial position lattices of cones and mRGC RF centers (stage 1)
 %
+% SkipFile
+% Inspecting a lattice loads a *_progress.mat file. Those exceed the 100 MByte
+% limit of a regular (non-gitlfs) github repository, so they are not included in
+% ISETBio and this tutorial errors without them.
+%
 % Syntax:
 %   t_mRGCMosaicSynthesizeAtStage1()
 %

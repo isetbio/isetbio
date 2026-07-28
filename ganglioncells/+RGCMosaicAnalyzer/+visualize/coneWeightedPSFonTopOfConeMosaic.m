@@ -66,8 +66,7 @@ PublicationReadyPlotLib.applyFormat(ax,ff);
 %end
 
 
-p = getpref('isetbio');
-pdfExportSubDir = fullfile(p.rgcResources.figurePDFsDir);
+pdfExportSubDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
 theVisualizationPDFfilename = fullfile('modelComponentVisualizations', thePDFfileName);
 
 % Generate the path if we need to

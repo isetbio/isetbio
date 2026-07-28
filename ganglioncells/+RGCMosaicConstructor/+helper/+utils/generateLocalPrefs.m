@@ -1,10 +1,14 @@
 % RGCMosaicConstructor.helper.utils.generateLocalPrefs()
 % 
-% If your machine is not listed in the switch case below, call this function
-% with key-value pairs that specify the full paths to local
-% directories in your machine where you want the interemediate data and
-% figure PDFs to be saved, e.g.:
-% 
+% If your machine is not listed in the switch case below, intermediate data and
+% figure PDFs are written under isetbio's local/ directory, which is gitignored:
+%
+%     <isetbioRootPath>/local/rgcResources/intermediateFiles
+%     <isetbioRootPath>/local/rgcResources/figures
+%
+% To put them somewhere else, call this function with key-value pairs giving the
+% full paths you want, e.g.:
+%
 %  RGCMosaicConstructor.helper.utils.generateLocalPrefs(...
 %     'intermediateDataDir', '/Users/yourName/Desktop/tmpISETBioData', ...
 %     'figurePDFsDir', '/Users/yourName/Desktop/tmpISETBioFigures');
@@ -17,8 +21,11 @@
 function generateLocalPrefs(varargin)
     ip = inputParser;
     ip.addParameter('useSLIMpaths', false, @islogical); % Only for OLD mosaics
-    ip.addParameter('intermediateDataDir', 'FullPathToLocalDirectoryWhereGeneratedIntermediateDataWillBeSaved'); 
-    ip.addParameter('figurePDFsDir', 'FullPathToLocalDirectoryWhereGeneratedFiguresWillBeSaved'); 
+    % Default to writing under isetbio's local/ directory, which is
+    % gitignored. Machines that are not listed in the switch below then write
+    % somewhere harmless instead of into the source tree.
+    ip.addParameter('intermediateDataDir', fullfile(isetbioRootPath, 'local', 'rgcResources', 'intermediateFiles'));
+    ip.addParameter('figurePDFsDir', fullfile(isetbioRootPath, 'local', 'rgcResources', 'figures'));
     ip.addParameter('queryUserBeforeGeneratingMissingDir', false);
 
     % Execute the parser
