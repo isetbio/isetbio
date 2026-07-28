@@ -106,9 +106,12 @@ end
     figureDir = figExporter.figureDir(mfilename, saveFigures);
 
     % Load the mRGCMosaic and the optics that were used to optimize it
+    % See t_mRGCMosaicBasic for why 'wavefrontSpatialSamples' is set below
+    % the default of 501.
     [theMRGCMosaic, theOI] = mRGCMosaic.loadPrebakedMosaic(...
             coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
-            'computeTheMosaicOptics', true);
+            'computeTheMosaicOptics', true, ...
+            'wavefrontSpatialSamples', 301);
    
 
     % Noise-free responses

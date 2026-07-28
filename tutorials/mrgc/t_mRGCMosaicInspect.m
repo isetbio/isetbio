@@ -168,9 +168,12 @@ end
 % Load the mRGCmosaic specified by the passed parameters:
 %   coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor
 % and generate the optics that were used to synthesize the mosaic
+% See t_mRGCMosaicBasic for why 'wavefrontSpatialSamples' is set below the
+% default of 501.
 [theMRGCmosaic, ~, thePSFatTheMosaicEccentricity] = mRGCMosaic.loadPrebakedMosaic(...
         coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
-        'computeTheMosaicOptics', true);
+        'computeTheMosaicOptics', true, ...
+        'wavefrontSpatialSamples', 301);
 
 
 % Subdirectory for exporting the generated PDFs
