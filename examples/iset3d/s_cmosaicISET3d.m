@@ -1,5 +1,13 @@
 %% Compute with iset3d and a cMosaic from ISETBio
 %
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
+%
 % See also
 %   ISET3d and sceneEye
 %

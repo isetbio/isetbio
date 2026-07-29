@@ -390,6 +390,16 @@ classdef mRGCMosaic < handle
             spatialSupportCenterDegs, spatialSupportTickSeparationArcMin, ...
             scaleBarDegs, gridless, noXLabel, noYLabel, varargin);
 
+        % Earlier method to render the input cone mosaic pooling map
+        [subregionLineWeightingFunctions, subregionContourData] = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
+             rgcRFposDegs, coneIndices, coneWeights, varargin);
+
+        % Earlier method to render the line weighting functions of the cone
+        % pooling maps for the center and surround
+        renderSubregionConePoolingLineWeightingFunctions(ax, ...
+            centerLineWeightingFunction, surroundLineWeightingFunction, ...
+            sensitivityRange, horizontalAxisDirection, varargin)
+
         % Method to compute the cone mosaic pooling map 
         [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
             theConeMosaic, theConeIndices, theConeWeights, spatialSupportDegs, flatTopSaturationLevel)
@@ -401,6 +411,7 @@ classdef mRGCMosaic < handle
         % Method to fit an ellipse to the pooled cones
         [contourData, theCenter, xAlpha, yAlpha, theRotationRadians] = subregionEllipseFromPooledConePositions(...
                          theConePositions, ellipseContourPoints, ellipseContourAngles, pLevel, maxNumberOfConesOutsideContour);
+
     end % Static methods
     
 end

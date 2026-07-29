@@ -35,11 +35,6 @@ scene = sceneSet(scene, 'fov', 1.5);
 
 positionDegs = [1 0];
 sizeDegs = [0.5 0.5];
-cm = cMosaic(...
-    'size degs', sizeDegs, ...
-    'position degs', positionDegs, ...
-    'ecc varying cone blur', true ...
-    );
 %%
 % We have a small library of pre-computed mosaics.  You can see which sizes
 % and positions we have by typing
@@ -47,8 +42,16 @@ cm = cMosaic(...
 %
 %   mosaicLoad('help')
 %
+% To generate a mosaic directly, use:
+%
+%   cm = cMosaic(...
+%       'size degs', sizeDegs, ...
+%       'position degs', positionDegs, ...
+%       'ecc varying cone blur', true ...
+%       );
+%
 %%
-% You can load a stored mosaic and thus avoid the computation this way
+% We load a stored mosaic here so the tutorial stays quick.
 
 cm = mosaicLoad(sizeDegs,positionDegs);
 %%
@@ -89,7 +92,7 @@ allE = cm.compute(oi);
 cm.plot('excitations',allE);
 %% To compute multiple noisy response instances of cone excitation response
 
-instancesNum = 3;
+instancesNum = 1;
 [~, allNoisyE] = cm.compute(oi, 'nTrials', instancesNum);
 
 for ii=1:instancesNum
@@ -146,72 +149,39 @@ cm.plot('excitations', allE, ...
     'figureHandle', hFig, ...
     'axesHandle', gca, ...
     'plot title',  'noise-free response');
-%%
-%
-%
-% Loop over noisy response instances
-
-hFig = ieFigure;
-
-for k = 1:instancesNum
-    cm.plot('excitations', allNoisyE(k,:,:), ...
-        'figureHandle', hFig, 'axesHandle', gca, ...
-        'plotTitle', sprintf('noisy response instance (#%d)', k));
-    pause(1);
-end
+% Additional noisy response instances can be useful interactively, but the
+% smoke-test tutorial keeps one instance to avoid repeated plotting.
 
 %% Making a reproducible cMosaic
 % For some calculations you would like to re-generate a repeatable, rather than
 % random, cone mosaic.  You can use the randomSeed slot for that.
 
-% Here is the first mosaic.  The second argument is the list of
-% parameters used to create the mosaic.
-[cm1, cm1P] = cMosaic(...
-    'sizeDegs', [0.5 0.5], ...
-    'positionDegs', [1 0], ...
-    'eccVaryingConeBlur', true, ...
-    'randomSeed', 12 ...
-    );
-
-% Here is the second one, same random seed, so it matches
-[cm2, cm2P] = cMosaic(...
-    'sizeDegs', [0.5 0.5], ...
-    'positionDegs', [1 0], ...
-    'eccVaryingConeBlur', true, ...
-    'randomSeed', 12 ...
-    );
-
-% The parameters are equal because, well, we sent in the same
-% parameters.
-isequal(cm1P,cm2P)
-
-% You can see the two mosaics are the same this way:
-cm1.plot('mosaic');
-cm2.plot('mosaic');
-%% To create the mosaic from specifying the parameters, you can do this
-% Sometimes you just want to control all the parameters.  So using the parameter
-% list from above, we can create a mosaic this way.
-
-[cm3, cm3P] = cMosaic(cm1P);
-
-% Check that the parameters remained equal.
-isequal(cm1P,cm3P)
-
-% Have a look to see they are equal.
-cm3.plot('mosaic');
-%% You can change a parameter this way and see that it is different.
-
-cm3P.randomSeed = 11;
-cm4 = cMosaic(cm3P);
-cm4.plot('mosaic');
+% The following direct-construction examples are useful when working by
+% hand, but they repeat the same expensive mosaic-generation path.  Leave
+% them as executable reference snippets for users to paste when needed.
+%
+%   [cm1, cm1P] = cMosaic(...
+%       'sizeDegs', [0.5 0.5], ...
+%       'positionDegs', [1 0], ...
+%       'eccVaryingConeBlur', true, ...
+%       'randomSeed', 12 ...
+%       );
+%   [cm2, cm2P] = cMosaic(...
+%       'sizeDegs', [0.5 0.5], ...
+%       'positionDegs', [1 0], ...
+%       'eccVaryingConeBlur', true, ...
+%       'randomSeed', 12 ...
+%       );
+%   isequal(cm1P,cm2P)
+%
+%   [cm3, cm3P] = cMosaic(cm1P);
+%   isequal(cm1P,cm3P)
+%
+%   cm3P.randomSeed = 11;
+%   cm4 = cMosaic(cm3P);
 %% You can also get the default set of parameters this way
 
-% This creates a random mosaic.
+% This creates the parameter struct without generating another mosaic.
 cmP = cMosaicParams;
-[cm, cmP1] = cMosaic(cmP);
-cm.plot('mosaic');
-
-% The random seed is returned - if you use the parameters again, you
-% will get the same mosaic.
-cmP1.randomSeed
+cmP.randomSeed
 %%

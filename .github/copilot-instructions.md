@@ -1,176 +1,55 @@
 # ISETBio AI Instructions
 
-Use this file as the shared startup guidance for Copilot, Claude, Codex,
-Gemini, and other AI coding assistants working in this repository.
+Use this file as the shared startup guidance for AI coding assistants working
+in this repository. Load a skill in `.github/skills/` when its description
+matches the requested work; skills contain task-specific procedures.
 
 ## Repository Context
 
 - MATLAB is the primary runtime.
-- The main repository is `isetbio`. ISETCam (`../isetcam`) is a required
-  dependency and is always expected to be on the MATLAB path when ISETBio is
-  used or tested.
-- ISETBio code and tests may directly use ISETCam utilities, including
-  `ieTestReport`. Do not duplicate utilities already supplied by ISETCam.
-- related local repositories may include `isetvalidate`, and `tools/UnitTestToolbox`.
-- Many independently maintained repositories depend on ISETBio. Before removing
-  or changing public APIs, paths, data locations, setup behavior, or integration
-  hooks, search for likely external usage and prefer staged deprecation when an
-  immediate change could disrupt collaborators. Allow time for dependent
-  repositories to migrate unless coordinated cleanup is explicitly requested.
-- For VS Code MATLAB setup, see `.vscode/matlab-setup.md`.
-- For MATLAB Command Window path setup, use `.github/matlab-paths.md`.
+- ISETCam (`../isetcam`) is a required dependency and must be on the MATLAB
+  path when ISETBio is used or tested. Reuse ISETCam utilities, including
+  `ieTestReport`; do not duplicate them in ISETBio.
+- Related local repositories can include `isetvalidate` and
+  `tools/UnitTestToolbox`.
+- Many independently maintained repositories depend on ISETBio. Before
+  changing a public API, path, data location, setup behavior, or integration
+  hook, search for likely external callers and prefer a staged deprecation
+  unless coordinated cleanup is explicitly requested.
 
-## Tutorials and Examples
+## Repository Layout
 
-ISETBio keeps `tutorials/` and `examples/` as separate teaching surfaces for
-different goals and audiences.
+- Computational subsystems include `cones/`, `opticalimage/`, `eyemovement/`,
+  `ganglioncells/`, `mouse/`, and `wrappers/`.
+- Teaching material is in `tutorials/` and `examples/`; automated validation
+  runners are in `validate/`.
+- Repository-owned data is in `data/`; developer documentation is in `docs/`.
 
-- **Tutorials (`tutorials/`)**
+## Universal Engineering Rules
 
-  - Audience: learners (including new students) who can program and are
-    learning image systems engineering and ISETCam object fundamentals.
-  - Purpose: short, heavily commented introductions to key objects and APIs.
-  - Expected content:
-    - object creation and setup
-    - `*Get`/`*Set` usage for key properties
-    - basic visualization (`*Window`, `*Plot`)
-    - one simple quantitative computation/checkpoint
-  - Expected behavior: runs relatively quickly and is easy to read linearly.
-- **Examples (`examples/`)**
-
-  - Audience: users looking for realistic analysis patterns to adapt.
-  - Purpose: applied workflows and more advanced computations using ISETCam.
-  - Expected content:
-    - end-to-end numerical analyses or visualization workflows
-    - realistic parameter choices and tradeoff exploration
-    - code that users may copy/adapt as a starting point for their own work
-  - Expected behavior: can be longer and more detailed than tutorials.
-
-When adding or editing files, preserve this distinction. If content is mainly
-onboarding and API orientation, place it in `tutorials/`. If content is mainly
-applied workflow, analysis, or deeper exploration, place it in `examples/`.
-
-### Data-Generation Scripts
-
-Some scripts exist to generate or refresh repository data files rather than to
-serve as tutorials or examples. Name these scripts `data_*.m`. This naming
-distinguishes them from automated tutorial (`t_*.m`) and example (`s_*.m`)
-smoke-test sources and makes their side-effecting purpose explicit.
-
-You can convert these tutorials and examples into HTML documentation by running
-the `s_publishTutorials` and `s_publishExamples` utilities (provided by ISETCam)
-from the MATLAB command window. To publish a single file, use the underlying
-utility `iePublish('filename.m')` which applies the correct HTML
-formatting and embedded figure styles needed for the tutorials site.
-
-For student contributors, prioritize clarity, reproducibility, and instructional
-value: use clear comments, stable outputs, and explicit links to related wiki
-pages, tests, and nearby tutorials/examples.
-
-### Skipping Automated Tutorial and Example Runs
-
-The `isetbioTutorialTest` and `isetbioExampleTest` runners execute `t_*` and
-`s_*` files by default. To exclude a source file from these automated smoke
-runs, add this exact comment anywhere in the file:
-
-```matlab
-% SkipFile
-```
-
-Use this opt-out sparingly for files that require unavailable external data or
-toolboxes, deliberate user interaction, unusually expensive computation, or a
-known failure that is explicitly documented nearby. The runners report these
-files as `Skipped`. Remove the tag when the file becomes suitable for routine
-automated execution.
-
-The legacy `% UTTBSkip` marker remains supported for compatibility, but new
-and updated files should use `% SkipFile`.
-
-ISETBio's wrappers use the shared ISETCam test engine. See
-`../isetcam/docs/tutorial-example-test-architecture.md` for the canonical run
-schema and the wrapper contract for additional repositories.
-
-## ISETCam Pipeline
-
-Prefer existing object-specific functions before writing new utilities.
-
-1. Scene: `scene*` functions, accessed with `sceneGet` and `sceneSet`.
-2. Optical image: `oi*` functions, accessed with `oiGet` and `oiSet`.
-3. Sensor: `sensor*` functions, accessed with `sensorGet` and `sensorSet`.
-4. Image processing: `ip*` functions, accessed with `ipGet` and `ipSet`.
-5. Display: `display*` functions, accessed with `displayGet` and `displaySet`.
-
-Common constructors and compute functions include `sceneCreate`,
-`oiCreate`, `oiCompute`, `sensorCreate`, `sensorCompute`, `ipCreate`,
-`ipCompute`, and `displayCreate`.
-
-For object diagnostics, prefer existing plotting functions such as
-`scenePlot`, `oiPlot`, `sensorPlot`, `ipPlot`, and `displayPlot` over ad hoc
-plotting.
-
-## Search Guidance
-
-- Use `rg` for text search and `fd` for filename/path search when using a
-  terminal.
-- Before adding behavior, search for nearby examples with the relevant object
-  prefix.
-- For color transforms and color science utilities, search `color/` before
-  implementing new code.
-- For new scene patterns or chart behavior, check existing examples in
-  `scene/` and especially related pattern/chart code.
-
-## Coding Style
-
-- Keep edits minimal and consistent with existing MATLAB style.
+- Keep edits minimal and match nearby MATLAB conventions.
 - Reuse established constructors, getters, setters, plotting helpers, and
-  object naming conventions.
-- Prefer vectorized MATLAB where it improves clarity or performance.
-- Update function header comments when behavior changes, especially `Syntax`,
-  `Inputs`, `Returns`, and `See also`.
-- Do not add dependencies unless they are necessary and consistent with the
-  repository.
+  object naming conventions before adding utilities.
+- Prefer vectorized MATLAB only when it improves clarity or performance.
+- Update a function header's `Syntax`, `Inputs`, `Returns`, and `See also`
+  comments when behavior changes.
+- Do not add dependencies unless necessary and consistent with the repository.
+- Use `rg` for content search and `fd` for filename search when available.
+- Validate changed code with the narrowest relevant MATLAB diagnostic or test.
+  Use `isetbioUnitTest` for the repository-wide unit suite.
 
-## Validation
+## Skills
 
-- Validate modified files with MATLAB diagnostics or focused test commands when
-  practical.
-- Place tests for major objects and computational areas in colocated `_tests_`
-  directories. Use ISETCam's `_tests_` directories as the reference
-  implementation when an ISETBio convention is not yet established.
-- Write function-based MATLAB tests in files named `test_<subject>.m`, starting
-  each file with `tests = functiontests(localfunctions)`.
-- Prefer focused, descriptively named test functions that cover accessors,
-  computations, dimensions and shapes, invariants, important validation
-  errors, and stable golden-value fingerprints with explicit named tolerances.
-- Keep core tests deterministic and non-interactive. Control random-number
-  generation when randomness is required, and classify GUI, smoke, slow, or
-  resource-heavy tests outside the core suite.
-- Give each `_tests_` directory a local `<area>UnitTest.m` runner built with
-  `TestSuite.fromFolder`, `TestRunner.withTextOutput`, and `ieTestReport`.
-  Local runners should run the `core` suite by default and accept `full` to
-  include all tests.
-- Local and repository-wide runners must close figures created during testing
-  while preserving figures that were open before the test run.
-- Run the full ISETBio unit-test suite with `isetbioUnitTest` and render or
-  summarize its output with ISETCam's `ieTestReport`. `isetbioUnitTest` is
-  the ISETBio master runner; `ieUnitTest` is the ISETCam master runner.
-- When converting legacy `isetvalidate` scripts into built-in unit tests,
-  place each test with the ISETBio subsystem or behavior it protects rather
-  than copying the legacy validation directory layout. Do not duplicate a
-  test already maintained by ISETCam merely because the validation script
-  historically lived under an ISETBio validation directory.
-- Treat `isetvalidate` as the broader system/regression validation suite when
-  relevant to a change.
-- MATLAB is available through the VS Code MATLAB extension.
-- A local MATLAB executable is available at
-  `/Applications/MATLAB_R2025b.app/bin/matlab` and can be used with `-batch`
-  for non-interactive checks.
-- If launching MATLAB from a sandboxed shell fails silently or exits with
-  status 1, retry unsandboxed or escalated because MATLAB may need to write
-  preferences or cache files outside the repository.
+Activate the matching skill before following detailed workflow guidance:
+
+- `matlab-environment` — MATLAB paths and VS Code setup.
+- `matlab-testing` — unit, tutorial, and example validation.
+- `tutorial-example-authoring` — creating or maintaining teaching scripts.
+- `isetcam-pipeline` — Scene, OI, sensor, IP, and display work.
+- `sceneeye-maintenance` — sceneEye tutorial/example cleanup and promotion.
+- `matlab-script-review` — read-only review of scripts against nearby tests.
 
 ## When Uncertain
 
-Choose the simplest implementation that matches existing `scene*`, `oi*`,
-`sensor*`, `ip*`, and `display*` patterns. Ask the user only when the choice
-would materially affect behavior, API shape, or test expectations.
+Choose the smallest implementation consistent with nearby code. Ask before a
+choice that materially changes behavior, public API shape, or test expectations.

@@ -25,6 +25,8 @@ function [uData, hdl] = plot(cmosaic, plotType, allE, varargin)
 %   plot title    - Plot title.
 %   label cones   - Label cone types in an excitation map.
 %   data only     - Return plot data without drawing. Default is false.
+%   domain        - Spatial units for the excitation map, 'degrees' or
+%                   'microns'. Default is 'degrees'.
 %
 % Outputs
 %   uData - Struct containing selected and plotted data, including the axes.
@@ -51,6 +53,8 @@ p.addParameter('roi', [], @(x)isempty(x) || isa(x, 'regionOfInterest'));
 p.addParameter('plottitle', '', @(x)ischar(x) || islogical(x) || iscell(x));
 p.addParameter('dataonly', false, @islogical);
 p.addParameter('labelcones', false, @islogical);
+p.addParameter('domain', 'degrees', ...
+    @(x)(ischar(x) && ismember(x, {'degrees', 'microns'})));
 p.addParameter('lens', [], @(x)isempty(x) || isa(x, 'Lens'));
 p.addParameter('trial', 1, @(x)isnumeric(x) && isscalar(x) && x >= 1);
 p.addParameter('timepoint', 1, @(x)(isnumeric(x) && isscalar(x) && x >= 1) || ...
@@ -115,6 +119,7 @@ switch plotType
             visualizationParams.figureHandle = figureHandle;
             visualizationParams.axesHandle = axesHandle;
             visualizationParams.labelConesInActivationMap = p.Results.labelcones;
+            visualizationParams.domain = p.Results.domain;
             visualizationParams = cmosaic.visualize(visualizationParams);
             uData.figureHandle = visualizationParams.figureHandle;
             uData.axesHandle = visualizationParams.axesHandle;

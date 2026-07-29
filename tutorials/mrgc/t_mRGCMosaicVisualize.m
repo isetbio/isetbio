@@ -1,4 +1,5 @@
-%% Introduction to the midget RGC mosaic (mRGCMosaic) object.
+function t_mRGCMosaicVisualize(options)
+% Introduction to the midget RGC mosaic (mRGCMosaic) object.
 %
 
 % Requires locally configured precomputed mRGC resources.
@@ -11,8 +12,88 @@
 
 % History:
 %    10/25/23  NPC  Wrote it.
+%    7/26/2026 NPC  Modernized it
 
-function t_mRGCMosaicVisualize
+% Examples:
+%{
+
+    t_mRGCMosaicVisualize();
+
+    t_mRGCMosaicVisualize(...
+        'rgcMosaicName', 'JCNpaperTemporal7DegsMosaic', ...
+        'opticsSubjectName', 'JCNpaperDefaultSubject');
+
+%}
+
+
+arguments
+
+    % ---- Mosaic specifiers for selecting a prebaked mRGC mosaic ---
+
+    % See RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParameters
+    % for what is available and to add new mosaics
+    options.rgcMosaicName (1,:) char = 'JCNpaperTemporal4DegsMosaic';
+
+
+    % ---- Which species to employ ----
+    % Choose between {'macaque', 'human'}. If 'macaque' is chosen, the input
+    % cone mosaic has a 1:1 L/M cone ratio.
+    options.coneMosaicSpecies  (1,:) char {mustBeMember(options.coneMosaicSpecies,{'human','macaque'})} = 'human';
+
+     % ----- Which subject optics to employ -----
+    options.opticsSubjectName (1,:) ...
+        char ...
+        {...
+        mustBeMember(options.opticsSubjectName, ...
+            { ...
+            'JCNpaperDefaultSubject' ...
+            'JCNpaperSecondSubject' ...
+            'VSS2024TalkFirstSubject' ...
+            'VSS2024TalkSecondSubject' ...
+            'JCNpaperStrehlRatio_0.87' ...
+            'JCNpaperStrehlRatio_0.72' ...
+            'JCNpaperStrehlRatio_0.59' ...
+            'JCNpaperStrehlRatio_0.60' ...
+            'JCNpaperStrehlRatio_0.27' ...
+            'JCNpaperStrehlRatio_0.23' ...
+            'JCNpaperStrehlRatio_0.21' ...
+            'JCNpaperStrehlRatio_0.19' ...
+            'JCNpaperStrehlRatio_0.09' ...
+            } ...
+            ) ...
+        } ...
+        = 'JCNpaperDefaultSubject';
+
+
+    % ------ targetVisualSTF options ----
+    % Options are : {'default', 'x1.3 RsRcRatio'}
+    % These are with respect to the macaque data of the Croner & Kaplan '95 study
+    % 'default': target the mean Rs/Rc, and the mean Ks/Kc (Rs/Rc)^2
+    % See RGCMosaicConstructor.helper.surroundPoolingOptimizerEngine.generateTargetVisualSTFmodifiersStruct
+    % for all existing options
+    options.targetVisualSTFdescriptor (1,:) char = 'default';
+
+
+    % ------ Visualization options ----
+    % Visualize cone pooling maps for a target RGC
+    options.targetRGCindexForVisualizingConePoolingMaps (1,:) double = [];
+
+    % Whether to generate a video of RFpooling maps along the horizontal meridian
+    options.generateVideoOfRFpoolingMapsAlongHorizontalMeridian (1,1) logical = false;
+
+    % Whether to close previously open figures
+    options.closePreviouslyOpenFigures (1,1) logical = true;
+end
+
+    % Set flags from key/value pairs
+    
+    % Mosaic specifiers for selecting a prebaked mRGC mosaic
+    rgcMosaicName = options.rgcMosaicName;
+    coneMosaicSpecies = options.coneMosaicSpecies;
+    opticsSubjectName = options.opticsSubjectName;
+    targetVisualSTFdescriptor = options.targetVisualSTFdescriptor;
+
+
     %% Close all figures
     close all;
 
@@ -30,18 +111,16 @@ function t_mRGCMosaicVisualize
     saveFigures = true;
     figureDir = figExporter.figureDir(mfilename, saveFigures);
     
-    %% Display available mRGCMosaics
-    rgcMosaicType = 'ONcenterMidgetRGC';
-    mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
 
-    %% Specify the desired eccentricity of the precomputed mRGC mosaic
-    % Choose the x-eccentricity from one of the available mosaics,
-    % displayed above
-    % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
-    horizontalEccDegs = 7.0;
-
-    %% Load the precomputed mRGCMosaic
-    theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);
+    %% Load the mRGCMosaic
+    % This tutorial only visualizes mosaic structure, so we skip generating
+    % the optics. Doing so avoids the Strehl ratio defocus search, which
+    % dominates the run time. See t_mRGCMosaicVisualizeWithOptics for
+    % visualizations that do require the optics.
+    theMRGCMosaic = mRGCMosaic.loadPrebakedMosaic(...
+            coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
+            'computeTheMosaicOptics', false);
+   
 
     %% Visualize the mRGCMosaic
     % Lets visualize it together with its input cone mosaic.
@@ -53,10 +132,8 @@ function t_mRGCMosaicVisualize
         'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
         'plotTitle', 'full mosaic');
 
-    %% Crop the mRGCMosaic
-    sizeDegs = [0.75 0.25];
-    eccDegs = [6 0.5];
-    theMRGCMosaic.cropToSizeAtEccentricity(sizeDegs, eccDegs);
+    %% Crop the mRGCMosaic to half size
+    theMRGCMosaic.cropToSizeAtEccentricity(theMRGCMosaic.sizeDegs*0.5, theMRGCMosaic.eccentricityDegs);
 
     theMRGCMosaic.visualize(...
         'identifyInputCones', true, ...
@@ -71,7 +148,7 @@ function t_mRGCMosaicVisualize
     % inputs in its RF center, and located near eccentricityDegs+[-0.5 0]; degs. 
     % 
 
-    targetRGCposition = eccDegs + [-0.1 0.1];
+    targetRGCposition = theMRGCMosaic.eccentricityDegs+ [-0.1 0.1];
     targetCenterConesNum = 2;
     targetCenterConeMajorityType = cMosaic.MCONE_ID;
     theRGCindex(1) = theMRGCMosaic.visualizeRetinalConePoolingRFmapNearPosition(...

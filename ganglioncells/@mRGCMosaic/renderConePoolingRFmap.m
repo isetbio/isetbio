@@ -50,7 +50,8 @@ function hFig = renderConePoolingRFmap(obj, theRGCindex, varargin)
     centerSubregionContourSamples = 48;
     contourGenerationMethod = 'ellipseFitToPooledConeApertureImage';
 
-    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod, theRGCindex, minConeWeightIncluded, ...
+    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod, ...
+        theRGCindex, minConeWeightIncluded, ...
         'forceRegenerateVisualizationCache', forceRegenerateVisualizationCache);
 
     % The cell position

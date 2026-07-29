@@ -7,7 +7,7 @@ function [theLatticePatchFileNames, latticeGalleryDir] = listPrecomputedPatches(
 
     withGenerationProgressHistory = p.Results.withGenerationProgressHistory;
 
-    latticeGalleryDir = fullfile(isetbioRootPath, 'isettools/ganglioncells/data/lattices');
+    latticeGalleryDir = fullfile(isetbioDataPath, 'rgc', 'lattices');
     listing = dir(latticeGalleryDir);
 
     folders = struct2table(listing);

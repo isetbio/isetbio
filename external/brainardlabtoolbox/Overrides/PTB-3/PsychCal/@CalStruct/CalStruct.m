@@ -253,19 +253,23 @@ classdef CalStruct < handle
         function value = get.processedData___S_device(obj)
             % Return S_device
             value = obj.processedData___S_device;
-            if (obj.reportSdev_Samb_warning)
-                % warn user that he/she must only use the 'S' variable
-                fprintf(2,'Use of the ''S_device'' field is discouraged and will be not allowed in future releases. Use ''S'' instead.\n');         
+            if (~isempty(value))
+                if (obj.reportSdev_Samb_warning)
+                    % warn user that he/she must only use the 'S' variable
+                    fprintf(2,'Use of the ''S_device'' field is discouraged and will be not allowed in future releases. Use ''S'' instead.\n');
+                end
             end
         end
         
         function value = get.processedData___S_ambient(obj)
             % Return S_ambient
             value = obj.processedData___S_ambient;
-            if (obj.reportSdev_Samb_warning)
-                % warn user that he/she must only use the 'S' variable
-                fprintf(2,'Use of the ''S_ambient'' field is discouraged and will be not allowed in future releases. Use ''S'' instead.\n');         
-            end    
+            if (~isempty(value))
+                if (obj.reportSdev_Samb_warning)
+                    % warn user that he/she must only use the 'S' variable
+                    fprintf(2,'Use of the ''S_ambient'' field is discouraged and will be not allowed in future releases. Use ''S'' instead.\n');
+                end
+            end
         end
         
         % End of getter methods for select properties over which we want more

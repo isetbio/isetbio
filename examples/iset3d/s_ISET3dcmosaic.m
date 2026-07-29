@@ -1,5 +1,13 @@
 %% Integrating iset3d and isetbio
 %
+% **************************************************************************
+% This script renders images with ISET3d.  To install and configure ISET3d
+% (Docker, PBRT, and the scene data), see the ISET3d wiki:
+%
+%    https://github.com/ISET/iset3d/wiki
+%
+% **************************************************************************
+%
 % These calculations show how to set up a scene and calculate the cone
 % excitations for a 3D scene and a human eye model.
 %

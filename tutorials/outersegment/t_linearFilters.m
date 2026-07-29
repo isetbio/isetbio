@@ -49,10 +49,10 @@ oiTimeAxis = -0.5:stimulusSamplingInterval:1;
 backgroundLuminances = [25 50 100 200 400];
 lumSteps = [20 20 20 20 20];
 
-% Try these to compensate for the gain control in the photocurrrent
-% response.
-backgroundLuminances = [25 50 100 200];
-lumSteps = [20 30 45 70];
+% Two representative levels are enough for a tutorial smoke run.  Add the
+% intermediate levels [50 100] interactively if you want a denser sweep.
+backgroundLuminances = [25 200];
+lumSteps = [20 70];
 
 % Generate optics
 noOptics = false;
