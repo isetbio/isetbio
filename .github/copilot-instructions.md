@@ -49,6 +49,14 @@ Activate the matching skill before following detailed workflow guidance:
 - `sceneeye-maintenance` — sceneEye tutorial/example cleanup and promotion.
 - `matlab-script-review` — read-only review of scripts against nearby tests.
 
+Skills are canonical in `.github/skills/<name>/SKILL.md`. Claude Code discovers
+skills only in `.claude/skills/`, so the whole directory is symlinked:
+`.claude/skills -> ../.github/skills`. One symlink per repository, not one per
+skill, so adding a skill needs no bookkeeping. Link the directory, never the
+individual skills — a directory of per-skill symlinks enumerates as symlinks
+rather than directories, which tools filtering on "is a directory" will skip.
+The same arrangement exists in ISETCam and ISET3D.
+
 ## When Uncertain
 
 Choose the smallest implementation consistent with nearby code. Ask before a

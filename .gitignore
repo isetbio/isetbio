@@ -24,3 +24,6 @@ __pycache__/
 /wiki/
 
 # Personal files belong under local/. Its own .gitignore keeps the placeholder.
+
+# Personal Claude Code overrides; .claude/settings.json is shared and committed
+.claude/settings.local.json
