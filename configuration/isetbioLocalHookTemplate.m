@@ -151,7 +151,9 @@ if (ispref('p.projectName'))
     rmpref('p.projectName');
 end
 generatePreferenceGroup(p);
-UnitTest.usePreferencesForProject(p.projectName);
+if (exist('UnitTest.m','file'))
+    UnitTest.usePreferencesForProject(p.projectName);
+end
 
 % Some behaviors are controlled through the ISET preferences.
 %
