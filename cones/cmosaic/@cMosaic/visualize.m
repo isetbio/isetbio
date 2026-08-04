@@ -249,6 +249,8 @@ textDisplay    = p.Results.textdisplay;
 textDisplayColor = p.Results.textdisplaycolor;
 clearAxesBeforeDrawing = p.Results.clearaxesbeforedrawing;
 
+
+
 if (~isempty(activation))
     labelCones = false;
     if (labelConesInActivationMap)
@@ -368,10 +370,10 @@ if (isempty(figureHandle)) && (isempty(axesHandle))
     if isempty(prevUnits)
         prevUnits = 'pixels';
     end
-    restoreUnits = onCleanup(@() set(figureHandle, 'Units', prevUnits)); %#ok<NASGU>
+    restoreUnits = onCleanup(@() set(figureHandle, 'Units', prevUnits));
     set(figureHandle, 'Units', 'pixels');
     set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-    axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
+    axesHandle = subplot('Position', [0.11 0.07 0.85 0.90]);
 elseif (isempty(figureHandle)) && (~isempty(axesHandle))
     % do nothing, we will draw the the passed axesHandle
 else
