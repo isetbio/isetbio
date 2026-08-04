@@ -11,7 +11,7 @@ function StrehlRatioAsAFunctionOfDefocusAndAstigmatism(...
 
     p = inputParser;
     p.addParameter('figureDir', [], @(x)(isempty(x)||(ischar(x))));
-    p.addParameter('darkScheme', false, @islogical);
+    p.addParameter('darkScheme', true, @islogical);
     p.addParameter('backgroundIsTransparent', false, @islogical);
     p.parse(varargin{:});
 

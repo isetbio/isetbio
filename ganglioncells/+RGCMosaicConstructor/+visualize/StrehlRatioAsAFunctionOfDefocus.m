@@ -10,14 +10,14 @@ function StrehlRatioAsAFunctionOfDefocus(...
     p = inputParser;
     p.addParameter('axesToRenderIn', [], @(x)(isempty(x)||(isa(x, 'handle'))));
     p.addParameter('figureDir', [], @(x)(isempty(x)||(ischar(x))));
-    p.addParameter('darkScheme', false, @islogical);
+    p.addParameter('darkScheme', true, @islogical);
     p.addParameter('backgroundIsTransparent', false, @islogical);
     p.parse(varargin{:});
 
     axesToRenderIn = p.Results.axesToRenderIn;
     figureDir = p.Results.figureDir;
     backgroundIsTransparent = p.Results.backgroundIsTransparent;
-
+    
     ff = PublicationReadyPlotLib.figureComponents('1x1 standard very tall figure', ...
         'darkScheme', p.Results.darkScheme);
     
