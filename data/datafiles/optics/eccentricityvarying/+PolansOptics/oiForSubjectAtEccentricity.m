@@ -36,11 +36,11 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     upsampleFactor = p.Results.upsampleFactor;
     noLCA = p.Results.noLCA;
-    refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
-    refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
+    defocusErrorDiopters = p.Results.refractiveErrorDiopters;
+    defocusErrorMicrons = wvfDefocusDioptersToMicrons(defocusErrorDiopters, pupilDiamMM);
     
     % Obtain z-coeffs at desired eccentricity
-    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
+    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, defocusErrorMicrons);
     if (subjectID == 0)
         measurementPupilDiameterMM = pupilDiamMM;
     else
@@ -73,7 +73,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     % Need to put defocus back in for subject 0 case, because it got 
     % zeroed out above.  Easiest to do that 
     if (subjectID == 0)
-        theWVF = wvfSet(theWVF,'zcoeffs', refractiveErrorMicrons, {'defocus'});
+        theWVF = wvfSet(theWVF,'zcoeffs', defocusErrorMicrons, {'defocus'});
     end
     
     % Remove wavelength-dependent defocus if noLCA is set
@@ -97,7 +97,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
 end
 
 
-function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons)
+function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, defocusErrorMicrons)
 
     % Get original z-coeffs at all measured eccentricities
     if (subjectID == 0)
@@ -117,29 +117,28 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
     interpolatedZcoeffs = zeros(1, 30);
     zCoeffsNum = size(zMap,3);
 
-    % The POlans Z-coeff indices start from 0, not 1
+    % The Polans Z-coeff indices start from 0, not 1
     theDefocusZcoeffIndex = wvfOSAIndexToVectorIndex('defocus') - 1;
 
     for zIndex = 1:zCoeffsNum
          % Retrieve the XY spatial map for this z-coeff
          z2Dmap = squeeze(zMap(:,:,zIndex));
          
-         % The 4-th z-coeff is defocus. Subtract central defocus from all
-         % spatial positions
+         % Subtract central defocus from all spatial positions
          if ((zCoeffIndices(zIndex) == theDefocusZcoeffIndex) && (subtractCentralRefraction))
              z2Dmap = z2Dmap - z2Dmap(indexOfZeroEcc);
          end
          
-         % Add refractive error
+         % Add defocus error
          if (zCoeffIndices(zIndex) == theDefocusZcoeffIndex)
-             if (abs(refractiveErrorMicrons)>0)
+             if (abs(defocusErrorMicrons)>0)
                 if (subtractCentralRefraction)
-                    fprintf('Original defocus at eccXY = (0,0) (central-refraction subtracted) (microns): %f, added defocus (microns): %f\n', z2Dmap(indexOfZeroEcc), refractiveErrorMicrons);
+                    fprintf('Original defocus at eccXY = (0,0) (central-refraction subtracted) (microns): %f, added defocus (microns): %f\n', z2Dmap(indexOfZeroEcc), defocusErrorMicrons);
                 else
-                    fprintf('Original defocus at eccXY = (0,0) (microns): %f, added defocus (microns): %f\n', z2Dmap(indexOfZeroEcc), refractiveErrorMicrons);
+                    fprintf('Original defocus at eccXY = (0,0) (microns): %f, added defocus (microns): %f\n', z2Dmap(indexOfZeroEcc), defocusErrorMicrons);
                 end
              end
-             z2Dmap = z2Dmap + refractiveErrorMicrons;
+             z2Dmap = z2Dmap + defocusErrorMicrons;
          end
          
          % Interpolate the XY map at the desired eccentricity.
@@ -151,7 +150,7 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
     if (subjectID == 0)
         % All zero coefficients
         interpolatedZcoeffs = 0*interpolatedZcoeffs;
-        % Add refractive error
-        interpolatedZcoeffs(wvfOSAIndexToVectorIndex('defocus')) = refractiveErrorMicrons;
+        % Add defocus error
+        interpolatedZcoeffs(wvfOSAIndexToVectorIndex('defocus')) = defocusErrorMicrons;
     end
 end

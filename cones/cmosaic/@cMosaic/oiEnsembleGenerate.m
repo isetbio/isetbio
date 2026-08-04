@@ -73,12 +73,14 @@ p.addParameter('pupilDiameterMM', 3.0, @isscalar);
 p.addParameter('inFocusWavelength', 550, @isscalar);
 p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
 p.addParameter('subtractCentralRefraction', false, @islogical);
+p.addParameter('subtractCentralRefraction3D', false, @islogical);
 p.addParameter('zeroCenterPSF', true, @islogical);
 p.addParameter('withZeroedPistonAndTiltZernikeCoefficients', false, @islogical);
 p.addParameter('flipPSFUpsideDown', true, @islogical);
 p.addParameter('visualizedSamplingGrid', false, @islogical);
 p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
 p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
+p.addParameter('obliqueAndVerticalAstigmatismErrorsMicrons', [0 0], @isnumeric);
 p.addParameter('noLCA',false,@islogical);
 p.parse(obj, oiSamplingGridDegs, varargin{:});
 
@@ -88,6 +90,9 @@ pupilDiamMM = p.Results.pupilDiameterMM;
 inFocusWavelength = p.Results.inFocusWavelength;
 subjectID = p.Results.subjectID;
 subtractCentralRefraction = p.Results.subtractCentralRefraction;
+subtractCentralRefraction3D = p.Results.subtractCentralRefraction3D;
+refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
+obliqueAndVerticalAstigmatismErrorsMicrons = p.Results.obliqueAndVerticalAstigmatismErrorsMicrons;
 wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
 zeroCenterPSF = p.Results.zeroCenterPSF;
 withZeroedPistonAndTiltZernikeCoefficients = p.Results.withZeroedPistonAndTiltZernikeCoefficients;
@@ -109,8 +114,6 @@ if (isstruct(oiSamplingGridDegs))
 else
     theMergingWeights = [];
 end
-
-
 
 
 % Generate the oiEnsemble
@@ -195,12 +198,14 @@ switch (zernikeDataBase)
                 'inFocusWavelength', inFocusWavelength, ...
                 'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                 'subtractCentralRefraction', subtractCentralRefraction, ...
+                'subtractCentralRefraction3D', subtractCentralRefraction3D, ...
                 'zeroCenterPSF', zeroCenterPSF, ...
                 'withZeroedPistonAndTiltZernikeCoefficients', withZeroedPistonAndTiltZernikeCoefficients, ...
                 'flipPSFUpsideDown', flipPSFUpsideDown, ...
                 'upsampleFactor', upSampleFactor, ...
                 'noLCA',p.Results.noLCA, ...
-                'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
+                'refractiveErrorDiopters', refractiveErrorDiopters, ...
+                'obliqueAndVerticalAstigmatismErrorsMicrons', obliqueAndVerticalAstigmatismErrorsMicrons);
 
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)
@@ -243,7 +248,7 @@ switch (zernikeDataBase)
                 'flipPSFUpsideDown', flipPSFUpsideDown, ...
                 'upsampleFactor', upSampleFactor, ...
                 'noLCA',p.Results.noLCA, ...
-                'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
+                'refractiveErrorDiopters', refractiveErrorDiopters);
 
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
@@ -284,7 +289,7 @@ switch (zernikeDataBase)
                 'flipPSFUpsideDown', flipPSFUpsideDown, ...
                 'upsampleFactor', upSampleFactor, ...
                 'noLCA',p.Results.noLCA, ...
-                'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
+                'refractiveErrorDiopters', refractiveErrorDiopters);
 
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
