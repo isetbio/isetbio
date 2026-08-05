@@ -1,6 +1,6 @@
 % isetbio/isettools
 %
-% Main code tree for isetbio.
+% Main code tree for isetbio. 
 %
 % bipolar                       - Implmentation of bipolar cells.
 % cell                          - Implementation of cellLayer and cellMosaic parent classes. Used by bipolar, rgc, etc.
