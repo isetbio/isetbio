@@ -83,7 +83,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(isscalar(x))&&(x>0))));
     p.addParameter('noLCA', false, @islogical);
     p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
-    p.addParameter('obliqueAndVerticalAstigmatismErrorsMicrons', [0 0], @isnumeric);
+    p.addParameter('obliqueAndVerticalAstigmatismErrorsDiopters', [0 0], @isnumeric);
 
 
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
@@ -104,12 +104,13 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     defocusErrorMicrons = wvfDefocusDioptersToMicrons(defocusErrorDiopters, pupilDiamMM);
     
     % Astigmatic errors (in microns directly), if desired
-    obliqueAndVerticalAstigmatismErrorsMicrons = p.Results.obliqueAndVerticalAstigmatismErrorsMicrons;
-
+    obliqueAndVerticalAstigmatismErrorsDiopters = p.Results.obliqueAndVerticalAstigmatismErrorsDiopters;
+    obliqueAndVerticalAstigmatismErrorsMicrons = wvfAstigmatismDioptersToMicrons(obliqueAndVerticalAstigmatismErrorsDiopters, pupilDiamMM);
+    
     % Obtain z-coeffs at desired eccentricity
     zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), ...
         subtractCentralRefraction, subtractCentralRefraction3D, ...
-        defocusErrorMicrons, obliqueAndVerticalAstigmatismErrorsMicrons);
+        defocusErrorMicrons, obliqueAndVerticalAstigmatismErrorsMicrons, pupilDiamMM);
     
     if (subjectID == 0)
         measurementPupilDiameterMM = pupilDiamMM;
@@ -163,7 +164,7 @@ end
 
 function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc, ...
     subtractCentralRefraction, subtractCentralRefraction3D, ...
-    defocusErrorMicrons, obliqueAndVerticalAstigmatismErrorsMicrons)
+    defocusErrorMicrons, obliqueAndVerticalAstigmatismErrorsMicrons, pupilDiamMM)
 
     % Get original z-coeffs at all measured eccentricities
     if (subjectID == 0)
@@ -202,16 +203,19 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
     
         % Subtract central defocus from all spatial positions
         if ((zCoeffIndices(zIndex) == theDefocusZcoeffIndex) && (subtractCentralRefraction||subtractCentralRefraction3D))
+            %fprintf('Subtracting central defocus: %2.2f D (%d/%d)\n', wvfDefocusMicronsToDiopters(z1Dmap(indexOfZeroEcc), pupilDiamMM), theDefocusZcoeffIndex, zIndex);
             z1Dmap = z1Dmap - z1Dmap(indexOfZeroEcc);
         end
 
         % Subtract oblique astigmatism from all spatial positions
         if ((zCoeffIndices(zIndex) == theObliqueAstigmatismZcoeffIndex) && (subtractCentralRefraction3D))
+            %fprintf('Subtracting central oblique astigmatism: %2.2f D (%d/%d)\n', wvfAstigmatismMicronsToDiopters(z1Dmap(indexOfZeroEcc), pupilDiamMM), theObliqueAstigmatismZcoeffIndex, zIndex);
             z1Dmap = z1Dmap - z1Dmap(indexOfZeroEcc);
         end
 
         % Subtract vertical astigmatism from all spatial positions
         if ((zCoeffIndices(zIndex) == theVerticalAstigmatismZcoeffIndex) && (subtractCentralRefraction3D))
+            %fprintf('Subtracting central vertical astigmatism: %2.2f D (%d/%d)\n', wvfAstigmatismMicronsToDiopters(z1Dmap(indexOfZeroEcc), pupilDiamMM),  theVerticalAstigmatismZcoeffIndex, zIndex);
             z1Dmap = z1Dmap - z1Dmap(indexOfZeroEcc);
         end
 
@@ -220,9 +224,9 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
         if (zCoeffIndices(zIndex) == theDefocusZcoeffIndex)
             if (abs(defocusErrorMicrons)>0)
                 if (subtractCentralRefraction)
-                    fprintf('Original defocus at eccX = 0 (central-refraction subtracted) (microns): %f, added defocus (microns): %f\n', z1Dmap(indexOfZeroEcc), defocusErrorMicrons);
+                   % fprintf('Original defocus at eccX = 0 (central-refraction subtracted) (microns): %f, added defocus (microns): %f\n', z1Dmap(indexOfZeroEcc), defocusErrorMicrons);
                 else
-                    fprintf('Original defocus at eccX = 0 (microns): %f, added defocus (microns): %f\n', z1Dmap(indexOfZeroEcc), defocusErrorMicrons);
+                   % fprintf('Original defocus at eccX = 0 (microns): %f, added defocus (microns): %f\n', z1Dmap(indexOfZeroEcc), defocusErrorMicrons);
                 end
             end
             z1Dmap = z1Dmap + defocusErrorMicrons;
@@ -231,13 +235,13 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
 
         % Add oblique astigmatism error
         if (zCoeffIndices(zIndex) == theObliqueAstigmatismZcoeffIndex) && (abs(obliqueAndVerticalAstigmatismErrorsMicrons(1))>0)
-            fprintf('Original oblique astigmatism: %f (microns), added (microns): %f\n', z1Dmap(indexOfZeroEcc), obliqueAndVerticalAstigmatismErrorsMicrons(1));
+           % fprintf('Original oblique astigmatism: %f (microns), added (microns): %f\n', z1Dmap(indexOfZeroEcc), obliqueAndVerticalAstigmatismErrorsMicrons(1));
             z1Dmap = z1Dmap + obliqueAndVerticalAstigmatismErrorsMicrons(1);
         end
 
         % Add vetical astigmatism error
         if (zCoeffIndices(zIndex) == theVerticalAstigmatismZcoeffIndex) && (abs(obliqueAndVerticalAstigmatismErrorsMicrons(2))>0)
-            fprintf('Original vertical astigmatism: %f (microns), added (microns): %f\n', z1Dmap(indexOfZeroEcc), obliqueAndVerticalAstigmatismErrorsMicrons(2));
+           % fprintf('Original vertical astigmatism: %f (microns), added (microns): %f\n', z1Dmap(indexOfZeroEcc), obliqueAndVerticalAstigmatismErrorsMicrons(2));
             z1Dmap = z1Dmap + obliqueAndVerticalAstigmatismErrorsMicrons(2);
         end
 

@@ -80,7 +80,7 @@ p.addParameter('flipPSFUpsideDown', true, @islogical);
 p.addParameter('visualizedSamplingGrid', false, @islogical);
 p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
 p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
-p.addParameter('obliqueAndVerticalAstigmatismErrorsMicrons', [0 0], @isnumeric);
+p.addParameter('obliqueAndVerticalAstigmatismErrorsDiopters', [0 0], @isnumeric);
 p.addParameter('noLCA',false,@islogical);
 p.parse(obj, oiSamplingGridDegs, varargin{:});
 
@@ -92,7 +92,7 @@ subjectID = p.Results.subjectID;
 subtractCentralRefraction = p.Results.subtractCentralRefraction;
 subtractCentralRefraction3D = p.Results.subtractCentralRefraction3D;
 refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
-obliqueAndVerticalAstigmatismErrorsMicrons = p.Results.obliqueAndVerticalAstigmatismErrorsMicrons;
+obliqueAndVerticalAstigmatismErrorsDiopters = p.Results.obliqueAndVerticalAstigmatismErrorsDiopters;
 wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
 zeroCenterPSF = p.Results.zeroCenterPSF;
 withZeroedPistonAndTiltZernikeCoefficients = p.Results.withZeroedPistonAndTiltZernikeCoefficients;
@@ -205,7 +205,7 @@ switch (zernikeDataBase)
                 'upsampleFactor', upSampleFactor, ...
                 'noLCA',p.Results.noLCA, ...
                 'refractiveErrorDiopters', refractiveErrorDiopters, ...
-                'obliqueAndVerticalAstigmatismErrorsMicrons', obliqueAndVerticalAstigmatismErrorsMicrons);
+                'obliqueAndVerticalAstigmatismErrorsDiopters', obliqueAndVerticalAstigmatismErrorsDiopters);
 
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)

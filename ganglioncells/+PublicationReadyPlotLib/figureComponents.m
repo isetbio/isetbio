@@ -118,7 +118,7 @@ function f = figureComponents(panelFormat, varargin)
         case '2x2 standard figure'
 
             f.reductionFactor = 0.24;
-            f.figureSize = [1050 980];
+            f.figureSize = [1050 980]*2;
 
             f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                     'rowsNum', 2, ...
