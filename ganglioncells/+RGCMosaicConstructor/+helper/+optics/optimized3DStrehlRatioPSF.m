@@ -136,8 +136,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 	theOptimalStrehlRatioOI = oiEnsemble{1,1}; 
 	theOptimalStrehlRatioPSF = psfEnsemble{1,1};
 	
-    contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection = visualizeStrehlRatioOptimization;
-
+    contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection = false;
 
 	if (contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection)
 		[~, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...
