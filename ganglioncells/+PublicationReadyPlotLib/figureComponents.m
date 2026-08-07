@@ -118,7 +118,11 @@ function f = figureComponents(panelFormat, varargin)
         case '2x2 standard figure'
 
             f.reductionFactor = 0.24;
-            f.figureSize = [1050 980]*2;
+            f.figureSize = [1600 1370];
+
+            f.axisFontSize = 24;
+            f.titleFontSize = 18;
+            f.legendFontSize = 16;
 
             f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                     'rowsNum', 2, ...
@@ -299,7 +303,7 @@ function f = figureComponents(panelFormat, varargin)
                     'leftMargin',     0.17, ...
                     'rightMargin',    0.12, ...
                     'bottomMargin',   0.10, ...
-                    'topMargin',      0.02);
+                    'topMargin',      0.05);
 
         case '1x1 standard figure no left axis label'
 
