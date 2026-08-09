@@ -41,54 +41,66 @@ function StrehlRatioAsAFunctionOfDefocusAndAstigmatism(...
     % Plot the slice over the defocus x oblique astigmatism plane at the
     % optimal vertical astigmatism
     StrehlRatio2Dslice = squeeze(StrehlRatio3Dmap(:, :, i3));
-    ax = theAxes{1,1};
-    imagesc(ax, examinedDefocusDiopters, examinedObliqueAstigmatismDiopters, StrehlRatio2Dslice');
-    hold(ax, 'on');
-    plot(ax, ...
-        theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), ...
-        theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), ...
-        'rx', 'LineWidth', 1.5, 'MarkerSize', 16);
-    xlabel(ax, 'defocus (D)');
-    ylabel(ax, sprintf('oblique astigmatism (D)\n(optimal: %2.3fD)', theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2)));
-    axis(ax, 'square'); axis(ax, 'xy'); 
-    set(ax, 'CLim', [0 theOptimalStrehlRatio]);
-    colormap(ax, theLUT);
-    colorbar(ax)
+
+    if (numel(StrehlRatio2Dslice(:)) > 1)
+        ax = theAxes{1,1};
+        
+        imagesc(ax, examinedDefocusDiopters, examinedObliqueAstigmatismDiopters, StrehlRatio2Dslice');
+        hold(ax, 'on');
+        plot(ax, ...
+            theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), ...
+            theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), ...
+            'rx', 'LineWidth', 1.5, 'MarkerSize', 16);
+        xlabel(ax, 'defocus (D)');
+        ylabel(ax, sprintf('oblique astigmatism (D)\n(optimal: %2.3fD)', theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2)));
+        axis(ax, 'square'); axis(ax, 'xy'); 
+        set(ax, 'CLim', [0 abs(theOptimalStrehlRatio)]);
+        colormap(ax, theLUT);
+        colorbar(ax)
+    end
+
 
     % Plot the slice over the vertical astigmatism x defocus plane
     StrehlRatio2Dslice = squeeze(StrehlRatio3Dmap(:, i2, :));
-    ax = theAxes{2,1};
-    imagesc(ax, examinedVerticalAstigmatismDiopters, examinedDefocusDiopters, StrehlRatio2Dslice);
-    hold(ax, 'on');
-    plot(ax, ...
-        theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), ...
-        theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), ...
-        'rx', 'LineWidth', 1.5, 'MarkerSize', 16);
-    xlabel(ax, 'vertical astigmatism (D)');
-    ylabel(ax, sprintf('defocus (D)\n(optimal: %2.3fD)', theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1)));
-    axis(ax, 'square'); axis(ax, 'xy'); 
-    set(ax, 'CLim', [0 theOptimalStrehlRatio]);
-    colormap(ax, theLUT);
-    colorbar(ax)
+
+    if (numel(StrehlRatio2Dslice(:)) > 1)
+        ax = theAxes{2,1};
+        imagesc(ax, examinedVerticalAstigmatismDiopters, examinedDefocusDiopters, StrehlRatio2Dslice);
+        hold(ax, 'on');
+        plot(ax, ...
+            theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), ...
+            theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), ...
+            'rx', 'LineWidth', 1.5, 'MarkerSize', 16);
+        xlabel(ax, 'vertical astigmatism (D)');
+        ylabel(ax, sprintf('defocus (D)\n(optimal: %2.3fD)', theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1)));
+        axis(ax, 'square'); axis(ax, 'xy'); 
+        set(ax, 'CLim', [0 abs(theOptimalStrehlRatio)]);
+        colormap(ax, theLUT);
+        colorbar(ax)
+    end
 
 
     % Plot the slice over the oblique x vertical astigmatism plane
     StrehlRatio2Dslice = squeeze(StrehlRatio3Dmap(i1, :, :));
-    ax = theAxes{1,2};
-    imagesc(ax,examinedObliqueAstigmatismDiopters, examinedVerticalAstigmatismDiopters, StrehlRatio2Dslice');
-    hold(ax, 'on');
-    plot(ax, ...
-        theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), ...
-        theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), ...
-        'rx', 'LineWidth', 1.5, 'MarkerSize', 16);
-    xlabel(ax, 'oblique astigmatism (D)');
-    ylabel(ax, sprintf('vertical astigmatism (D)\n(optimal: %2.3fD)', theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3)));
-    axis(ax, 'square'); axis(ax, 'xy'); 
-    set(ax, 'CLim', [0 theOptimalStrehlRatio]);
-    colormap(ax, theLUT);
-    colorbar(ax)
+
+    if (numel(StrehlRatio2Dslice(:)) > 1)
+        ax = theAxes{1,2};
+        imagesc(ax,examinedObliqueAstigmatismDiopters, examinedVerticalAstigmatismDiopters, StrehlRatio2Dslice');
+        hold(ax, 'on');
+        plot(ax, ...
+            theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), ...
+            theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), ...
+            'rx', 'LineWidth', 1.5, 'MarkerSize', 16);
+        xlabel(ax, 'oblique astigmatism (D)');
+        ylabel(ax, sprintf('vertical astigmatism (D)\n(optimal: %2.3fD)', theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3)));
+        axis(ax, 'square'); axis(ax, 'xy'); 
+        set(ax, 'CLim', [0 abs(theOptimalStrehlRatio)]);
+        colormap(ax, theLUT);
+        colorbar(ax)
+    end
     
     
+    % Plot the PSF
     XLimsArcMin = 5*[-1 1];
     YLimsArcMin = XLimsArcMin;
     XTicksArcMin = -6:2:6;
@@ -97,10 +109,16 @@ function StrehlRatioAsAFunctionOfDefocusAndAstigmatism(...
     [~,targetInFocusWavelengthIndex] = min(abs(theOptimalStrehlRatioPSF.supportWavelength-550));
 
     ax = theAxes{2,2};
+    if (theOptimalStrehlRatio<0)
+        theTitle = sprintf('%s',  whichEye);
+    else
+        theTitle = sprintf('%s (Strehl ratio: %2.3f)',  whichEye, theOptimalStrehlRatio);
+    end
+
     RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, ...
         theOptimalStrehlRatioPSF, targetInFocusWavelengthIndex, ...
 	    max(theOptimalStrehlRatioPSF.data(:)), ...
-		sprintf('%s (Strehl ratio: %2.3f)',  whichEye, theOptimalStrehlRatio), ...
+		theTitle, ...
 		'XLimsArcMin', XLimsArcMin, ...
 		'YLimsArcMin', YLimsArcMin, ...
 		'XTicksArcMin', XTicksArcMin, ... 
