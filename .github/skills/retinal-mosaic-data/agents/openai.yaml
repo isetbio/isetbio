@@ -1,0 +1,4 @@
+interface:
+  display_name: "Retinal Mosaic Data"
+  short_description: "Work safely with ISETBio cone and RGC mosaic data."
+  default_prompt: "Help me understand, load, generate, or migrate ISETBio retinal mosaic data."

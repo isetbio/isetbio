@@ -1,0 +1,4 @@
+interface:
+  display_name: "SDR Mosaic Data"
+  short_description: "Stage and fetch ISETBio SDR mosaic data."
+  default_prompt: "Work on the ISETBio SDR mosaic-data deposit and manifest-aware ieWebGet cache workflow."

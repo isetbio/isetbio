@@ -48,6 +48,7 @@ Activate the matching skill before following detailed workflow guidance:
 - `isetcam-pipeline` — Scene, OI, sensor, IP, and display work.
 - `sceneeye-maintenance` — sceneEye tutorial/example cleanup and promotion.
 - `matlab-script-review` — read-only review of scripts against nearby tests.
+- `sdr-mosaic-data` — SDR staging, manifests, ieWebGet registration, and cached retinal mosaic downloads.
 
 Skills are canonical in `.github/skills/<name>/SKILL.md`. Claude Code discovers
 skills only in `.claude/skills/`, so the whole directory is symlinked:
