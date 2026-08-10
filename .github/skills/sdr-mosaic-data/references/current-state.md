@@ -19,12 +19,19 @@ was verified after creation.
 `data_sabesan/` is deliberately outside the initial deposit. It contains
 Professor Ram Sabesan's adaptive-optics measurements and its own README.
 
-## Current limitations
+## Published deposit and remaining work
 
-No SDR collection, deposit, PURL, DRUID, Stacks root, ISETCam registry entry,
-or remote loader exists yet. The manifest records the current ISETBio commit
-as the manifest-generation provenance; it does not claim that commit generated
-the individual historical data files.
+The first public release is available at
+`https://purl.stanford.edu/vm447vf0975` (DRUID `vm447vf0975`). Its verified
+Stacks download root is `https://stacks.stanford.edu/file/vm447vf0975`.
+`manifest.json` and a nested cone-mosaic MAT file were both verified from this
+root on 2026-08-10.
+
+An ISETCam registry entry exists for browsing and for recording the verified
+download root. Manifest-aware asset download and the remote ISETBio loader are
+still deferred. The manifest records the current ISETBio commit as the
+manifest-generation provenance; it does not claim that commit generated the
+individual historical data files.
 
 ## Naming contract
 

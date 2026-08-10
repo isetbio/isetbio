@@ -10,6 +10,15 @@ Use this skill for the ISETBio `isetbio-mosaics` SDR workflow. Read
 is available; it is the detailed design record and remains authoritative for
 the loader contract and deferred decisions.
 
+## Published deposit
+
+`isetbio-mosaics` is published at
+`https://purl.stanford.edu/vm447vf0975` (DRUID `vm447vf0975`). Its verified
+Digital Stacks download root is
+`https://stacks.stanford.edu/file/vm447vf0975`. Both `manifest.json` and a
+nested mosaic asset have been verified at that root. Keep the deposited
+directory hierarchy intact when resolving relative manifest paths.
+
 ## Deposit workflow
 
 1. Inspect the staged root and every manifest before uploading. Preserve the
@@ -19,9 +28,11 @@ the loader contract and deferred decisions.
 2. Create the SDR collection/deposit named `isetbio-mosaics`, retaining the
    hierarchy. Use the top-level `README.md` for the plain-language file guide
    and the SDR description for the short catalog-level summary.
-3. Record the final PURL, DRUID, public version, and the exact Stacks download
-   root that serves a file such as `manifest.json`. Test one nested MAT-file
-   URL. Do not derive the download root from a guessed URL pattern.
+3. The first public release is PURL `https://purl.stanford.edu/vm447vf0975`,
+   DRUID `vm447vf0975`, with Stacks root
+   `https://stacks.stanford.edu/file/vm447vf0975`. For later versions, record
+   the public version and re-test `manifest.json` plus one nested MAT-file URL.
+   Do not derive a download root from a guessed URL pattern.
 4. Compare uploaded file sizes/checksums with the staged manifests before
    treating the deposit as ready for loader work.
 
