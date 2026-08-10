@@ -18,7 +18,7 @@ their connectivity.
 | --- | --- | --- | --- |
 | Cone lattice | `data/datafiles/cones/lattices/` | Retina-wide cone RF-center positions | Crop geometry used to construct a `cMosaic`. |
 | RGC lattice | `data/datafiles/rgc/lattices/` | Retina-wide midget-RGC RF-center positions | Crop destination geometry used to generate an RGC mosaic. |
-| Serialized cone mosaic | `data/datafiles/cones/cmosaic_*.mat` | A local, complete `cMosaic` | Load through `mosaicLoad` for a precomputed cone realization. |
+| Serialized cone mosaic | SDR `cone_mosaics/` collection, cached in `data/sdr/isetbio-mosaics/` | A local, complete `cMosaic` | Load through `mosaicLoad` for a precomputed cone realization. |
 | Pre-baked RGC mosaic | `ganglioncells/mosaics/ONmRGC/` | A local `mRGCMosaic`, its input `cMosaic`, and computed connectivity/model data | Fast loading of a completed cone-to-RGC circuit model. |
 | Compute-ready RGC mosaic | External resource directory selected by `getpref('isetbio').rgcResources` | A further prepared `mRGCMosaic` used by optimization workflows | Load through `loadComputeReadyRGCMosaic`. |
 
@@ -59,9 +59,11 @@ changing the input cone positions or cone types.
 
 ## Choose the Smallest Correct Loader Change
 
-- Use `mosaicLoad` and `mosaicName` for the `cmosaic_*.mat` library. Do not
-  overload the `cMosaic` constructor’s existing `name` parameter: it is a
-  human-readable label, not a resource identifier.
+- Use `mosaicLoad` for the serialized cone-mosaic library. Its legacy
+  parameter and filename calls select a manifest record and fetch it on
+  demand; use `mosaicLoad('list')` to discover available cone mosaics. Do
+  not overload the `cMosaic` constructor’s existing `name` parameter: it is
+  a human-readable label, not a resource identifier.
 - Use `mRGCMosaic.loadPrebakedMosaic` for the pre-baked ON-mRGC circuit
   models. Preserve its parameter-to-filename convention and its cropping
   behavior.
@@ -82,9 +84,9 @@ removing a bundled asset.
   `rg -n "mosaicLoad|loadPrebakedMosaic|loadComputeReadyRGCMosaic|finalConePositions|finalMRGCPositions"`.
 - Inspect representative MAT-file variables before writing migration logic;
   do not infer content from filenames.
-- Update data-path tests if their contract deliberately changes. In
-  particular, `data/_tests_/test_dataPaths.m` currently asserts the presence
-  of representative bundled cone and lattice assets.
+- Update data-path tests if their contract deliberately changes. The bundled
+  cone mosaics have been migrated; cone and mRGC lattices remain bundled until
+  their own remote loaders are implemented and validated.
 - Validate both a first fetch/load and a cache-hit load, plus a clear error
   when the resource is unavailable. For circuit generation, verify dimensions
   and cone/RGC counts of the connectivity matrices as well as successful

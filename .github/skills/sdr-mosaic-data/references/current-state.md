@@ -27,11 +27,13 @@ Stacks download root is `https://stacks.stanford.edu/file/vm447vf0975`.
 `manifest.json` and a nested cone-mosaic MAT file were both verified from this
 root on 2026-08-10.
 
-An ISETCam registry entry exists for browsing and for recording the verified
-download root. Manifest-aware asset download and the remote ISETBio loader are
-still deferred. The manifest records the current ISETBio commit as the
-manifest-generation provenance; it does not claim that commit generated the
-individual historical data files.
+ISETCam now supports manifest-relative `isetbio-mosaics` asset download and a
+verified full-deposit mirror. `mosaicLoad` resolves and verifies remote cone
+mosaics through the manifest cache; the 27 bundled cone mosaics were removed
+in ISETBio commit `757f1e26d`. Remote cone/mRGC lattice import and pre-baked
+ON-mRGC circuit loading remain deferred. The manifest records the current
+ISETBio commit as the manifest-generation provenance; it does not claim that
+commit generated the individual historical data files.
 
 ## Naming contract
 

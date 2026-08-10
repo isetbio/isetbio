@@ -3,14 +3,16 @@
 ## Existing ISETCam behavior
 
 `ieWebGet` stores resource names, PURLs, and Stacks roots in the private
-`urlDeposit` helper inside `../isetcam/utility/file/ieWebGet.m`. It downloads
-only known resource types through switch cases. It already supports a caller
-provided `downloaddir`, but it does not currently provide a general,
-manifest-relative single-file fetch API.
+`urlDeposit` helper inside `../isetcam/utility/file/ieWebGet.m`. Its
+`isetbio-mosaics` case accepts a caller-provided `downloaddir` and one
+manifest-relative `depositfile`, preserving that path below the destination.
+It also accepts `depositfile = 'all'` to mirror every asset named by the
+top-level and collection manifests, verifying each MAT file's byte count and
+SHA-256.
 
-Add the SDR resource and a minimal generic asset case in ISETCam. Keep URL
-construction and transport there. Let ISETBio resolve its resource identifier
-through its collection manifest and call that ISETCam capability.
+Keep URL construction and transport in ISETCam. ISETBio resolves a public
+loader request through its collection manifest, then calls that ISETCam
+capability.
 
 ## Required fetch sequence
 
@@ -34,7 +36,9 @@ Register the resource after the PURL and download root are known. Keep the
 PURL and Stacks root separate: the PURL is for people, while the Stacks root is
 for `ieWebGet` transfers.
 
-Validate these cases before changing public loaders:
+The cone-mosaic implementation has validated a first manifest/asset download,
+checksum verification, and a cache hit. Validate these additional cases before
+migrating each remaining public loader:
 
 - first manifest and asset download;
 - cache hit with no network request;
@@ -44,4 +48,5 @@ Validate these cases before changing public loaders:
 - one opt-in live SDR download.
 
 Use a temporary cache plus fake transport for ordinary unit tests. Do not make
-the repository's core test suite depend on the public SDR service.
+the repository's core test suite depend on the public SDR service. The existing
+live cone-mosaic check is named `FullOnly` so it is opt-in.

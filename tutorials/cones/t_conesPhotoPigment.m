@@ -22,7 +22,7 @@
 % See also   
 
 %% Initialize
-ieInit; clear; close all;
+ieInit; 
 
 % Set wavelength support
 wls = (400:5:700)';

@@ -43,21 +43,19 @@ The current implementation is `../isetcam/utility/file/ieWebGet.m`. Its SDR
 registry is private (`urlDeposit`) and its cases are resource-specific, so
 adding a registry row alone is not enough for arbitrary manifest paths.
 
-- Add the `isetbio-mosaics` resource to ISETCam, with the PURL for browsing
-  and the verified Stacks download root for files.
-- Extend `ieWebGet` with a narrow manifest-asset fetch path that accepts an
-  SDR-relative file path and a local destination. Preserve existing resource
-  behavior.
+- The `isetbio-mosaics` ISETCam resource records the PURL for browsing and
+  the verified Stacks root for files. `ieWebGet` accepts one SDR-relative
+  asset path plus a caller-supplied destination, and `deposit file = 'all'`
+  mirrors every manifest-listed asset.
 - Set the default ISETBio cache root to
   `fullfile(isetbioRootPath, 'data', 'sdr')`. `data/sdr/.gitignore` excludes
   downloaded files from Git. The resulting cache must be
   `<cache-root>/isetbio-mosaics/<collection>/<eye>/<file>.mat`.
-- Fetch `manifest.json` before resolving an asset. Look up an exact manifest
-  record; do not reconstruct a remote filename from MATLAB arguments.
-- Download to a temporary file in the destination directory, verify its
-  SHA-256 and byte count, then rename it into the mirrored cache path. For a
-  cache hit, verify the checksum before returning it; replace a corrupt cache
-  entry. Give missing-resource and checksum failures clear errors.
+- `mosaicLoad` fetches `manifest.json` before resolving a cone mosaic, looks
+  up an exact record, and does not reconstruct a remote filename from MATLAB
+  arguments. It downloads to a temporary sibling, verifies SHA-256 and byte
+  count, then renames into the mirrored cache path. It verifies cache hits
+  and replaces corrupt entries.
 
 See `references/iewebget-and-cache.md` for the interface and validation
 details.
@@ -67,12 +65,22 @@ details.
 Keep `mosaicLoad`, cone/mRGC lattice importers, and
 `mRGCMosaic.loadPrebakedMosaic` as public entry points. Place remote resolution
 below them. Do not repurpose `cMosaic`'s `name` parameter, modify the staged
-file layout casually, remove bundled assets, or rewrite Git history as part of
-the initial loader work.
+file layout casually, or rewrite Git history as part of the initial loader
+work. The bundled cone mosaics have been removed after their loader was
+validated; migrate each remaining collection only after its corresponding
+loader and empty-cache validation are complete.
 
 Keep core unit tests offline and deterministic. Add fake-transport tests for
 manifest lookup, mirrored paths, first fetch, cache hit, corrupt cache, and
 missing resource. Put a real SDR smoke test behind an opt-in `FullOnly` mode.
+
+## Documentation follow-up
+
+Over the next few weeks, build out user-facing ISETBio documentation in the
+repository GitHub wiki (`isetbio/wiki`), including mosaic discovery, on-demand
+caching, and full-deposit mirroring. The repository `docs/` directory may
+later become a set of pointers to those wiki pages; do not restructure it as
+part of loader migration work.
 
 ## Deferred Git-history cleanup
 
