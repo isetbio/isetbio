@@ -73,3 +73,18 @@ the initial loader work.
 Keep core unit tests offline and deterministic. Add fake-transport tests for
 manifest lookup, mirrored paths, first fetch, cache hit, corrupt cache, and
 missing resource. Put a real SDR smoke test behind an opt-in `FullOnly` mode.
+
+## Deferred Git-history cleanup
+
+Removing a migrated asset from the current tree is a normal commit and makes
+future repository checkouts smaller only when paired with a later history
+rewrite. Do not rewrite history during the initial SDR migration. Revisit that
+separate project after roughly one to two years, once the SDR loader and
+deposit have proven stable and downstream users have migrated.
+
+At that time, preserve the SDR PURL, manifests, checksums, and a verified bare
+repository backup before using a scoped `git filter-repo` rewrite to remove
+only approved migrated paths. Inventory release tags, branches, forks, and
+downstream repositories; announce the force-push/re-clone cutover; then verify
+a fresh clone, the affected releases, and representative SDR loads. Never
+rewrite history merely to reduce repository size without that coordination.
