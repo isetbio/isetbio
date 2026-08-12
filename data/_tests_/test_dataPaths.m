@@ -30,18 +30,25 @@ function testDataReadersUseCanonicalTree(testCase)
 mosaicFile = mosaicName([1 1], [0 0]);
 testCase.verifyTrue(startsWith(mosaicFile, [isetbioDataPath filesep]));
 
+% Source lattices now come from the isetbio-mosaics SDR deposit, so the
+% gallery directories are empty in a fresh checkout. What must stay stable is
+% where a locally generated lattice is written and looked for, and that the
+% deposit still publishes the lattices the standard configurations name.
+% Checking availability here rather than downloading keeps this test offline.
 coneLatticeParams = retinalattice.configure(64, 'cones', 'right eye');
 testCase.verifyEqual(coneLatticeParams.latticeGalleryDir, ...
     fullfile(isetbioDataPath, 'cones', 'lattices'));
-testCase.verifyTrue(isfile(fullfile(coneLatticeParams.latticeGalleryDir, ...
-    coneLatticeParams.patchFinalPositionsSaveFileName)));
+testCase.verifyTrue(isfolder(coneLatticeParams.latticeGalleryDir));
+verifyDepositPublishes(testCase, 'cone_lattices', ...
+    coneLatticeParams.patchFinalPositionsSaveFileName);
 
 mRGCLatticeParams = retinalattice.configure(60, ...
     'midget ganglion cells', 'right eye');
 testCase.verifyEqual(mRGCLatticeParams.latticeGalleryDir, ...
     fullfile(isetbioDataPath, 'rgc', 'lattices'));
-testCase.verifyTrue(isfile(fullfile(mRGCLatticeParams.latticeGalleryDir, ...
-    mRGCLatticeParams.patchFinalPositionsSaveFileName)));
+testCase.verifyTrue(isfolder(mRGCLatticeParams.latticeGalleryDir));
+verifyDepositPublishes(testCase, 'mrgc_lattices', ...
+    mRGCLatticeParams.patchFinalPositionsSaveFileName);
 
 % The default mRGC synthesis configuration uses a 64-degree source lattice.
 % Keep this check separate from the 60-degree compatibility asset above so a
@@ -50,8 +57,8 @@ mRGCLattice64Params = retinalattice.configure(64, ...
     'midget ganglion cells', 'right eye');
 testCase.verifyEqual(mRGCLattice64Params.latticeGalleryDir, ...
     fullfile(isetbioDataPath, 'rgc', 'lattices'));
-testCase.verifyTrue(isfile(fullfile(mRGCLattice64Params.latticeGalleryDir, ...
-    mRGCLattice64Params.patchFinalPositionsSaveFileName)));
+verifyDepositPublishes(testCase, 'mrgc_lattices', ...
+    mRGCLattice64Params.patchFinalPositionsSaveFileName);
 
 coneDensity = rawDataReadData('coneDensityCurcio1990', ...
     'datatype', 'isetbiomatfileonpath');
@@ -59,6 +66,14 @@ testCase.verifyNotEmpty(fieldnames(coneDensity));
 
 packageFunction = which('ArtalOptics.constants');
 testCase.verifyTrue(startsWith(packageFunction, [isetbioDataPath filesep]));
+end
+
+function verifyDepositPublishes(testCase, collectionName, legacyFileName)
+% The deposit must still publish the lattice a standard configuration names.
+records = sdrLegacyFilenameMap(collectionName);
+testCase.verifyTrue(any(strcmp({records.legacy_filename}, legacyFileName)), ...
+    sprintf('The %s collection no longer publishes %s.', ...
+    collectionName, legacyFileName));
 end
 
 function testBundledDataGoldenValues(testCase)

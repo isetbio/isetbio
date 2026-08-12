@@ -5,8 +5,12 @@
 %    mosaics are used to generate smaller mosaics at any eccentricity via
 %    cropping. More specifically, this stores positions and other related
 %    information so that the actual mosaic object at a patch can be
-%    computed quickly.  The data are stored in:
+%    computed quickly.  Newly generated lattices are written to the local
+%    gallery:
 %        isetbio/data/datafiles/cones/lattices
+%    That directory is empty in a fresh checkout. The lattices ISETBio
+%    publishes are downloaded on demand from the isetbio-mosaics SDR
+%    deposit, and a lattice generated here takes precedence over them.
 %
 %    This takes a very long time to run, and I'm not sure we want to write
 %    out mosaics by default.  The SkipFile comment below prevents this from

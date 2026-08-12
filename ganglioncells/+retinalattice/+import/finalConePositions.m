@@ -22,13 +22,17 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
 %          it is cone center positions (BW).
 %
 % Description
-%
+%   The source lattice is resolved by retinalattice.import.sourceLatticeFile,
+%   which prefers a locally generated lattice and otherwise downloads the
+%   published copy from the isetbio-mosaics SDR deposit into the local cache.
+%   The first call for a given lattice may therefore take as long as the
+%   download; later calls read the verified cached file.
 %
 % Also:  Read the chatGPT code below in which I asked it to shorten the
 % variable names.  Interesting.
 %
 % See also
-%   retinalattice
+%   retinalattice, retinalattice.import.sourceLatticeFile
 
 %% Convert degs to retinal microns
 eccMicrons  = 1000*RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
@@ -39,8 +43,8 @@ sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDe
 % several mosaics by cropping the same lattice. A one-entry cache avoids
 % repeated disk reads without retaining every eye/size variant. Use
 % `clear retinalattice.import.finalConePositions` to release the cache.
-p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
-theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
+theMosaicFileName = retinalattice.import.sourceLatticeFile(...
+    sourceLatticeSizeDegs, 'cones', whichEye);
 [~, mosaicName, mosaicExt] = fileparts(theMosaicFileName);
 persistent cachedMosaicFileName cachedRFPositions
 if isempty(cachedMosaicFileName) || ...

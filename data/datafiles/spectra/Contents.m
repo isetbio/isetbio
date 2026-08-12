@@ -2,4 +2,5 @@
 %
 % Spectra
 %
-%    marsspectrum    - Some spectrum from mars.
+%    marsspectrum  - Some spectrum from mars.
+%

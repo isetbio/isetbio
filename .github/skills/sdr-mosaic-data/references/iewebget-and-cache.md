@@ -36,17 +36,18 @@ Register the resource after the PURL and download root are known. Keep the
 PURL and Stacks root separate: the PURL is for people, while the Stacks root is
 for `ieWebGet` transfers.
 
-The cone-mosaic implementation has validated a first manifest/asset download,
-checksum verification, and a cache hit. Validate these additional cases before
-migrating each remaining public loader:
+All four collections are migrated and share one fetch path, so these cases are
+verified once rather than per loader. `test_sdrMosaicCacheFullOnly` covers a
+first download, a cache hit, corrupt-cache replacement, missing records, and
+the deposited lattices reproducing the golden crop values.
 
-- first manifest and asset download;
-- cache hit with no network request;
-- corrupt cached asset replacement;
-- missing manifest record;
-- failed checksum or byte-count validation; and
-- one opt-in live SDR download.
+Still outstanding: the offline equivalents. Cache-hit and corrupt-cache tests
+need either a network or a seam, because `sdrMosaicFetch` calls `ieWebGet`
+directly and `sdrMosaicCacheRoot` is fixed. Adding a fake transport means
+introducing an injection point; decide whether that testing seam is worth the
+API surface before writing those tests. The offline suite currently covers
+manifest-independent behavior only, through `test_sdrLegacyFilenameMap` and
+`test_dataPaths`.
 
-Use a temporary cache plus fake transport for ordinary unit tests. Do not make
-the repository's core test suite depend on the public SDR service. The existing
-live cone-mosaic check is named `FullOnly` so it is opt-in.
+Do not make the repository's core test suite depend on the public SDR service.
+Live checks are named `FullOnly` so they stay opt-in.

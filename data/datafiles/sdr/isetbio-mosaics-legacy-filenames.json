@@ -1,0 +1,840 @@
+{
+  "schema_version": 1,
+  "document": "legacy-filename map for the isetbio-mosaics SDR deposit",
+  "generated": "2026-08-12",
+  "generated_by": "checksum comparison of deposited manifests against repository copies",
+  "deposit": {
+    "name": "isetbio-mosaics",
+    "druid": "vm447vf0975",
+    "purl": "https://purl.stanford.edu/vm447vf0975",
+    "stacks_root": "https://stacks.stanford.edu/file/vm447vf0975"
+  },
+  "purpose": [
+    "Record the pre-SDR ISETBio filename for every deposited asset so a future deposit version can add a legacy_filename field to each manifest record.",
+    "Serve, in the interim, as the reference table for ISETBio loaders that must translate a historically generated filename into an SDR-relative path."
+  ],
+  "update_guidance": [
+    "Add fields to manifest records; do not rename deposited paths. The paths are part of published Stacks URLs and of every recorded sha256 verification.",
+    "Fields proposed for every collection: legacy_filename.",
+    "Field proposed for mrgc_on_circuits only: eccentricity_degrees_signed."
+  ],
+  "collections": {
+    "cone_lattices": {
+      "proposed_new_fields": [
+        "legacy_filename"
+      ],
+      "records": [
+        {
+          "sdr_path": "left/nominal-fov-58deg.mat",
+          "bytes": 18571676,
+          "sha256": "e47629bc98d38fef7f2d047140f0d61a7bf8b2af001026a1ca16ddfc95148bb4",
+          "legacy_filename": "left_eye_cones_58deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/cones/lattices/left_eye_cones_58deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "left/nominal-fov-60deg.mat",
+          "bytes": 19246627,
+          "sha256": "6bb278f6dbe8ce79da381b876a8763022528bd5fa692f099a9ac07694a86559c",
+          "legacy_filename": "left_eye_cones_60deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/cones/lattices/left_eye_cones_60deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/nominal-fov-58deg.mat",
+          "bytes": 18559140,
+          "sha256": "54eb0a9ef90511ca72782a194a7c6f17d5404e05794f7e4872c808d138f45728",
+          "legacy_filename": "right_eye_cones_58deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/cones/lattices/right_eye_cones_58deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/nominal-fov-60deg.mat",
+          "bytes": 19249261,
+          "sha256": "80b55aa96cbaa8d84f65f6df5be25b5e3a8b6edb670382014e464e1836359143",
+          "legacy_filename": "right_eye_cones_60deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/cones/lattices/right_eye_cones_60deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/nominal-fov-64deg.mat",
+          "bytes": 21079382,
+          "sha256": "817c05bcf25b77a95aacfe521abd6eaa7890c84360f3478f503e8dd20238f015",
+          "legacy_filename": "right_eye_cones_64deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/cones/lattices/right_eye_cones_64deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        }
+      ],
+      "record_fields": [
+        "sdr_path",
+        "bytes",
+        "sha256",
+        "legacy_filename",
+        "legacy_repository_path",
+        "provenance",
+        "candidate_legacy_filename",
+        "candidate_confidence",
+        "candidate_basis"
+      ]
+    },
+    "mrgc_lattices": {
+      "proposed_new_fields": [
+        "legacy_filename"
+      ],
+      "records": [
+        {
+          "sdr_path": "left/nominal-fov-58deg.mat",
+          "bytes": 2784251,
+          "sha256": "2445e5737194982be7f7ad182eb075c1fb25664c58165bb81dd571484c97e3c4",
+          "legacy_filename": "left_eye_midget_ganglion_cells_58deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/rgc/lattices/left_eye_midget_ganglion_cells_58deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "left/nominal-fov-60deg.mat",
+          "bytes": 2856880,
+          "sha256": "68fe7be5b4c9c05276de43e5966fa8367d71860b382ec1ea7b7bd83ba573078e",
+          "legacy_filename": "left_eye_midget_ganglion_cells_60deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/rgc/lattices/left_eye_midget_ganglion_cells_60deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "left/nominal-fov-64deg.mat",
+          "bytes": 2905074,
+          "sha256": "d84450165562830fbc4c5ec0340397261814e4f7f9cb38950630937e07f13846",
+          "legacy_filename": "left_eye_midget_ganglion_cells_64deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/rgc/lattices/left_eye_midget_ganglion_cells_64deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/nominal-fov-58deg.mat",
+          "bytes": 2782836,
+          "sha256": "e492517165c9543d965b66ab9cda6fe350ec3636d4e70c216c8b0fdd8d88879b",
+          "legacy_filename": "right_eye_midget_ganglion_cells_58deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/rgc/lattices/right_eye_midget_ganglion_cells_58deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/nominal-fov-60deg.mat",
+          "bytes": 2855714,
+          "sha256": "d2de3ba5987e8f6910b4868ba5b6037328f784ca0a295e2e85f2fcae2a38482a",
+          "legacy_filename": "right_eye_midget_ganglion_cells_60deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/rgc/lattices/right_eye_midget_ganglion_cells_60deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/nominal-fov-64deg.mat",
+          "bytes": 2908256,
+          "sha256": "dc88f3fa1bdf4cc8b5ab4303cffccfe1f5fde3fca4f2dc67859acfa32405003c",
+          "legacy_filename": "right_eye_midget_ganglion_cells_64deg_mosaic.mat",
+          "legacy_repository_path": "data/datafiles/rgc/lattices/right_eye_midget_ganglion_cells_64deg_mosaic.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        }
+      ],
+      "record_fields": [
+        "sdr_path",
+        "bytes",
+        "sha256",
+        "legacy_filename",
+        "legacy_repository_path",
+        "provenance",
+        "candidate_legacy_filename",
+        "candidate_confidence",
+        "candidate_basis"
+      ]
+    },
+    "cone_mosaics": {
+      "proposed_new_fields": [
+        "legacy_filename"
+      ],
+      "note": "The 27 repository copies were removed in commit 757f1e26d. Legacy names were recovered from that commit's parent tree and matched by sha256 of the archived Git blobs.",
+      "records": [
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w0.5-h0.5.mat",
+          "bytes": 244376,
+          "sha256": "8d76801d5ce3125c2f303f9d157128caff15ab40b8a8e63537b35acc5100b285",
+          "legacy_filename": "cmosaic_0.5-0.5_0.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_0.5-0.5_0.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w1-h1.mat",
+          "bytes": 713493,
+          "sha256": "987c29c6fd24ba62ac4be952b26239d8dc4606d6bb819018dd526d759ebb4eb4",
+          "legacy_filename": "cmosaic_1.0-1.0_0.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_1.0-1.0_0.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w18-h18.mat",
+          "bytes": 25397992,
+          "sha256": "a28ad70ff2c0f3ab9901c5eaea291d4c145caf29a13ba573562b1d08ab9e4718",
+          "legacy_filename": "cmosaic_18.0-18.0_0.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_18.0-18.0_0.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w2-h2.mat",
+          "bytes": 1888414,
+          "sha256": "24adf80e1d7919811f352d259dc111748a5f8cef59fe8cc08a4af12c86b62ffc",
+          "legacy_filename": "cmosaic_2.0-2.0_0.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_2.0-2.0_0.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w4-h4.mat",
+          "bytes": 4537190,
+          "sha256": "8e26c5ce5ccf7a9a68badabe2985e5855a1c659c97a3b19a2be2a42460e2764b",
+          "legacy_filename": "cmosaic_4.0-4.0_0.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_4.0-4.0_0.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w8-h8.mat",
+          "bytes": 10369299,
+          "sha256": "9c39b50ae9c88ebb5e49dcc69b4a4269dd66e04250109a95fcd1ab77bad08ff5",
+          "legacy_filename": "cmosaic_8.0-8.0_0.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_8.0-8.0_0.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x1-y0__size-w0.5-h0.5.mat",
+          "bytes": 102237,
+          "sha256": "fbdc9044d3f31d3c431e22eb61dba6169246bbd9e4ef1a5870edb44fd00b0fe2",
+          "legacy_filename": "cmosaic_0.5-0.5_1.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_0.5-0.5_1.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x1-y0__size-w1-h1.mat",
+          "bytes": 361929,
+          "sha256": "fb6f2ddabf10bd0342d2ed41bb6207960871de2f8ef8e4337511ef9939cfa21f",
+          "legacy_filename": "cmosaic_1.0-1.0_1.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_1.0-1.0_1.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x1-y0__size-w2-h2.mat",
+          "bytes": 1395983,
+          "sha256": "a5ffe98e17625e33890cb6b8315e8c19088d5b71336557f016a6277eaa3458cc",
+          "legacy_filename": "cmosaic_2.0-2.0_1.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_2.0-2.0_1.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x1-y0__size-w4-h4.mat",
+          "bytes": 4222116,
+          "sha256": "dd339ffc8f1efaf9e726d6c92ea01abbca98b798d7986fb0c1ad9ad3ee60e008",
+          "legacy_filename": "cmosaic_4.0-4.0_1.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_4.0-4.0_1.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x1-y0__size-w8-h8.mat",
+          "bytes": 10210861,
+          "sha256": "2be67cf0eab806bcc6f8339e3ad527e22c65058878e8760e0753dd8df2cf96aa",
+          "legacy_filename": "cmosaic_8.0-8.0_1.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_8.0-8.0_1.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x10-y0__size-w0.5-h0.5.mat",
+          "bytes": 30005,
+          "sha256": "0de647f2cd0d35c40a99fd08afab54dfe00e26d41434fcb188361a3ad0e273bd",
+          "legacy_filename": "cmosaic_0.5-0.5_10.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_0.5-0.5_10.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x10-y0__size-w1-h1.mat",
+          "bytes": 66227,
+          "sha256": "19178cb667391f010befc7e2946df430b767bef11df81859d1f4fa19ce3716ab",
+          "legacy_filename": "cmosaic_1.0-1.0_10.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_1.0-1.0_10.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x10-y0__size-w2-h2.mat",
+          "bytes": 209818,
+          "sha256": "e643c678de24bef19c40c10cfec03f0e10e1bbd9085c5ab889d52c8fa3751839",
+          "legacy_filename": "cmosaic_2.0-2.0_10.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_2.0-2.0_10.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x10-y0__size-w4-h4.mat",
+          "bytes": 784011,
+          "sha256": "60cdb80aa8129094ef0b89a7f93f906ea72b12406e54226f900a6bb44548370f",
+          "legacy_filename": "cmosaic_4.0-4.0_10.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_4.0-4.0_10.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x10-y0__size-w8-h8.mat",
+          "bytes": 2807886,
+          "sha256": "79fb1db66e1a427275b689fbf2bdf714a87fa42caf8508a63ca5cbd6adf51e70",
+          "legacy_filename": "cmosaic_8.0-8.0_10.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_8.0-8.0_10.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w0.5-h0.5.mat",
+          "bytes": 66326,
+          "sha256": "d87d010d1dc61a5a2cd2a2875fac2c147c24204113ced94df196e19744152698",
+          "legacy_filename": "cmosaic_0.5-0.5_2.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_0.5-0.5_2.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w1-h1.mat",
+          "bytes": 212886,
+          "sha256": "39d8eb9ffb875bc8110834ce57d123559c1254df4a5ec880ac26d65b501c3d85",
+          "legacy_filename": "cmosaic_1.0-1.0_2.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_1.0-1.0_2.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w2-h2.mat",
+          "bytes": 799556,
+          "sha256": "f5a30054f105926987c3ecc484a990278d640b35c11bf154a0703353df79d1ab",
+          "legacy_filename": "cmosaic_2.0-2.0_2.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_2.0-2.0_2.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w4-h4.mat",
+          "bytes": 3252352,
+          "sha256": "6c8cbc2b790fd2b6a1b3c8bde60e0c89f186348f1a76840c9bff8079fcf2d9bd",
+          "legacy_filename": "cmosaic_4.0-4.0_2.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_4.0-4.0_2.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w8-h8.mat",
+          "bytes": 9714049,
+          "sha256": "2bd36dde873e1bf40a22def889a054414716d79b9b3765eb0ea9bdb94fcea47c",
+          "legacy_filename": "cmosaic_8.0-8.0_2.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_8.0-8.0_2.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w0.5-h0.5.mat",
+          "bytes": 45311,
+          "sha256": "7738baf366762137cded26a8b208ab92970478df907f3725d9016972a20ed669",
+          "legacy_filename": "cmosaic_0.5-0.5_4.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_0.5-0.5_4.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w1-h1.mat",
+          "bytes": 125431,
+          "sha256": "96a5637752e3adbcb8a7edbfcd32ba9fb6de7ecc12b36e8cd2227a502481c6eb",
+          "legacy_filename": "cmosaic_1.0-1.0_4.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_1.0-1.0_4.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w2-h2.mat",
+          "bytes": 453391,
+          "sha256": "f25e6625ce9b531991ca707be381314c68b6b55de3f5d188e1cf9d01e4fadcf5",
+          "legacy_filename": "cmosaic_2.0-2.0_4.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_2.0-2.0_4.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w4-h4.mat",
+          "bytes": 1755530,
+          "sha256": "f311d998d5c623e64ffe829d98f8e180833d6965e74b90b5fef624e805f6fc9a",
+          "legacy_filename": "cmosaic_4.0-4.0_4.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_4.0-4.0_4.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w8-h8.mat",
+          "bytes": 7274463,
+          "sha256": "ba6ccedbd70cc521c0f85c48402f9df09d6cd0de5f2cb95353a082b012c8224a",
+          "legacy_filename": "cmosaic_8.0-8.0_4.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_8.0-8.0_4.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w9-h2.mat",
+          "bytes": 3156542,
+          "sha256": "0046156a1d11472884e0aaac6f008f9f5e1870bf2424d0895d68f26a7ca5271b",
+          "legacy_filename": "cmosaic_9.0-2.0_4.0-0.0.mat",
+          "legacy_repository_path": "data/datafiles/cones/cmosaic_9.0-2.0_4.0-0.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": ""
+        }
+      ],
+      "record_fields": [
+        "sdr_path",
+        "bytes",
+        "sha256",
+        "legacy_filename",
+        "legacy_repository_path",
+        "provenance",
+        "candidate_legacy_filename",
+        "candidate_confidence",
+        "candidate_basis"
+      ]
+    },
+    "mrgc_on_circuits": {
+      "proposed_new_fields": [
+        "legacy_filename",
+        "eccentricity_degrees_signed"
+      ],
+      "defect": "Staging dropped the sign of the x eccentricity from both the deposited path and the eccentricity_degrees field. right/ecc-x2-y0__size-w2-h2 is x = -2 deg while right/ecc-x2-y0__size-w0.5-h0.5 is x = +2 deg; both records read [2, 0]. No current collision, because the two differ in size, but the metadata cannot be used to select a circuit by signed eccentricity.",
+      "records": [
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w2-h2__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 95039368,
+          "sha256": "55e6bd5a8aade3449b92da5acec357fc9e838d844df0f4d04e0b0a36a3153763",
+          "legacy_filename": "MRGCMosaic_RE_Ecc0.0_0.0_Size2.0x2.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc0.0_0.0_Size2.0x2.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            0.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": false
+        },
+        {
+          "sdr_path": "right/ecc-x0-y0__size-w2-h2__optics-polans2015-3__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 125439121,
+          "sha256": "0a6f4bb0818909b7d9c03a7f042315c5e8af8184224656aa076e5b5ebf6539e4",
+          "legacy_filename": "",
+          "legacy_repository_path": "",
+          "provenance": "no-repository-copy",
+          "candidate_legacy_filename": "MRGCMosaic_RE_Ecc0.0_0.0_Size2.0x2.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "candidate_confidence": "high",
+          "candidate_basis": "zero eccentricity, so the sign is not expressible",
+          "eccentricity_degrees_signed": null,
+          "manifest_eccentricity_sign_lost": false
+        },
+        {
+          "sdr_path": "right/ecc-x10-y0__size-w4-h4__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 46589231,
+          "sha256": "cb0cc9eed1db96467ba42b0ed741064b70da7fee1e20868970dd7436cca3c6d8",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-10.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-10.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -10.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x10-y0__size-w4-h4__optics-polans2015-3__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 51360119,
+          "sha256": "452b66e823704be7b27082cec048e3c423059336e83a2d059683bc79cc10bbc1",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-10.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-10.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -10.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x14-y0__size-w5-h5__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 65718705,
+          "sha256": "9be1583da11b07bccc142a7d3fb8349f31ab1e21fa632b27db1b8e3d69388fc6",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-14.0_0.0_Size5.0x5.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-14.0_0.0_Size5.0x5.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -14.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x14-y0__size-w5-h5__optics-polans2015-3__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 84785350,
+          "sha256": "7d6e3b76d17d1afb47b8d4f2773510eeb92adc8ecb9f65acd40df09098711e45",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-14.0_0.0_Size5.0x5.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-14.0_0.0_Size5.0x5.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -14.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x19-y0__size-w6-h6__optics-polans2015-2__surround-packer-dacey-2002-h1-free-mid.mat",
+          "bytes": 76598436,
+          "sha256": "818b6fd2da0a09136c4d6b02122e455197147a3c0575ed72e5395e8ccd63eb63",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-19.0_0.0_Size6.0x6.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeMidH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-19.0_0.0_Size6.0x6.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeMidH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -19.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x19-y0__size-w6-h6__optics-polans2015-3__surround-packer-dacey-2002-h1-free-mid.mat",
+          "bytes": 81653754,
+          "sha256": "2b348f5f4da8e1f8872bc3e884be34e379740e5c0bf15fe640c7aedeb615c54c",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-19.0_0.0_Size6.0x6.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeMidH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-19.0_0.0_Size6.0x6.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeMidH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -19.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w0.5-h0.5__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 2715788,
+          "sha256": "1798d32ee3b49575f7d340ac84e3b98e56f2de6d13a409ef1259150178b4a4ce",
+          "legacy_filename": "MRGCMosaic_RE_Ecc2.0_0.0_Size0.5x0.5_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc2.0_0.0_Size0.5x0.5_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            2.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": false
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w2-h2__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 51485237,
+          "sha256": "a7842310adeb1d1ac032a85e3bbf14548884a7e12e1b72e24adbc7a2d4db0793",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-2.0_0.0_Size2.0x2.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-2.0_0.0_Size2.0x2.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -2.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x2-y0__size-w2-h2__optics-polans2015-3__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 55335819,
+          "sha256": "3b07db76e7aa476dfc1b164598784f534fc999e4e55920a718560981930a7fd2",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-2.0_0.0_Size2.0x2.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-2.0_0.0_Size2.0x2.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -2.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x25-y0__size-w7-h7__optics-polans2015-2__surround-packer-dacey-2002-h1-free-upper.mat",
+          "bytes": 92188880,
+          "sha256": "3f49fccdf18981b707ecc848e8cb569f770f3aa463b3728fbf2c2a82ac70fb8d",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-25.0_0.0_Size7.0x7.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeUpperH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-25.0_0.0_Size7.0x7.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeUpperH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -25.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x25-y0__size-w7-h7__optics-polans2015-3__surround-packer-dacey-2002-h1-free-upper.mat",
+          "bytes": 89341767,
+          "sha256": "b750bdd598a5e897a6e824a79c38bfb991af74f8ed03fec57fd95aea7b6cff7e",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-25.0_0.0_Size7.0x7.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeUpperH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-25.0_0.0_Size7.0x7.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeUpperH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -25.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x32-y0__size-w9-h9__optics-polans2015-2__surround-packer-dacey-2002-h1-free-upper.mat",
+          "bytes": 136577121,
+          "sha256": "1e72695dbf9f34d4a92847840ef6d449f3a780027e608106a479725cab95cd05",
+          "legacy_filename": "",
+          "legacy_repository_path": "",
+          "provenance": "no-repository-copy",
+          "candidate_legacy_filename": "MRGCMosaic_RE_Ecc-32.0_0.0_Size9.0x9.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeUpperH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "candidate_confidence": "unverified",
+          "candidate_basis": "negative x assumed from the convention of every other nonzero-eccentricity circuit; resolve by loading the asset and reading theMRGCMosaic.eccentricityDegs",
+          "eccentricity_degrees_signed": null,
+          "manifest_eccentricity_sign_lost": false
+        },
+        {
+          "sdr_path": "right/ecc-x32-y0__size-w9-h9__optics-polans2015-3__surround-packer-dacey-2002-h1-free-upper.mat",
+          "bytes": 119662063,
+          "sha256": "0fe794b1fb252a779f57bd2dda730f2d76a542e82b3f032ac2ebf3647223801c",
+          "legacy_filename": "",
+          "legacy_repository_path": "",
+          "provenance": "no-repository-copy",
+          "candidate_legacy_filename": "MRGCMosaic_RE_Ecc-32.0_0.0_Size9.0x9.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeUpperH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "candidate_confidence": "unverified",
+          "candidate_basis": "negative x assumed from the convention of every other nonzero-eccentricity circuit; resolve by loading the asset and reading theMRGCMosaic.eccentricityDegs",
+          "eccentricity_degrees_signed": null,
+          "manifest_eccentricity_sign_lost": false
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w3-h3__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 69500110,
+          "sha256": "dba5f8e0557ceddeb818bb94271365aefb8c2519e1cedc6154b069beefb4b211",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-4.0_0.0_Size3.0x3.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-4.0_0.0_Size3.0x3.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -4.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x4-y0__size-w3-h3__optics-polans2015-3__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 84473565,
+          "sha256": "3d538db92ec603482c1371abff7be7876bef1e50947e4f4bee05857cdba2cfb9",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-4.0_0.0_Size3.0x3.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-4.0_0.0_Size3.0x3.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -4.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x7-y0__size-w11-h11__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 346422528,
+          "sha256": "d527032c0a9fc976aed20d6a10e7f98dd78cc0ea5a07bcd9def443865db2eb92",
+          "legacy_filename": "",
+          "legacy_repository_path": "",
+          "provenance": "no-repository-copy",
+          "candidate_legacy_filename": "MRGCMosaic_RE_Ecc-7.0_0.0_Size11.0x11.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "candidate_confidence": "unverified",
+          "candidate_basis": "negative x assumed from the convention of every other nonzero-eccentricity circuit; resolve by loading the asset and reading theMRGCMosaic.eccentricityDegs",
+          "eccentricity_degrees_signed": null,
+          "manifest_eccentricity_sign_lost": false
+        },
+        {
+          "sdr_path": "right/ecc-x7-y0__size-w4-h4__optics-polans2015-2__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 62059147,
+          "sha256": "c6a61aa23c29c4467351c292ac1ecbfce8970737a2f9e92f4d2b1fc06efcd44b",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-7.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-7.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-2_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -7.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x7-y0__size-w4-h4__optics-polans2015-3__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 71068657,
+          "sha256": "29cab8b9731c50cd0a6b85947627e5ef5bd3096afdbb7657ed3b9042062991f8",
+          "legacy_filename": "MRGCMosaic_RE_Ecc-7.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "legacy_repository_path": "ganglioncells/mosaics/ONmRGC/MRGCMosaic_RE_Ecc-7.0_0.0_Size4.0x4.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "provenance": "sha256-verified",
+          "candidate_legacy_filename": "",
+          "candidate_confidence": "",
+          "candidate_basis": "",
+          "eccentricity_degrees_signed": [
+            -7.0,
+            0
+          ],
+          "manifest_eccentricity_sign_lost": true
+        },
+        {
+          "sdr_path": "right/ecc-x9-y0__size-w12-h12__optics-polans2015-3__surround-packer-dacey-2002-h1-free-low.mat",
+          "bytes": 551085268,
+          "sha256": "80902bf9adb47f112aff0a26935670599f60f00d7ee809d3c3a9b793fe5c6313",
+          "legacy_filename": "",
+          "legacy_repository_path": "",
+          "provenance": "no-repository-copy",
+          "candidate_legacy_filename": "MRGCMosaic_RE_Ecc-9.0_0.0_Size12.0x12.0_Phi_1.00_Optics_Polans2015-3_maxStrehlRatio_srndModel_PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0.mat",
+          "candidate_confidence": "unverified",
+          "candidate_basis": "negative x assumed from the convention of every other nonzero-eccentricity circuit; resolve by loading the asset and reading theMRGCMosaic.eccentricityDegs",
+          "eccentricity_degrees_signed": null,
+          "manifest_eccentricity_sign_lost": false
+        }
+      ],
+      "record_fields": [
+        "sdr_path",
+        "bytes",
+        "sha256",
+        "legacy_filename",
+        "legacy_repository_path",
+        "provenance",
+        "candidate_legacy_filename",
+        "candidate_confidence",
+        "candidate_basis",
+        "eccentricity_degrees_signed",
+        "manifest_eccentricity_sign_lost"
+      ]
+    }
+  },
+  "matlab_note": "Every record in a collection carries the same field names so jsondecode returns a struct array. Unknown strings are empty, not null."
+}

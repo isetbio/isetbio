@@ -1,4 +1,32 @@
 function [theLatticePatchFileNames, latticeGalleryDir] = listPrecomputedPatches(varargin)
+% List the midget-RGC source lattices available to this installation
+%
+% Syntax
+%   [theLatticePatchFileNames, latticeGalleryDir] = ...
+%        retinalattice.listPrecomputedPatches(...)
+%
+% Optional key/value pairs
+%   withGenerationProgressHistory - When true, list the lattice generation
+%        progress files instead of the final-position lattices. Progress
+%        files are large generation artifacts that are neither shipped with
+%        ISETBio nor published in the SDR deposit, so this list is empty
+%        unless lattices were generated locally.
+%
+% Returns
+%   theLatticePatchFileNames - Cell array of lattice filenames, in the
+%        historical ISETBio naming that retinalattice.decodeFileName parses
+%   latticeGalleryDir - The local lattice gallery directory
+%
+% Description
+%   Final-position lattices are published in the isetbio-mosaics SDR deposit
+%   rather than bundled with the repository. This function lists what a user
+%   can actually load: any lattice present in the local gallery, plus every
+%   lattice available from the deposit. A locally generated lattice is listed
+%   once, even when the deposit publishes the same name.
+%
+% See also
+%   retinalattice.decodeFileName, retinalattice.import.sourceLatticeFile,
+%   sdrLegacyFilenameMap
 
     % Parse input
     p = inputParser;
@@ -8,29 +36,27 @@ function [theLatticePatchFileNames, latticeGalleryDir] = listPrecomputedPatches(
     withGenerationProgressHistory = p.Results.withGenerationProgressHistory;
 
     latticeGalleryDir = fullfile(isetbioDataPath, 'rgc', 'lattices');
-    listing = dir(latticeGalleryDir);
 
-    folders = struct2table(listing);
-    allLatticePatchFileNames = folders(~matches(folders.name,[".","..", ".DS_Store"]),:);
-
-    allLatticePatchFileNames = allLatticePatchFileNames{:,1};
-    theLatticePatchFileNames = cell(0,0);
+    listing = dir(fullfile(latticeGalleryDir, '*.mat'));
+    localFileNames = {listing.name};
 
     if (withGenerationProgressHistory)
-        for iFile = 1:numel(allLatticePatchFileNames)
-            theFileName = allLatticePatchFileNames{iFile};
-            if (contains(theFileName, 'progress'))
-                theLatticePatchFileNames{size(theLatticePatchFileNames,2)+1} = theFileName;
-            end
-        end
+        % Generation artifacts are local only.
+        theLatticePatchFileNames = localFileNames(...
+            contains(localFileNames, 'progress'));
     else
-       for iFile = 1:numel(allLatticePatchFileNames)
-            theFileName = allLatticePatchFileNames{iFile};    
-            if (~contains(theFileName, 'progress'))
-                theLatticePatchFileNames{size(theLatticePatchFileNames,2)+1} = theFileName;
-            end
-        end
+        localFinalFileNames = localFileNames(...
+            ~contains(localFileNames, 'progress'));
+
+        % Add the lattices published in the deposit, named as ISETBio has
+        % always named them so decodeFileName still parses the result.
+        depositRecords = sdrLegacyFilenameMap('mrgc_lattices');
+        depositFileNames = {depositRecords.legacy_filename};
+        depositFileNames = depositFileNames(~cellfun(@isempty, depositFileNames));
+
+        theLatticePatchFileNames = unique(...
+            [localFinalFileNames(:); depositFileNames(:)]);
     end
 
-    theLatticePatchFileNames = theLatticePatchFileNames';
+    theLatticePatchFileNames = theLatticePatchFileNames(:);
 end

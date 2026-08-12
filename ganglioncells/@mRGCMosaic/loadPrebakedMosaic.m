@@ -1,5 +1,34 @@
 function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilename, opticsParams] = loadPrebakedMosaic(...
     coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, varargin)
+% Load a pre-baked ON-mRGC circuit and, optionally, its optics
+%
+% Syntax
+%   [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, ...
+%    mRGCMosaicFilename, opticsParams] = mRGCMosaic.loadPrebakedMosaic(...
+%        coneMosaicSpecies, opticsSubjectName, rgcMosaicName, ...
+%        targetVisualSTFdescriptor, ...)
+%
+% Returns
+%   theMRGCMosaic         - The loaded circuit, empty when none matches
+%   theOI, thePSF         - Optics for the circuit, empty when not computed
+%   prebakedMRGCMosaicDir - Directory actually holding the loaded file. This
+%        is the local gallery for a locally synthesized circuit, and the SDR
+%        cache directory for a downloaded one. It does not necessarily join
+%        with mRGCMosaicFilename below; use sdrPrebakedCircuitFile to get a
+%        full path.
+%   mRGCMosaicFilename    - Historical ISETBio filename identifying the
+%        circuit. The deposited asset uses a different, normalized name.
+%   opticsParams          - Optics parameters for the circuit
+%
+% Description
+%   The circuit is resolved by sdrPrebakedCircuitFile, which prefers a local
+%   copy and otherwise downloads the published asset from the isetbio-mosaics
+%   SDR deposit and verifies it against the manifest checksum. Circuits are
+%   large, so a first load can take some time.
+%
+% See also
+%   sdrPrebakedCircuitFile, mRGCMosaic.listPrebakedMosaics,
+%   sdrLegacyFilenameMap
 
     % Parse input
     p = inputParser;
@@ -80,18 +109,25 @@ function [theMRGCMosaic, theOI, thePSF, prebakedMRGCMosaicDir, mRGCMosaicFilenam
         return;
     end
 
-    theFileName = fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename);
-    if (~isfile(theFileName))
-        theFileName
+    % Resolve the circuit locally, or download and verify it from the
+    % published isetbio-mosaics SDR deposit.
+    theFileName = sdrPrebakedCircuitFile(mRGCMosaicFilename);
+    if (isempty(theFileName))
         fprintf(2, 'Could not locate a prebaked mosaic with the provided specifiers.\n');
+        fprintf(2, 'Wanted: %s\n', mRGCMosaicFilename);
+        fprintf(2, 'Use mRGCMosaic.listPrebakedMosaics to see what is available.\n');
         fprintf(2, 'See ''t_visualizePrebakedMosaicAndOptics'' for a different way to load prebaked mosaics\n');
+        theMRGCMosaic = [];
+        theOI = [];
+        thePSF = [];
         return;
     end
+    prebakedMRGCMosaicDir = fileparts(theFileName);
 
     fprintf('Loading prebaked mRGCmosaic from:\n\t%s\n', mRGCMosaicFilename);
 
-    % Load the mosaic 
-    load(fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic')
+    % Load the mosaic
+    load(theFileName, 'theMRGCMosaic')
 
 
     fprintf('\t---> The full prebaked mRGC mosaic contains %d mRGCs\n', theMRGCMosaic.rgcsNum);

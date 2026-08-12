@@ -160,9 +160,23 @@ if (options.promptUserForMosaic)
     % Obtain the directory where all the prebaked mRGCmosaics are stored
     [theRGCmosaicFileNames, prebakedRGCmosaicDirectory] = mRGCMosaic.listPrebakedMosaics();
 
+    % Prebaked mosaics live in the isetbio-mosaics SDR deposit and are cached
+    % locally once loaded, so browse whichever directory actually holds files.
+    browseDirectory = prebakedRGCmosaicDirectory;
+    if (isempty(dir(fullfile(browseDirectory, '*.mat'))))
+        browseDirectory = fullfile(sdrMosaicCacheRoot(), 'mrgc_on_circuits');
+    end
+
+    if (isempty(dir(fullfile(browseDirectory, '**', '*.mat'))))
+        fprintf(2, 'No prebaked mosaic has been downloaded or synthesized yet.\n');
+        fprintf(2, 'Load one by name first, for example with t_mRGCMosaicBasic,\n');
+        fprintf(2, 'or run this tutorial with ''promptUserForMosaic'' set false.\n');
+        return;
+    end
+
     % Let the user select one prebaked mRGCmosaic
     [mRGCMosaicFilename, prebakedMRGCMosaicDir] = ...
-            uigetfile(sprintf('%s/*.mat', prebakedRGCmosaicDirectory), 'Select an RGB mosaic');
+            uigetfile(sprintf('%s/*.mat', browseDirectory), 'Select an RGB mosaic');
 
     % Load the user-selected prebaked mRGCmosaic
     load(fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic');
@@ -227,13 +241,24 @@ else
         % Load the mRGCmosaic specified by the passed parameters:
         %   coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor
         % and generate the optics that were used to synthesize the mosaic
-        % See t_mRGCMosaicBasic for why 'wavefrontSpatialSamples' is set
-        % below the default of 501. Raise it if you need a finer PSF than
-        % the 301x301 sampling used here for the visualizations below.
+        %
+        % Nearly all of this tutorial's run time is spent here. The native
+        % optics are found by searching 29 defocus values for the one that
+        % maximizes the Strehl ratio, and each step computes a PSF. The
+        % search runs in parallel and prints a few lines per step, so expect
+        % a burst of repeated output while it works.
+        %
+        % 'wavefrontSpatialSamples' is set below the default of 501 to keep
+        % that search affordable. 201 samples is enough for the
+        % visualizations below: it returns the same optimal defocus as the
+        % 301 used in t_mRGCMosaicBasic, with the Strehl ratio agreeing to
+        % 0.002 and the peak PSF to better than 0.1%, in half the time.
+        % Raise it if you need a finer PSF than the 201x201 sampling here.
+        fprintf('Computing the native optics. This is the slow step.\n');
         [theMRGCMosaic, theOIatTheMosaicEccentricity, thePSFatTheMosaicEccentricity] = mRGCMosaic.loadPrebakedMosaic(...
             coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptor, ...
             'computeTheMosaicOptics', true, ...
-            'wavefrontSpatialSamples', 301, ...
+            'wavefrontSpatialSamples', 201, ...
             'opticsToEmploy', opticsToEmploy, ...
             'cropParams', cropParams);
     end
@@ -292,8 +317,12 @@ theMRGCMosaic.visualize(...
     'exportVisualizationPDFdirectory', exportVisualizationPDFdirectory);
 
 
-% Visualize the full mosaic of RF centers, now visualizing the full
-% extent of RF center pooling
+% Visualize the same mosaic again, changing only the minimum cone weight
+% that is rendered. Figure 1 used the sensitivity at the point of overlap,
+% so each RF center stops where neighboring centers meet. Here the
+% threshold drops to the 1% sensitivity used to include divergent cone
+% connections, so the drawn outlines show the full extent of RF center
+% pooling and neighboring centers visibly overlap. Compare the two.
 hFig = figure(2); clf;
 theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
 ax = theAxes{1,1};
@@ -343,7 +372,12 @@ vLambdaWeightedPSF.supportYdegs = thePSFatTheMosaicEccentricity.supportY/60 - PS
 
 if (isstruct(opticsToEmploy)) && (isfield(opticsToEmploy, 'customOpticsParams'))
 
-    opticsToEmploy.customOpticsParams
+    fprintf('Custom optics: %s, %s subject %d, %2.2f mm pupil, %2.2fD refractive error.\n', ...
+        opticsToEmploy.customOpticsParams.modification, ...
+        opticsToEmploy.customOpticsParams.ZernikeDataBase, ...
+        opticsToEmploy.customOpticsParams.subjectID, ...
+        opticsToEmploy.customOpticsParams.pupilDiameterMM, ...
+        opticsToEmploy.customOpticsParams.refractiveErrorDiopters);
     comboMosaicPSFvisualizationFileName = sprintf('zoomedInMRGCmosaicWithPSFminCenterConeWeight_customOptics_SubjID_%d_withRefractiveError_%2.2fD', ...
         opticsToEmploy.customOpticsParams.subjectID, ...
         opticsToEmploy.customOpticsParams.refractiveErrorDiopters);

@@ -30,7 +30,7 @@ function cmosaic = mosaicLoad(sizeDeg,positionDeg)
 %       updating!)
 %
 % See also
-%   ieWebGet, mosaicName, cMosaic
+%   ieWebGet, mosaicName, cMosaic, sdrMosaicRecords, sdrMosaicFetch
 
 % Examples:
 %{
@@ -44,7 +44,7 @@ cm = mosaicLoad([1 1],[1 0]);
 if ischar(sizeDeg) && ismember(lower(sizeDeg), {'help', 'list'})
     collectionName = 'cone_mosaics';
     if nargin >= 2 && ischar(positionDeg), collectionName = positionDeg; end
-    records = localCollectionRecords(collectionName);
+    records = sdrMosaicRecords(collectionName);
     fprintf('\nAvailable SDR assets in %s:\n\n', collectionName);
     for ii = 1:numel(records)
         fprintf('%-5s  %s\n', records(ii).eye, records(ii).path);
@@ -98,68 +98,12 @@ if isempty(recordIndex)
         mat2str(sizeDeg), mat2str(positionDeg));
 end
 
-localFile = localFetchRecord(records(recordIndex));
+localFile = sdrMosaicFetch('cone_mosaics', records(recordIndex));
 loadedData = load(localFile, 'cmosaic');
 cmosaic = loadedData.cmosaic;
 
 end
 
 function records = localConeMosaicRecords()
-records = localCollectionRecords('cone_mosaics');
-end
-
-function records = localCollectionRecords(collectionName)
-cacheRoot = fullfile(isetbioRootPath, 'data', 'sdr', 'isetbio-mosaics');
-topManifest = localFetchManifest(cacheRoot, 'manifest.json');
-topData = jsondecode(fileread(topManifest));
-collectionIndex = find(strcmp({topData.collections.name}, collectionName), 1);
-if isempty(collectionIndex)
-    error('mosaicLoad:Manifest', 'The SDR manifest has no %s collection.', collectionName);
-end
-collectionManifest = localFetchManifest(cacheRoot, topData.collections(collectionIndex).manifest);
-collectionData = jsondecode(fileread(collectionManifest));
-records = collectionData.files;
-end
-
-function localFile = localFetchManifest(cacheRoot, relativePath)
-pathParts = split(relativePath, '/');
-localFile = fullfile(cacheRoot, pathParts{:});
-if ~isfile(localFile)
-    ieWebGet('depositname', 'isetbio-mosaics', 'depositfile', relativePath, ...
-        'downloaddir', cacheRoot, 'unzip', false);
-end
-end
-
-function localFile = localFetchRecord(record)
-cacheRoot = fullfile(isetbioRootPath, 'data', 'sdr', 'isetbio-mosaics');
-pathParts = split(record.path, '/');
-localFile = fullfile(cacheRoot, 'cone_mosaics', pathParts{:});
-if isfile(localFile) && localRecordMatchesFile(localFile, record)
-    return;
-end
-
-if isfile(localFile), delete(localFile); end
-temporaryRoot = tempname(cacheRoot);
-mkdir(temporaryRoot);
-cleanup = onCleanup(@() localRemoveFolder(temporaryRoot));
-temporaryFile = ieWebGet('depositname', 'isetbio-mosaics', ...
-    'depositfile', ['cone_mosaics/' record.path], ...
-    'downloaddir', temporaryRoot, 'unzip', false);
-if ~localRecordMatchesFile(temporaryFile, record)
-    error('mosaicLoad:Checksum', 'Downloaded mosaic failed its manifest checksum or byte-count check.');
-end
-localDir = fileparts(localFile);
-if ~isfolder(localDir), mkdir(localDir); end
-movefile(temporaryFile, localFile, 'f');
-clear cleanup
-end
-
-function tf = localRecordMatchesFile(localFile, record)
-details = dir(localFile);
-tf = ~isempty(details) && details.bytes == record.bytes && ...
-    strcmpi(ieHash(localFile, 'file', 'SHA-256', 'hex'), record.sha256);
-end
-
-function localRemoveFolder(folder)
-if isfolder(folder), rmdir(folder, 's'); end
+records = sdrMosaicRecords('cone_mosaics');
 end
