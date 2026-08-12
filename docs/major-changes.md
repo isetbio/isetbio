@@ -3,6 +3,40 @@
 This document summarizes changes affecting public APIs, compatibility, or major
 implementation paths.
 
+## 2026-08: Retinal Mosaic Data Moved to the Stanford Digital Repository
+
+The large retinal data files are no longer stored in the repository. They are
+published in the SDR deposit `isetbio-mosaics`,
+<https://purl.stanford.edu/vm447vf0975>, and downloaded on demand into an
+untracked cache under `data/sdr/isetbio-mosaics/`. All four collections have
+migrated: 5 cone lattices, 6 midget-RGC lattices, 27 serialized cone mosaics,
+and 21 pre-baked ON-mRGC circuits, about 1.2 GB in total.
+
+Public entry points are unchanged. `mosaicLoad`,
+`retinalattice.import.finalConePositions`,
+`retinalattice.import.finalMRGCPositions`, and
+`mRGCMosaic.loadPrebakedMosaic` take the same arguments and return the same
+results; remote resolution sits below them. Every download is verified against
+the manifest's SHA-256, and a corrupt cache entry is replaced rather than
+loaded.
+
+Behavior that did change:
+
+- A first call for a given file downloads it. Sizes run from 200 KB to 551 MB.
+- `data/datafiles/cones/lattices/`, `data/datafiles/rgc/lattices/`, and
+  `ganglioncells/mosaics/ONmRGC/` are empty in a fresh checkout. A file you
+  generate locally into one of them still takes precedence over the deposited
+  copy.
+- `mRGCMosaic.listPrebakedMosaics` and
+  `retinalattice.listPrecomputedPatches` list what the deposit publishes as
+  well as what is present locally, rather than listing a directory.
+- `mRGCMosaic.loadPrebakedMosaic` returns the directory that actually holds
+  the loaded file, which is the cache directory for a downloaded circuit. It
+  no longer necessarily joins with the returned filename.
+
+Usage, caching, and troubleshooting are documented in
+[sdr-mosaic-data.md](sdr-mosaic-data.md).
+
 ## 2026-06: Validation Infrastructure Reorganized
 
 ISETBio and ISETCam now keep their public test runners and validation

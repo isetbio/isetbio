@@ -65,22 +65,41 @@ details.
 Keep `mosaicLoad`, cone/mRGC lattice importers, and
 `mRGCMosaic.loadPrebakedMosaic` as public entry points. Place remote resolution
 below them. Do not repurpose `cMosaic`'s `name` parameter, modify the staged
-file layout casually, or rewrite Git history as part of the initial loader
-work. The bundled cone mosaics have been removed after their loader was
-validated; migrate each remaining collection only after its corresponding
-loader and empty-cache validation are complete.
+file layout casually, or rewrite Git history.
 
-Keep core unit tests offline and deterministic. Add fake-transport tests for
-manifest lookup, mirrored paths, first fetch, cache hit, corrupt cache, and
-missing resource. Put a real SDR smoke test behind an opt-in `FullOnly` mode.
+All four collections are migrated. The shared fetch layer is in `utility/sdr/`:
+`sdrMosaicCacheRoot`, `sdrMosaicRecords`, `sdrMosaicFetch`, `sdrMosaicVerify`,
+`sdrLegacyFilenameMap`, and `sdrPrebakedCircuitFile`. Lattices resolve through
+`retinalattice.import.sourceLatticeFile`. A locally generated file always wins
+over the deposited copy, so the three gallery directories remain, each with a
+README. Add a new collection by resolving through these helpers rather than
+writing a second fetch path.
+
+Circuits are selected by their historical ISETBio filename, not by manifest
+metadata. Staging dropped the sign of the x eccentricity for
+`mrgc_on_circuits`, so x = -2 and x = +2 both read `[2 0]`. The legacy map at
+`data/datafiles/sdr/isetbio-mosaics-legacy-filenames.json` is the lookup table;
+every pairing in it was established by SHA-256 comparison. Before deleting any
+bundled asset, confirm it is byte-identical to its deposited copy.
+
+Keep core unit tests offline and deterministic. Live checks are named
+`FullOnly`: `test_sdrMosaicCacheFullOnly` covers first fetch, cache hit,
+corrupt-cache replacement, missing records, and golden crop parity;
+`test_sdrLegacyFilenameMapFullOnly` checks the map against the manifests and
+fails once the eccentricity sign is fixed. Offline fake-transport tests are
+still outstanding and need an injection seam, since `sdrMosaicFetch` calls
+`ieWebGet` directly and `sdrMosaicCacheRoot` is fixed.
 
 ## Documentation follow-up
 
-Over the next few weeks, build out user-facing ISETBio documentation in the
-repository GitHub wiki (`isetbio/wiki`), including mosaic discovery, on-demand
-caching, and full-deposit mirroring. The repository `docs/` directory may
-later become a set of pointers to those wiki pages; do not restructure it as
-part of loader migration work.
+`docs/sdr-mosaic-data.md` is the user-facing account of the deposit: loading,
+the cache, full-deposit mirroring, locally generated data, and troubleshooting.
+`docs/major-changes.md` carries the compatibility entry. Update both when
+loader behavior changes.
+
+The wiki (`isetbio/wiki`) is still to be written, and `docs/sdr-mosaic-data.md`
+is its intended source. The repository `docs/` directory may later become a set
+of pointers to wiki pages; do not restructure it as part of loader work.
 
 ## Deferred Git-history cleanup
 

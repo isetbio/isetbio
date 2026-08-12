@@ -16,11 +16,17 @@ their connectivity.
 
 | Data | Location | Contents | Role |
 | --- | --- | --- | --- |
-| Cone lattice | `data/datafiles/cones/lattices/` | Retina-wide cone RF-center positions | Crop geometry used to construct a `cMosaic`. |
-| RGC lattice | `data/datafiles/rgc/lattices/` | Retina-wide midget-RGC RF-center positions | Crop destination geometry used to generate an RGC mosaic. |
-| Serialized cone mosaic | SDR `cone_mosaics/` collection, cached in `data/sdr/isetbio-mosaics/` | A local, complete `cMosaic` | Load through `mosaicLoad` for a precomputed cone realization. |
-| Pre-baked RGC mosaic | `ganglioncells/mosaics/ONmRGC/` | A local `mRGCMosaic`, its input `cMosaic`, and computed connectivity/model data | Fast loading of a completed cone-to-RGC circuit model. |
-| Compute-ready RGC mosaic | External resource directory selected by `getpref('isetbio').rgcResources` | A further prepared `mRGCMosaic` used by optimization workflows | Load through `loadComputeReadyRGCMosaic`. |
+| Cone lattice | SDR `cone_lattices/`; local gallery `data/datafiles/cones/lattices/` | Retina-wide cone RF-center positions | Crop geometry used to construct a `cMosaic`. Resolved by `retinalattice.import.sourceLatticeFile`. |
+| RGC lattice | SDR `mrgc_lattices/`; local gallery `data/datafiles/rgc/lattices/` | Retina-wide midget-RGC RF-center positions | Crop destination geometry used to generate an RGC mosaic. Same resolver. |
+| Serialized cone mosaic | SDR `cone_mosaics/` | A local, complete `cMosaic` | Load through `mosaicLoad` for a precomputed cone realization. |
+| Pre-baked RGC mosaic | SDR `mrgc_on_circuits/`; local gallery `ganglioncells/mosaics/ONmRGC/` | A local `mRGCMosaic`, its input `cMosaic`, and computed connectivity/model data | Load through `mRGCMosaic.loadPrebakedMosaic`, which resolves via `sdrPrebakedCircuitFile`. |
+| Compute-ready RGC mosaic | External resource directory selected by `getpref('isetbio').rgcResources` | A further prepared `mRGCMosaic` used by optimization workflows | Load through `loadComputeReadyRGCMosaic`. Not part of the SDR deposit. |
+
+The four SDR collections are cached under `data/sdr/isetbio-mosaics/`, which
+Git ignores. The local galleries above are empty in a fresh checkout; a file
+generated locally into one of them takes precedence over the deposited copy.
+See `sdr-mosaic-data` for the deposit, cache, and legacy-filename contract, and
+`docs/sdr-mosaic-data.md` for the user-facing account.
 
 Do not confuse “mosaic” in a filename with a completed circuit. A lattice
 contains positions, not cone types, cone–RGC wiring, receptive-field weights,
@@ -66,7 +72,9 @@ changing the input cone positions or cone types.
   a human-readable label, not a resource identifier.
 - Use `mRGCMosaic.loadPrebakedMosaic` for the pre-baked ON-mRGC circuit
   models. Preserve its parameter-to-filename convention and its cropping
-  behavior.
+  behavior. The filename it builds is the lookup key into the deposit,
+  because the published circuit metadata lost the sign of the x
+  eccentricity; do not switch to selecting by eccentricity and size.
 - Use `mRGCMosaic.loadComputeReadyRGCMosaic` only for the configured external
   compute-ready resource set; it currently relies on ISETBio preferences.
 - Keep the lattices available for any workflow that regenerates a mosaic. A
@@ -84,9 +92,9 @@ removing a bundled asset.
   `rg -n "mosaicLoad|loadPrebakedMosaic|loadComputeReadyRGCMosaic|finalConePositions|finalMRGCPositions"`.
 - Inspect representative MAT-file variables before writing migration logic;
   do not infer content from filenames.
-- Update data-path tests if their contract deliberately changes. The bundled
-  cone mosaics have been migrated; cone and mRGC lattices remain bundled until
-  their own remote loaders are implemented and validated.
+- Update data-path tests if their contract deliberately changes. All four
+  collections have been migrated, so a test must not assert that a bundled
+  lattice or circuit exists on disk.
 - Validate both a first fetch/load and a cache-hit load, plus a clear error
   when the resource is unavailable. For circuit generation, verify dimensions
   and cone/RGC counts of the connectivity matrices as well as successful

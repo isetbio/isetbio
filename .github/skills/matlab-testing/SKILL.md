@@ -78,3 +78,11 @@ ieTestReport('/path/to/run/directory','List','all');
 
 When a sandboxed MATLAB batch run silently fails or exits with status 1,
 retry with permission to write MATLAB preferences or caches outside the repo.
+
+## Known coverage gap
+
+Nothing pins the optics-dependent mRGC path with golden values: visually
+projected RF properties and spatial transfer functions. It was left out on
+cost, roughly 20 seconds per case, so it belongs behind an opt-in `FullOnly`
+test rather than the core suite. See `docs/todo-science.md` for the details and
+for the known NaN surround behavior that the pre-baked circuit tests pin.
