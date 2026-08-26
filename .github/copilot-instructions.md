@@ -7,6 +7,7 @@ matches the requested work; skills contain task-specific procedures.
 ## Repository Context
 
 - MATLAB is the primary runtime.
+- Read and try to follow Matlab coding rules at https://github.com/matlab/rules
 - ISETCam (`../isetcam`) is a required dependency and must be on the MATLAB
   path when ISETBio is used or tested. Reuse ISETCam utilities, including
   `ieTestReport`; do not duplicate them in ISETBio.
