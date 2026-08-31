@@ -36,10 +36,14 @@ function exportFigToPDF(pdfFileName,figHandle,dpi, varargin)
     set(figHandle,'InvertHardCopy','off')
     % Save the pdf (this is the same method used by "saveas")
     if (~isempty(varargin))
-        if ismember('noui', varargin{:})
-            print(figHandle,'-dpdf', '-noui', pdfFileName,sprintf('-r%d',dpi));
+        if ismember('employExportGraphicsCall', varargin{:})
+            exportgraphics(figHandle, pdfFileName, 'Resolution', dpi, 'ContentType', 'vector')
         else
-            print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));
+            if ismember('noui', varargin{:})
+                print(figHandle,'-dpdf', '-noui', pdfFileName,sprintf('-r%d',dpi));
+            else
+                print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));
+            end
         end
     else
         print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));
