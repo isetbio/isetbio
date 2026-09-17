@@ -37,8 +37,7 @@ function exportFigToPNG(imFileName,figHandle,dpi, varargin)
     % Save the pdf (this is the same method used by "saveas")
     if (~isempty(varargin))
         if ismember('employExportGraphicsCall', varargin{:})
-            exportgraphics(figHandle, imFileName, 'Resolution', dpi, 'ContentType', 'image')
-            pause
+            exportgraphics(figHandle, imFileName, 'Resolution', dpi, 'ContentType', 'image');
         else
             if ismember('noui', varargin{:})
                 print(figHandle,'-dpng', '-noui',imFileName,sprintf('-r%d',dpi));
