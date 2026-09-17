@@ -36,10 +36,15 @@ function exportFigToPNG(imFileName,figHandle,dpi, varargin)
     set(figHandle,'InvertHardCopy','off')
     % Save the pdf (this is the same method used by "saveas")
     if (~isempty(varargin))
-        if ismember('noui', varargin{:})
-            print(figHandle,'-dpng', '-noui',imFileName,sprintf('-r%d',dpi));
+        if ismember('employExportGraphicsCall', varargin{:})
+            exportgraphics(figHandle, imFileName, 'Resolution', dpi, 'ContentType', 'image')
+            pause
         else
-            print(figHandle,'-dpng',imFileName,sprintf('-r%d',dpi));
+            if ismember('noui', varargin{:})
+                print(figHandle,'-dpng', '-noui',imFileName,sprintf('-r%d',dpi));
+            else
+                print(figHandle,'-dpng',imFileName,sprintf('-r%d',dpi));
+            end
         end
     else
         print(figHandle,'-dpng',imFileName,sprintf('-r%d',dpi))
