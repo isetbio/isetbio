@@ -10,12 +10,14 @@ function StrehlRatioAsAFunctionOfDefocusAndAstigmatism(...
 
     p = inputParser;
     p.addParameter('figureDir', [], @(x)(isempty(x)||(ischar(x))));
+    p.addParameter('figureType', 'PNG', @ischar);
     p.addParameter('darkScheme', true, @islogical);
     p.addParameter('backgroundIsTransparent', false, @islogical);
     p.addParameter('pdfFileName', '', @(x)(isempty(x)||(ischar(x))));
     p.parse(varargin{:});
 
     figureDir = p.Results.figureDir;
+    figureType = p.Results.figureType;
     thePDFfileName = p.Results.pdfFileName;
     backgroundIsTransparent = p.Results.backgroundIsTransparent;
 
@@ -139,19 +141,29 @@ function StrehlRatioAsAFunctionOfDefocusAndAstigmatism(...
     end
 
     if (isempty(thePDFfileName))
-        thePDFfileName = sprintf('StrehlRatio3Doptimization_%s_%s_subjID_%d', whichEye, zernikeDataBase, subjectID);
+        thePDFfileName = sprintf('StrehlRatio3Doptimization_%s_%s_subjID_%d.pdf', whichEye, zernikeDataBase, subjectID);
     end
 
-     thePDFfileName = fullfile(figureDir,thePDFfileName);
-     NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+    thePDFfileName = fullfile(figureDir,thePDFfileName);
+    switch (figureType)
+        case 'PNG'
+            thePNGfileName = strrep(thePDFfileName, '.pdf', '.png');
+            NicePlot.exportFigToPNG(thePNGfileName, hFig, 300, ...
+                'employExportGraphicsCall');
+        case 'PDF'
+            NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, ...
+                'employExportGraphicsCall');
+        otherwise
+            error('Unknown figure format: ''%s''.\n', figureType)
+    end
 
-     % The PSF alone
-     ff = PublicationReadyPlotLib.figureComponents('1x1 standard very tall figure', ...
+    % The PSF alone
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard very tall figure', ...
         'darkScheme', p.Results.darkScheme);
     
-     hFig = figure(); clf;
-     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
-     ax = theAxes{1,1};
+    hFig = figure(); clf;
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
+    ax = theAxes{1,1};
 
 
     RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax, ...
@@ -162,22 +174,32 @@ function StrehlRatioAsAFunctionOfDefocusAndAstigmatism(...
 		    'YLimsArcMin', YLimsArcMin, ...
 		    'XTicksArcMin', XTicksArcMin, ... 
 		    'YTicksArcMin', YTicksArcMin);
-     theLUT = brewermap(1024, '*greys');
-     colormap(ax, theLUT);
-     colorbar(ax);
+    theLUT = brewermap(1024, '*greys');
+    colormap(ax, theLUT);
+    colorbar(ax);
 
-     % Finalize figure using the Publication-Ready format
-     ff.box = 'on';
-     PublicationReadyPlotLib.applyFormat(ax,ff);
+    % Finalize figure using the Publication-Ready format
+    ff.box = 'on';
+    PublicationReadyPlotLib.applyFormat(ax,ff);
     
-     if (backgroundIsTransparent)
-            set(hFig, 'Color', 'none');
-            set(ax, 'Color', 'none', 'XColor', [0.9 0.9 0.9], 'YColor', [0.9 0.9 0.9]);
-     end
+    if (backgroundIsTransparent)
+       set(hFig, 'Color', 'none');
+       set(ax, 'Color', 'none', 'XColor', [0.9 0.9 0.9], 'YColor', [0.9 0.9 0.9]);
+    end
     
-
-     thePDFfileName = strrep(thePDFfileName, 'StrehlRatioOptimization', 'StrehlRatioOptimizationPSF');
-     NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+    thePDFfileName = strrep(thePDFfileName, 'StrehlRatioOptimization', 'StrehlRatioOptimizationPSF');
+     
+    switch (figureType)
+        case 'PNG'
+            thePNGfileName = strrep(thePDFfileName, '.pdf', '.png');
+            NicePlot.exportFigToPNG(thePNGfileName, hFig, 300, ...
+                'employExportGraphicsCall');
+        case 'PDF'
+            NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, ...
+                'employExportGraphicsCall');
+        otherwise
+            error('Unknown figure format: ''%s''.\n', figureType)
+    end
 
 end
 

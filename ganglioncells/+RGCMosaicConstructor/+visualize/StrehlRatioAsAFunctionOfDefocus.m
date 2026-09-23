@@ -10,13 +10,17 @@ function StrehlRatioAsAFunctionOfDefocus(...
     p = inputParser;
     p.addParameter('axesToRenderIn', [], @(x)(isempty(x)||(isa(x, 'handle'))));
     p.addParameter('figureDir', [], @(x)(isempty(x)||(ischar(x))));
+    p.addParameter('figureType', 'PNG', @ischar);
     p.addParameter('darkScheme', true, @islogical);
     p.addParameter('backgroundIsTransparent', false, @islogical);
     p.addParameter('pdfFileName', '', @(x)(isempty(x)||(ischar(x))));
     p.parse(varargin{:});
 
+   
+
     axesToRenderIn = p.Results.axesToRenderIn;
     figureDir = p.Results.figureDir;
+    figureType = p.Results.figureType;
     thePDFfileName = p.Results.pdfFileName;
     backgroundIsTransparent = p.Results.backgroundIsTransparent;
     
@@ -58,12 +62,23 @@ function StrehlRatioAsAFunctionOfDefocus(...
     end
 
      if (isempty(thePDFfileName))
-        thePDFfileName = sprintf('StrehlRatioOptimization_%s_%s_subjID_%d', whichEye, zernikeDataBase, subjectID);
+        thePDFfileName = sprintf('StrehlRatioOptimization_%s_%s_subjID_%d.pdf', whichEye, zernikeDataBase, subjectID);
     end
 
     if (isempty(axesToRenderIn))
         thePDFfileName = fullfile(figureDir,thePDFfileName);
-        NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+
+        switch (figureType)
+            case 'PNG'
+                thePNGfileName = strrep(thePDFfileName, '.pdf', '.png');
+                NicePlot.exportFigToPNG(thePNGfileName, hFig, 300, ...
+                    'employExportGraphicsCall');
+            case 'PDF'
+                NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, ...
+                    'employExportGraphicsCall');
+            otherwise
+                error('Unknown figure format: ''%s''.\n', figureType)
+        end
     end
 
 
@@ -112,9 +127,21 @@ function StrehlRatioAsAFunctionOfDefocus(...
 
         if (isempty(axesToRenderIn))
             thePDFfileName = strrep(thePDFfileName, 'StrehlRatioOptimization', 'StrehlRatioOptimizationPSF');
-            NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
-        end
 
+            if (~isempty(thePDFfileName))
+                switch (figureType)
+                    case 'PNG'
+                        thePNGfileName = strrep(thePDFfileName, '.pdf', '.png');
+                        NicePlot.exportFigToPNG(thePNGfileName, hFig, 300, ...
+                            'employExportGraphicsCall');
+                    case 'PDF'
+                        NicePlot.exportFigToPDF(thePDFfileName, hFig, 300, ...
+                            'employExportGraphicsCall');
+                    otherwise
+                        error('Unknown figure format: ''%s''.\n', figureType)
+                end
+            end
+        end
     end
 
 
