@@ -1,6 +1,6 @@
 ---
 name: matlab-script-review
-description: Review existing ISETBio MATLAB tutorial, example, or demo scripts without implementing behavior. Use when asked to assess runnability, comment quality, overlap, consolidation candidates, or teaching-script coverage against the nearest object-specific _tests_ directory, especially scripts under scripts/ or scene-related examples.
+description: Review existing ISETBio MATLAB tutorial, example, or demo scripts without implementing behavior. Use when asked to assess runnability, comment quality, overlap, consolidation candidates, or teaching-script coverage against the nearest object-specific _tests_ directory.
 ---
 
 # MATLAB Script Review
@@ -35,16 +35,17 @@ overlapping scripts and the one teaching goal that should remain.
 
 ### Scene Review Heuristics
 
-Prefer existing `scene*` constructors, accessors, and plotting helpers. Check
-`s_sceneDemo.m` and `s_sceneExamples.m` as possible overview overlaps. Review
-illuminant scripts (`s_sceneIlluminant.m`, `s_sceneIlluminantSpace.m`,
-`s_sceneIlluminantMixtures.m`, `s_sceneChangeIlluminant.m`) as a cluster, and
-do the same for reflectance scripts (`s_sceneReflectanceCharts.m`,
+Scene scripts and their tests live in ISETCam (`../isetcam/examples/scene/`
+and `../isetcam/scene/_tests_/`), not in ISETBio. Prefer existing `scene*`
+constructors, accessors, and plotting helpers. Check `s_sceneDemo.m` as a
+possible overview overlap. Review illuminant scripts (`s_sceneIlluminant.m`,
+`s_sceneIlluminantSpace.m`, `s_sceneChangeIlluminant.m`) as a cluster, and do
+the same for reflectance scripts (`s_sceneReflectanceCharts.m`,
 `s_sceneReflectanceChartBasisFunctions.m`, `s_sceneReflectanceSamples.m`).
 
-Compare relevant scene examples with nearby tests including `test_scenedemo.m`,
-`test_sceneexamples.m`, `test_sceneChangeIlluminant.m`,
-`test_sceneIncreaseSize.m`, and `test_sceneHCCompress.m` when present.
+Compare relevant scene examples with the tests there, including
+`test_scenedemo.m`, `test_sceneexamples.m`, `test_sceneChangeIlluminant.m`,
+`test_sceneIncreaseSize.m`, and `test_sceneHCCompress.m`.
 
 Favor a small number of high-value scripts with distinct teaching goals. Keep a
 script that uniquely explains a core concept even when a unit test covers the

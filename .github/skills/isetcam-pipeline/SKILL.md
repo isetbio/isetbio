@@ -26,10 +26,12 @@ For diagnostics, prefer the corresponding `scenePlot`, `oiPlot`, `sensorPlot`,
 
 ### Search Before Implementing
 
-- Search for nearby implementations using the relevant object prefix.
-- Search `color/` before adding color transforms or color-science utilities.
-- For scene patterns or charts, inspect `scene/` and related existing pattern
-  or chart code before designing new behavior.
+- Search for nearby implementations using the relevant object prefix. The
+  scene, OI, sensor, IP, and display families live in ISETCam (`../isetcam`).
+- Search `../isetcam/color/` before adding color transforms or color-science
+  utilities.
+- For scene patterns or charts, inspect `../isetcam/scene/` and related
+  existing pattern or chart code before designing new behavior.
 - Respect existing property names, input/output conventions, data shapes, and
   public APIs. Avoid parallel helper implementations when an object-family API
   already expresses the operation.

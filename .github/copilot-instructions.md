@@ -7,7 +7,8 @@ matches the requested work; skills contain task-specific procedures.
 ## Repository Context
 
 - MATLAB is the primary runtime.
-- Read and try to follow Matlab coding rules at https://github.com/matlab/rules
+- Follow the MATLAB coding rules at https://github.com/matlab/rules. Where
+  they conflict with the conventions of the file being edited, match the file.
 - ISETCam (`../isetcam`) is a required dependency and must be on the MATLAB
   path when ISETBio is used or tested. Reuse ISETCam utilities, including
   `ieTestReport`; do not duplicate them in ISETBio.
@@ -45,10 +46,12 @@ Activate the matching skill before following detailed workflow guidance:
 
 - `matlab-environment` — MATLAB paths and VS Code setup.
 - `matlab-testing` — unit, tutorial, and example validation.
+- `matlab-evaluation` — running MATLAB non-interactively from a shell (`-batch`, paths, exit codes).
 - `tutorial-example-authoring` — creating or maintaining teaching scripts.
 - `isetcam-pipeline` — Scene, OI, sensor, IP, and display work.
 - `sceneeye-maintenance` — sceneEye tutorial/example cleanup and promotion.
 - `matlab-script-review` — read-only review of scripts against nearby tests.
+- `retinal-mosaic-data` — cone and mRGC lattices, mosaics, loaders, and cone-to-RGC connectivity.
 - `sdr-mosaic-data` — SDR staging, manifests, ieWebGet registration, and cached retinal mosaic downloads.
 
 Skills are canonical in `.github/skills/<name>/SKILL.md`. Claude Code discovers

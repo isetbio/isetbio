@@ -105,9 +105,9 @@ of pointers to wiki pages; do not restructure it as part of loader work.
 
 Removing a migrated asset from the current tree is a normal commit and makes
 future repository checkouts smaller only when paired with a later history
-rewrite. Do not rewrite history during the initial SDR migration. Revisit that
-separate project after roughly one to two years, once the SDR loader and
-deposit have proven stable and downstream users have migrated.
+rewrite. Do not rewrite history yet. Revisit that separate project no earlier
+than August 2027 (the deposit was published 2026-08-10), once the SDR loader
+and deposit have proven stable and downstream users have migrated.
 
 At that time, preserve the SDR PURL, manifests, checksums, and a verified bare
 repository backup before using a scoped `git filter-repo` rewrite to remove

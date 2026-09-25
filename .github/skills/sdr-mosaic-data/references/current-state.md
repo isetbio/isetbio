@@ -2,8 +2,8 @@
 
 ## Staging root
 
-`/Volumes/Wandell/MATLAB/isetbio` is ready for the first SDR deposit. It
-contains:
+`/Volumes/Wandell/MATLAB/isetbio` is the staging root the first SDR deposit
+was published from. It contains:
 
 - `README.md`: plain-language guide for SDR visitors.
 - `manifest.json`: top-level index.
