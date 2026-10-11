@@ -4,12 +4,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
 
     p = inputParser;
     p.addParameter('noLCA', false, @islogical);
+    p.addParameter('wavefrontSpatialSamples', 401, @isscalar);
     p.parse(varargin{:});
     noLCA = p.Results.noLCA;
-    
-    wavefrontSpatialSamples = 401;
-    zCoeffs = zeros(1,22);
+    wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
 
+    zCoeffs = zeros(1,22);
     % Add custom optical defocus
     if (opticalDefocusDiopters ~= 0)
         refractiveErrorMicrons = wvfDefocusDioptersToMicrons(opticalDefocusDiopters, pupilDiameterMM);

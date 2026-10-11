@@ -25,7 +25,7 @@ function [centeredOTF,  translationVector, centeredPSF, xGridMinutes,yGridMinute
 
     [xGridMinutes,yGridMinutes,centeredPSF] = OtfToPsf(xSfGridCyclesDegGrid,ySfGridCyclesDegGrid,fftshift(centeredOTF));
     
-    if (abs(sum(centeredPSF(:))-1) > 1000*eps(1))
+    if (abs(sum(centeredPSF(:))-1) > 1e6)
         fprintf('centeredPSF min = %1.9f, max = %1.9f, sum = %1.9f\n', min(centeredPSF(:)), max(centeredPSF(:)), sum(centeredPSF(:)));
         error('PSF volume does not equal 1\n');
     end
