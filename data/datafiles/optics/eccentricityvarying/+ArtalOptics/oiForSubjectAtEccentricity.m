@@ -84,8 +84,6 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('noLCA', false, @islogical);
     p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
     p.addParameter('obliqueAndVerticalAstigmatismErrorsDiopters', [0 0], @isnumeric);
-
-
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
 
     inFocusWavelength = p.Results.inFocusWavelength;
@@ -103,7 +101,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     defocusErrorDiopters = p.Results.refractiveErrorDiopters;
     defocusErrorMicrons = wvfDefocusDioptersToMicrons(defocusErrorDiopters, pupilDiamMM);
     
-    % Astigmatic errors (in microns directly), if desired
+    % Astigmatic errors, if desired
     obliqueAndVerticalAstigmatismErrorsDiopters = p.Results.obliqueAndVerticalAstigmatismErrorsDiopters;
     obliqueAndVerticalAstigmatismErrorsMicrons = wvfAstigmatismDioptersToMicrons(obliqueAndVerticalAstigmatismErrorsDiopters, pupilDiamMM);
     
@@ -140,6 +138,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
         'upsampleFactor',  upsampleFactor, ...
         'noLCA', noLCA, ...
         'name', sprintf('Artal subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), 0));
+
+    % Need to put defocus back in for subject 0 case, because it got 
+    % zeroed out above.  Easiest to do that 
+    if (subjectID == 0)
+        theWVF = wvfSet(theWVF,'zcoeffs', defocusErrorMicrons, {'defocus'});
+    end
 
     % Remove wavelength-dependent defocus if noLCA is set.
     %

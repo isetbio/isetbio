@@ -11,6 +11,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 	    useParfor)
 
 
+
     % Deal with inconsistent capitalization of zernikeDataBase fieldname
     if (isfield(opticsParams, 'zernikeDataBase') && (~isfield(opticsParams, 'ZernikeDataBase')))
         zernikeDataBase = opticsParams.zernikeDataBase;
@@ -38,14 +39,24 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 	% Find the wavelength at thich the diffraction-limited PSF achieves its peak.
 	% Since we have LCA enabled, this should be 550.
 	theDiffractionLimitedPSF = psfEnsemble{1,1};
+
 	[peakDiffractionLimitedPSFAmplitude, ...
 	 wavelengthIndexOfPeakDiffractionLimitedPSFamplitude, ...
 	 wavelengthOfPeakDiffractionLimitedPSFamplitude] = RGCMosaicConstructor.helper.optics.analyzePSF(theDiffractionLimitedPSF, []);
-	 assert(wavelengthOfPeakDiffractionLimitedPSFamplitude == 550, 'Diffraction-limited PSF does not peak at 550');
+	 
+
+    if ((wavelengthOfPeakDiffractionLimitedPSFamplitude ~= 550) && ...
+       (max(max(squeeze(theDiffractionLimitedPSF.data(:,:,wavelengthIndexOfPeakDiffractionLimitedPSFamplitude)))) > peakDiffractionLimitedPSFAmplitude))
+            fprintf('Diffraction-limited PSF does not peak at 550. It peaks at %d nm', wavelengthOfPeakDiffractionLimitedPSFamplitude);
+            error('Diffraction-limited PSF does not peak at 550.')
+    else
+        % Peak amplitude occurs at 550 and other wavelengths. Fix it to 550
+        wavelengthIndexOfPeakDiffractionLimitedPSFamplitude = find(theDiffractionLimitedPSF.supportWavelength == 550);
+        wavelengthOfPeakDiffractionLimitedPSFamplitude = theDiffractionLimitedPSF.supportWavelength(wavelengthIndexOfPeakDiffractionLimitedPSFamplitude);
+    end
 
 	targetInFocusWavelengthIndex = wavelengthIndexOfPeakDiffractionLimitedPSFamplitude;
 	targetInFocusWavelength = wavelengthOfPeakDiffractionLimitedPSFamplitude;
-	fprintf('Diffraction-limited PSF peaks at %d nm (which is our in-focus wavelength)\n', targetInFocusWavelength);
 
 	if (visualizeStrehlRatioOptimization) || (contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection)
 		% Generate central-diffraction corrected PSF (just for reference to the optimal Strehl ratio PSF)
@@ -73,6 +84,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 	% Search through the defocus values in examinedRefractionErrorDioptersGrid to determine the defocus value
 	% for which the ratio of peak PSF amplitude for the current subject to peakDiffractionLimitedPSFAmplitude 
 	% (at the wavelengthOfPeakDiffractionLimitedPSFamplitude) is maximal
+
 	if (useParfor)
 		parfor iRefractiveError = 1:size(examinedDefocusAndAstigmatismDioptersGrid,1)
 
@@ -96,17 +108,60 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 		end
 	end
 	
-
-
     the3DSize(1) = numel(examinedRefractionErrorDiopters);
     the3DSize(2) = numel(examinedObliqueAstigmatismDiopters);
     the3DSize(3) = numel(examinedVerticalAstigmatismDiopters);
     StrehlRatio3Dmap = reshape(StrehlRatio3DFunction,the3DSize);
-    [theOptimalStrehlRatio, idx] = max(StrehlRatio3DFunction);
+    
+  
+    [theOptimalStrehlRatio, idx] = max(StrehlRatio3Dmap(:));
     [i1, i2, i3] = ind2sub(size(StrehlRatio3Dmap), idx);
+    [theOptimalStrehlRatio StrehlRatio3Dmap(i1,i2,i3)]
+
     theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1) = examinedRefractionErrorDiopters(i1);
     theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2) = examinedObliqueAstigmatismDiopters(i2);
     theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3) = examinedVerticalAstigmatismDiopters(i3);
+
+    if (visualizeStrehlRatioOptimization)
+        figure(5000 + round(oiPositionDegs(1)*10)+round(oiPositionDegs(2))); clf;
+        ax = subplot(1,3,1);
+        slide2D = squeeze(StrehlRatio3Dmap(i1,:,:));
+        imagesc(ax,examinedVerticalAstigmatismDiopters, examinedObliqueAstigmatismDiopters, slide2D);
+        hold (ax, 'on');
+        plot(ax,theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), 'r+');
+        hold(ax, 'off');
+        xlabel(ax, 'vertical astigmatism (D)');
+        ylabel(ax, 'oblique astigmatism (D)')
+        title(sprintf('Strehl ratio: %f', slide2D(i2,i3)))
+        axis(ax,'image')
+        axis(ax,'xy')
+        set(ax, 'FontSize', 14);
+        colormap(ax,gray)
+        
+        ax = subplot(1,3,2);
+        imagesc(ax, examinedVerticalAstigmatismDiopters, examinedRefractionErrorDiopters, squeeze(StrehlRatio3Dmap(:,i2,:)));
+        hold(ax, 'on');
+        plot(ax,theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), 'r+');
+        hold(ax, 'off');
+        xlabel(ax, 'defocus (D)');
+        ylabel(ax, 'oblique astigmatism (D)')
+        axis(ax,'image')
+        axis(ax,'xy')
+        set(ax, 'FontSize', 14);
+        colormap(ax,gray)
+
+        ax = subplot(1,3,3);
+        imagesc(ax,examinedObliqueAstigmatismDiopters, examinedRefractionErrorDiopters, squeeze(StrehlRatio3Dmap(:,:,i3)));
+        hold(ax, 'on');
+        plot(ax,theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), 'r+');
+        hold(ax, 'off');
+        xlabel(ax, 'defocus (D)');
+        ylabel(ax, 'vertical astigmatism (D)')
+        axis(ax,'image')
+        axis(ax,'xy')
+        set(ax, 'FontSize', 14);
+        colormap(ax,gray)
+    end
 
 
     fprintf(2,'\nWill employ a defocus correction of %2.3f (Diopters), and O/V astigmatic correction of (%2.3f,%2.3f) (Diopters) for which the Strehl ratio is maximal (%2.3f)\n\n', ...
@@ -115,7 +170,6 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
         theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), ...
         theOptimalStrehlRatio);
 
-    
 	% Generate the optimal Strehl ratio optics
 	[oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...
 		oiPositionDegs, ...
@@ -136,8 +190,6 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 	theOptimalStrehlRatioOI = oiEnsemble{1,1}; 
 	theOptimalStrehlRatioPSF = psfEnsemble{1,1};
 	
-    contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection = false;
-
 	if (contrastOptimizedStrehlRatioPSFtoAsMeasuredAndCentralCorrection)
 		[~, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...
         			oiPositionDegs, ...
@@ -155,9 +207,9 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 		thePSFasMeasured = psfEnsemble{1,1};
 		
 
-		hFig = figure(2000);
+		hFig = figure(2000+round(oiPositionDegs(1)*10)+round(oiPositionDegs(2)));
 		clf;
-		set(hFig, 'Position', [10 10 1360 1200]);
+		set(hFig, 'Position', [10 10 1700 1200]);
 
 		XLimsArcMin = 5*[-1 1];
 		YLimsArcMin = 5*[-1 1];
@@ -185,6 +237,8 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
         StrehlRatio2Dslice = squeeze(StrehlRatio3Dmap (:,:,i3));
         % Plot the slice over the defocus x oblique astigmatism plane
         imagesc(ax5,examinedRefractionErrorDiopters, examinedObliqueAstigmatismDiopters, StrehlRatio2Dslice');
+        axis(ax5, 'image');
+        axis(ax5, 'xy');
         hold(ax5, 'on');
         plot(ax5, theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), 'rx', 'LineWidth', 1.5, 'MarkerSize', 20);
         xlabel(ax5, 'defocus (D)');
@@ -195,14 +249,16 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
         % Plot the slice over the defocus x vertical astigmatism plane
         imagesc(ax6,examinedRefractionErrorDiopters, examinedVerticalAstigmatismDiopters, StrehlRatio2Dslice');
         hold(ax6, 'on');
-        plot(ax6, theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), 'bs', 'MarkerSize', 20);
+        plot(ax6, theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), 'rx', 'MarkerSize', 20);
+        axis(ax6, 'image');
+        axis(ax6, 'xy');
         xlabel(ax6, 'defocus (D)');
         ylabel(ax6, 'vertical astigmatism (D)');
 
 
 		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax1, theDiffractionLimitedPSF, targetInFocusWavelengthIndex, ...
 			peakDiffractionLimitedPSFAmplitude, ...
-			sprintf('diffraction limited PSF\npeak: %d at \n%d nm (in-focus wavelength)', peakDiffractionLimitedPSFAmplitude, targetInFocusWavelength), ...
+			sprintf('diffraction limited PSF\npeak: %2.3f at \n%d nm', peakDiffractionLimitedPSFAmplitude, targetInFocusWavelength), ...
 			'XLimsArcMin', XLimsArcMin, ...
 			'YLimsArcMin', YLimsArcMin, ...
 			'XTicksArcMin', XTicksArcMin, ... 
@@ -214,7 +270,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 		
         RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax2, theOptimalStrehlRatioPSF, targetInFocusWavelengthIndex, ...
 			peakOptimalStrehlRatioPSFAmplitude,  ...
-			sprintf('(%2.1f,%2.1f) degs PSF \n with optimal Strehl ratio (%2.3f)\npeak: %f at \n%d nm (in-focus wavelength))', ...
+			sprintf('(%2.1f,%2.1f) degs PSF \n with optimal Strehl ratio (%2.3f)\npeak: %2.3f at \n%d nm)', ...
 				oiPositionDegs(1), oiPositionDegs(2), peakOptimalStrehlRatioPSFAmplitude/ peakDiffractionLimitedPSFAmplitude, peakOptimalStrehlRatioPSFAmplitude, targetInFocusWavelength), ...
 			'XLimsArcMin', XLimsArcMin, ...
 			'YLimsArcMin', YLimsArcMin, ...
@@ -228,7 +284,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 		
 		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax3, thePSFasMeasured, wavelengthIndexOfPeakPSFasMeasuredAmplitude, ...
 			peakPSFasMeasuredAmplitude, ...
-			sprintf('(%2.1f,%2.1f) PSF as measured\npeak: %f \nat %d nm', oiPositionDegs(1), oiPositionDegs(2), peakPSFasMeasuredAmplitude, wavelengthOfPeakPSFasMeasuredAmplitude), ...
+			sprintf('(%2.1f,%2.1f) PSF as measured\npeak: %2.3f \nat %d nm', oiPositionDegs(1), oiPositionDegs(2), peakPSFasMeasuredAmplitude, wavelengthOfPeakPSFasMeasuredAmplitude), ...
 			'XLimsArcMin', XLimsArcMin, ...
 			'YLimsArcMin', YLimsArcMin, ...
 			'XTicksArcMin', XTicksArcMin, ... 
@@ -241,7 +297,7 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 
 		RGCMosaicConstructor.helper.optics.visualizePSFatWavelength(ax4, theCentralCorrectionPSF, targetInFocusWavelengthIndex, ...
 			peakCentralCorrectionPSFAmplitude, ...
-			sprintf('(%2.1f,%2.1f) PSF \n(with central refraction (0,0) correction)\nStrehl ratio: %2.3f\npeak %f \nat %d nm',  oiPositionDegs(1), oiPositionDegs(2), StrehlRatioForCentralCorrection, peakCentralCorrectionPSFAmplitude, targetInFocusWavelength), ...
+			sprintf('(%2.1f,%2.1f) PSF \n(with central refraction correction)\nStrehl ratio: %2.3f\npeak %f \nat %d nm',  oiPositionDegs(1), oiPositionDegs(2), StrehlRatioForCentralCorrection, peakCentralCorrectionPSFAmplitude, targetInFocusWavelength), ...
 			'XLimsArcMin', XLimsArcMin, ...
 			'YLimsArcMin', YLimsArcMin, ...
 			'XTicksArcMin', XTicksArcMin, ... 

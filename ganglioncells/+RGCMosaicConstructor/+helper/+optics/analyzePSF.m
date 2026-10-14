@@ -9,13 +9,14 @@ function [peakAmplitude, wavelengthIndexOfPeakAmplitude, wavelengthOfPeakAmplitu
 			wavePeakAmplitude(iWave) = max(the2DPSF(:));
 		end
 		[peakAmplitude, wavelengthIndexOfPeakAmplitude] = max(wavePeakAmplitude);
-	else
+    else
 		the2DPSF = squeeze(thePSF.data(:,:,wavelengthIndexOfPeakAmplitude));
 		peakAmplitude = max(the2DPSF(:));
 	end
 	wavelengthOfPeakAmplitude = thePSF.supportWavelength(wavelengthIndexOfPeakAmplitude);
+    
 
-	visualizeThePSFslices = false;
+	visualizeThePSFslices = ~true;
 	if (visualizeThePSFslices)
 		for iWave = 1:wavesNum
 			the2DPSF = squeeze(thePSF.data(:,:,iWave));
