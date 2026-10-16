@@ -35,7 +35,6 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 	       'upsampleFactor', psfUpsampleFactor, ...
 	       'warningInsteadOfErrorForBadZernikeCoeffs', false);
 
-
 	% Find the wavelength at thich the diffraction-limited PSF achieves its peak.
 	% Since we have LCA enabled, this should be 550.
 	theDiffractionLimitedPSF = psfEnsemble{1,1};
@@ -44,7 +43,6 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 	 wavelengthIndexOfPeakDiffractionLimitedPSFamplitude, ...
 	 wavelengthOfPeakDiffractionLimitedPSFamplitude] = RGCMosaicConstructor.helper.optics.analyzePSF(theDiffractionLimitedPSF, []);
 	 
-
     if ((wavelengthOfPeakDiffractionLimitedPSFamplitude ~= 550) && ...
        (max(max(squeeze(theDiffractionLimitedPSF.data(:,:,wavelengthIndexOfPeakDiffractionLimitedPSFamplitude)))) > peakDiffractionLimitedPSFAmplitude))
             fprintf('Diffraction-limited PSF does not peak at 550. It peaks at %d nm', wavelengthOfPeakDiffractionLimitedPSFamplitude);
@@ -108,61 +106,18 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 		end
 	end
 	
-    the3DSize(1) = numel(examinedRefractionErrorDiopters);
-    the3DSize(2) = numel(examinedObliqueAstigmatismDiopters);
-    the3DSize(3) = numel(examinedVerticalAstigmatismDiopters);
+    the3DSize = [numel(examinedRefractionErrorDiopters) ...
+                 numel(examinedObliqueAstigmatismDiopters) ...
+                 numel(examinedVerticalAstigmatismDiopters)];
     StrehlRatio3Dmap = reshape(StrehlRatio3DFunction,the3DSize);
     
-  
+
     [theOptimalStrehlRatio, idx] = max(StrehlRatio3Dmap(:));
     [i1, i2, i3] = ind2sub(size(StrehlRatio3Dmap), idx);
-    [theOptimalStrehlRatio StrehlRatio3Dmap(i1,i2,i3)]
 
     theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1) = examinedRefractionErrorDiopters(i1);
     theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2) = examinedObliqueAstigmatismDiopters(i2);
     theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3) = examinedVerticalAstigmatismDiopters(i3);
-
-    if (visualizeStrehlRatioOptimization)
-        figure(5000 + round(oiPositionDegs(1)*10)+round(oiPositionDegs(2))); clf;
-        ax = subplot(1,3,1);
-        slide2D = squeeze(StrehlRatio3Dmap(i1,:,:));
-        imagesc(ax,examinedVerticalAstigmatismDiopters, examinedObliqueAstigmatismDiopters, slide2D);
-        hold (ax, 'on');
-        plot(ax,theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), 'r+');
-        hold(ax, 'off');
-        xlabel(ax, 'vertical astigmatism (D)');
-        ylabel(ax, 'oblique astigmatism (D)')
-        title(sprintf('Strehl ratio: %f', slide2D(i2,i3)))
-        axis(ax,'image')
-        axis(ax,'xy')
-        set(ax, 'FontSize', 14);
-        colormap(ax,gray)
-        
-        ax = subplot(1,3,2);
-        imagesc(ax, examinedVerticalAstigmatismDiopters, examinedRefractionErrorDiopters, squeeze(StrehlRatio3Dmap(:,i2,:)));
-        hold(ax, 'on');
-        plot(ax,theOptimalStrehlRatioDefocusAndAstigmatismDiopters(2), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), 'r+');
-        hold(ax, 'off');
-        xlabel(ax, 'defocus (D)');
-        ylabel(ax, 'oblique astigmatism (D)')
-        axis(ax,'image')
-        axis(ax,'xy')
-        set(ax, 'FontSize', 14);
-        colormap(ax,gray)
-
-        ax = subplot(1,3,3);
-        imagesc(ax,examinedObliqueAstigmatismDiopters, examinedRefractionErrorDiopters, squeeze(StrehlRatio3Dmap(:,:,i3)));
-        hold(ax, 'on');
-        plot(ax,theOptimalStrehlRatioDefocusAndAstigmatismDiopters(3), theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), 'r+');
-        hold(ax, 'off');
-        xlabel(ax, 'defocus (D)');
-        ylabel(ax, 'vertical astigmatism (D)')
-        axis(ax,'image')
-        axis(ax,'xy')
-        set(ax, 'FontSize', 14);
-        colormap(ax,gray)
-    end
-
 
     fprintf(2,'\nWill employ a defocus correction of %2.3f (Diopters), and O/V astigmatic correction of (%2.3f,%2.3f) (Diopters) for which the Strehl ratio is maximal (%2.3f)\n\n', ...
         theOptimalStrehlRatioDefocusAndAstigmatismDiopters(1), ...
@@ -211,10 +166,10 @@ function [theOptimalStrehlRatioOI, theOptimalStrehlRatioPSF, ...
 		clf;
 		set(hFig, 'Position', [10 10 1700 1200]);
 
-		XLimsArcMin = 5*[-1 1];
-		YLimsArcMin = 5*[-1 1];
-		XTicksArcMin = -5:1:5;
-		YTicksArcMin = -5:1:5;
+		XLimsArcMin = 15*[-1 1];
+		YLimsArcMin = 15*[-1 1];
+		XTicksArcMin = -15:5:15;
+		YTicksArcMin = -15:5:15;
 		
 		colormap(brewermap(1024, '*greys'));
 
