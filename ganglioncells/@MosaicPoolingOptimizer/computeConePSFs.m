@@ -34,7 +34,7 @@ function [theLconePSF, theMconePSF, theSconePSF, spatialSupportDegs] = ...
     else
         wavelengthSupport = theConeMosaic.wave;
         coneFundamentals = ieReadSpectra(...
-            fullfile(isetRootPath, 'data', 'human', 'stockman'), displayWavelengths);
+            'stockman.mat', displayWavelengths);
     end
 
     theLconePSF = [];
