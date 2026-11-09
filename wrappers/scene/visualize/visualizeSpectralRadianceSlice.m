@@ -19,11 +19,11 @@ wavelengBandwidth = wavelengthSupport(2)-wavelengthSupport(1);
 energyInWattsPerSrPerNMPerM2 = Quanta2Energy(wavelengthSupport, photonRateSpectralSlice);
 
 % Read-in the human luminosity function, Vlambda
-fName = fullfile(isetRootPath, 'data', 'human', 'luminosity.mat');
+fName = 'luminosity.mat';
 Vlambda = ieReadSpectra(fName, wavelengthSupport);
 
 % Read-in the CIE XYZ color matching functions
-fName = fullfile(isetRootPath, 'data', 'human', 'XYZ.mat');
+fName = 'XYZ.mat';
 XYZ = ieReadSpectra(fName, wavelengthSupport);
 
 % Compute target luminance by integrating the dot product 
