@@ -113,13 +113,12 @@ testCase.verifyEqual(treeShrew.data([1 186 end]), ...
 end
 
 function testISETCamDataRemainsSeparate(testCase)
-relativeFiles = { ...
-    fullfile('human', 'stockman.mat'); ...
-    fullfile('human', 'luminosity.mat'); ...
-    fullfile('human', 'XYZ.mat')};
+% ISETCam organizes data/human into subfolders, so find these by name.
+names = {'stockman.mat', 'luminosity.mat', 'XYZ.mat'};
+humanData = [fullfile(isetRootPath, 'data', 'human') filesep];
 
-for ii = 1:numel(relativeFiles)
-    testCase.verifyTrue(isfile(fullfile(isetRootPath, 'data', relativeFiles{ii})), ...
-        sprintf('Missing required ISETCam data file: %s', relativeFiles{ii}));
+for ii = 1:numel(names)
+    testCase.verifyTrue(startsWith(which(names{ii}), humanData), ...
+        sprintf('%s does not come from ISETCam data/human', names{ii}));
 end
 end
