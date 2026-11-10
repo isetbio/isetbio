@@ -63,7 +63,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
     grid(axesHandle, 'on');
   
     box(axesHandle, 'on');
-    axes(axesHandle, 'xy');
+    axis(axesHandle, 'xy');
     set(axesHandle, 'Color', [0.8 0.85 0.85]);
     set(axesHandle, 'XLim', xyRange, 'YLim', xyRange, 'CLim', [0 1], 'Color', [1 1 1]);
     set(axesHandle, 'XTick', xyTicks, 'YTick', xyTicks);
