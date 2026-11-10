@@ -7,6 +7,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('xyTicks', -20:2:20, @isnumeric);
     p.addParameter('alpha', 0.3, @isscalar);
+    p.addParameter('noYLabel', false', @islogical);
     
     p.parse(varargin{:});
     theConeMosaic = p.Results.superimposedConeMosaic;
@@ -15,7 +16,8 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
     fontSize = p.Results.fontSize;
     plotTitle = p.Results.plotTitle;
     alpha = p.Results.alpha;
-    
+    noYLabel = p.Results.noYLabel;
+
     if (numel(xyRange) == 1)
         xyRange = xyRange*0.5*[-1 1];
     end
@@ -48,13 +50,16 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
     if (isempty(cMap))
         cMap = brewermap(1024, 'reds');
     end
-    semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
     imagesc(axesHandle, xSupport, ySupport, thePSF);
-    colormap(axesHandle, brewermap(1024, '*spectral'));
     hold(axesHandle, 'on');
+    semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
+    colormap(axesHandle, cMap);
+
     
     xlabel(axesHandle, 'arc min');
-    ylabel(axesHandle, 'arc min');
+    if (~noYLabel)
+        ylabel(axesHandle, 'arc min');
+    end
     grid(axesHandle, 'on');
   
     box(axesHandle, 'on');

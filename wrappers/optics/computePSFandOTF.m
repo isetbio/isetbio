@@ -47,13 +47,13 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         % vertical tilt (2), and 
         % horizontal tilt (3)
         zcoeffsMicrons(1:3) = 0;
-        if (doNotZeroCenterPSF)
-            % User has passed ''doNotZeroCenterPSF'' = true, and
-            % ''withZeroedPistonAndTiltZernikeCoefficients'' = true
-            % Notify the user that we are overriding the value of '''doNotZeroCenterPSF''
-            fprintf('\n\ncomputePSFandOTF(): overiding the passed value ''doNotZeroCenterPSF'' from true to false, because the passed ''withZeroedPistonAndTiltZernikeCoefficients'' is set to true.\n\n');
-            doNotZeroCenterPSF = false;
-        end
+        % if (doNotZeroCenterPSF)
+        %     % User has passed ''doNotZeroCenterPSF'' = true, and
+        %     % ''withZeroedPistonAndTiltZernikeCoefficients'' = true
+        %     % Notify the user that we are overriding the value of '''doNotZeroCenterPSF''
+        %     fprintf('\n\ncomputePSFandOTF(): overiding the passed value ''doNotZeroCenterPSF'' from true to false, because the passed ''withZeroedPistonAndTiltZernikeCoefficients'' is set to true.\n\n');
+        %     doNotZeroCenterPSF = false;
+        % end
     else
         if (doNotZeroCenterPSF == false)
             % User wants zero-centered PSF. Suggest switching to setting 
@@ -106,6 +106,7 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         end
     end
     
+
     for wIndex = 1:numel(wavelengthsListToCompute)
         % 04/02/24, DHB: Remove ifftshift to match change to wvfGet (where
         % the ifftshift went back in)
