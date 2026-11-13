@@ -87,7 +87,7 @@ function t_mRGCMosaicSynthesizeAtStage1(options)
 arguments
     % --- Which neuron type to generate the spatial position mosaic for ---
     % Currently available types  'cones' and 'midget ganglion cells' 
-    options.neuronType (1,:) char {mustBeMember(options.neuronType,{'cones','midget ganglion cells'})} = 'midget ganglion cells';
+    options.neuronType (1,:) char {mustBeMember(options.neuronType,{'cones','midget ganglion cells', 'ipRGCs'})} = 'midget ganglion cells';
 
     % Left or right eye
     options.whichEye (1,:) char {mustBeMember(options.whichEye,{'left eye','right eye'})} = 'right eye';

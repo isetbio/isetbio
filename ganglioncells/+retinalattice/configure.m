@@ -10,8 +10,13 @@ function p = configure(sourceLatticeSizeDegs, neuronType, whichEye)
     switch (neuronType)
         case 'cones'
             p.latticeGalleryDir = fullfile(isetbioDataPath, 'cones', 'lattices');
+            lambdaMinMicrons = 2.15; % This will give peak density of 250,000 cones/mm2
         case 'midget ganglion cells'
             p.latticeGalleryDir = fullfile(isetbioDataPath, 'rgc', 'lattices');
+            lambdaMinMicrons = 2.15; % This will give peak density of 250,000 cones/mm2
+        case 'ipRGCs'
+            p.latticeGalleryDir = fullfile(isetbioDataPath, 'rgc', 'lattices');
+            lambdaMinMicrons = 200;  % This will give peak density of 50 ipRGCs/mm2
     end
 
     % Patch filename (history of positions)
@@ -45,7 +50,7 @@ function p = configure(sourceLatticeSizeDegs, neuronType, whichEye)
     % p.queryUserIntervalMinutes = 60*12;
     
     % Tolerance for moving point back to elliptical domain
-    p.lambdaMinMicrons = 2.15; % This will give peak density of 250,000 cones/mm2
+    p.lambdaMinMicrons = lambdaMinMicrons; % This will give peak density of 250,000 cones/mm2
     p.borderTolerance = 0.001 * p.lambdaMinMicrons;
     
     % Terminate loop if rfs move less than this positional tolerance 
@@ -75,10 +80,19 @@ function p = configure(sourceLatticeSizeDegs, neuronType, whichEye)
             p.rfSpacingExactFunction = @coneSpacingFunction;
         case 'midget ganglion cells'
             p.rfSpacingExactFunction = @midgetRGCSpacingFunction;
+        case 'ipRGCs'
+            p.rfSpacingExactFunction = @ipRGCSpacingFunction;
     end
     
 end
 
+function [rfSpacingMicrons, eccentricitiesMicrons] = ipRGCSpacingFunction(rfPosMicrons, whichEye, useParfor)
+    [~, rfSpacingMMs] = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(...
+        whichEye, rfPosMicrons, 'ipRGCs', useParfor);
+    
+    rfSpacingMicrons = 1e3 * rfSpacingMMs(:); 
+    eccentricitiesMicrons = sqrt(sum(rfPosMicrons .^ 2, 2));
+end
 
 function [rfSpacingMicrons, eccentricitiesMicrons] = midgetRGCSpacingFunction(rfPosMicrons, whichEye, useParfor)
     [~, rfSpacingMMs] = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(...

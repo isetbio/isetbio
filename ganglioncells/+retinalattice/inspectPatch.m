@@ -1,4 +1,4 @@
-function inspectPatch(neuronType, fovDegs, whichEye)
+function [theRFpositionsMicrons, theRFpositionsDegs] = inspectPatch(neuronType, fovDegs, whichEye)
 
     % Configure algorithm params
     params = retinalattice.configure(fovDegs, neuronType, whichEye);
@@ -81,8 +81,8 @@ function inspectPatch(neuronType, fovDegs, whichEye)
         axis 'square';
         hold off
         drawnow;
-        
-       
     end
     
+    theRFpositionsMicrons = theRFpositions;
+    theRFpositionsDegs = RGCmodels.Watson.convert.rhoMMsToDegs(theRFpositionsMicrons*1e-3);
 end
