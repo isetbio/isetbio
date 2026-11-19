@@ -349,22 +349,14 @@ end
 focalLengthMM = opticsGet(opticsBaseline,'focal length','mm');
 pupilAreaMM2 = pi*(coneParams.pupilDiamMM/2)^2;
 
-% Also get rradiance correction factor between PTB and ISETBio
-%
-% See function for oiCalculateIrradiance for where this happens in ISETBio
-% and some info on why. This correctrion applied in that routine remains
-% mysterious to some of us, but for our purposes here we just match the calculation.
-%
-% This is what ISETBio does:
-%     irradiance = pi / (1 + 4 * fN ^ 2 * (1 + abs(m)) ^ 2) * radiance;
-% This is what PTB does:
-%     irradiance = pupilArea/(eyeLength^2) * radiance;
-%                = (pi/4)*(pupilDiam/eyeLength)^2 * radiance
-%                = pi/(4 * fN ^ 2)
-% because fN = eyeLength/pupilDiam.
+% Correct the PTB irradiance to match ISETCam's finite-distance geometry
+% (see oiCalculateIrradiance). With nominal f-number fN and magnification m,
+% ISETCam's geometric factor is pi / (m^2 + 4*fN^2*(1 + abs(m))^2).
+% PTB uses pupilArea / eyeLength^2, which is pi / (4*fN^2) when the focal
+% length is passed as the eye length.
 fN = focalLengthMM/coneParams.pupilDiamMM;
 m = opticsGet(opticsBaseline,'magnification',sceneGet(scene{1},'distance'));
-irradianceCorrectionFactorPTBToISETBio = (4*fN^2)/(1 + 4 * fN^2 * (1 + abs(m)) ^ 2);
+irradianceCorrectionFactorPTBToISETBio = (4*fN^2)/(m^2 + 4*fN^2*(1 + abs(m))^2);
 
 %% Convert radiance of source to retinal irradiance and then to cone excitations.
 %
